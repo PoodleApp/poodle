@@ -1,0 +1,64 @@
+type Account {
+  id: ID!
+  email: String!
+  loggedIn: Boolean!
+  conversations: [Conversation!]!
+  messages: [Message!]!
+}
+
+type AccountMutations {
+  create(email: String!): Account!
+  authenticate(id: ID!): Account!
+  sync(id: ID!): Account!
+}
+
+type Conversation {
+  id: ID!
+  date: String!
+  from: Address!
+  presentableElements: [Presentable!]!
+  isRead: Boolean!
+  subject: String
+}
+
+type Message {
+  id: ID!
+  date: String!
+  messageId: ID!
+  subject: String
+  from: [Address!]!
+}
+
+type Address {
+  host: String!
+  mailbox: String!
+  name: String
+}
+
+type Presentable {
+  id: ID!
+  contents: [Content!]!
+  date: String!
+  from: Address!
+}
+
+type Content {
+  type: String!
+  subtype: String!
+  content: String!
+}
+
+type Mutation {
+  accounts: AccountMutations!
+}
+
+type Query {
+  account(id: ID!): Account
+  accounts: [Account!]!
+  conversation(id: ID!): Conversation
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+}

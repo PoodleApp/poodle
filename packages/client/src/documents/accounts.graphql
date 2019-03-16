@@ -1,0 +1,91 @@
+# TODO: use fragments after figuring out why fragments are not working
+
+query getAllAccounts {
+  accounts {
+    id
+    email
+    loggedIn
+  }
+}
+
+query getAccount($accountId: ID!) {
+  account(id: $accountId) {
+    id
+    email
+    loggedIn
+    conversations {
+      id
+      date
+      from {
+        host
+        mailbox
+        name
+      }
+      isRead
+      subject
+    }
+  }
+}
+
+mutation addAccount($email: String!) {
+  accounts {
+    create(email: $email) {
+      id
+      email
+      loggedIn
+    }
+  }
+}
+
+mutation authenticate($id: ID!) {
+  accounts {
+    authenticate(id: $id) {
+      id
+      email
+      loggedIn
+    }
+  }
+}
+
+query getConversation($id: ID!) {
+  conversation(id: $id) {
+    id
+    presentableElements {
+      id
+      contents {
+        type
+        subtype
+        content
+      }
+      date
+      from {
+        name
+        mailbox
+        host
+      }
+    }
+    isRead
+    subject
+  }
+}
+
+mutation sync($accountId: ID!) {
+  accounts {
+    sync(id: $accountId) {
+      id
+      email
+      loggedIn
+      conversations {
+        id
+        date
+        from {
+          host
+          mailbox
+          name
+        }
+        isRead
+        subject
+      }
+    }
+  }
+}

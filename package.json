@@ -1,0 +1,24 @@
+{
+  "license": "Apache-2.0",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "start": "./scripts/dev"
+  },
+  "prettier": {
+    "semi": false
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "git-format-staged -f 'prettier --stdin --stdin-filepath \"{}\"' '*.css' '*.graphql' '*.ts' '*.tsx'"
+    }
+  },
+  "devDependencies": {
+    "git-format-staged": "^2.1.0",
+    "husky": "^1.3.1",
+    "prettier": "^1.16.4",
+    "typescript": "^3.4.5"
+  }
+}

@@ -1,0 +1,15 @@
+overwrite: true
+schema: "../main/schema/schema.graphql"
+documents: "src/**/*.graphql"
+generates:
+  src/generated/graphql.tsx:
+    plugins:
+      - add: '/* eslint-disable */'
+      - typescript
+      - typescript-operations
+      - typescript-react-apollo
+    config:
+      noGraphQLTag: true
+      withComponent: false
+      withHOC: false
+      withHooks: true
