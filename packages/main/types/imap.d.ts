@@ -444,12 +444,6 @@ declare module "imap" {
       openReadOnly: boolean,
       callback: (error: Error, mailbox: Connection.Box) => void
     ): void
-    openBox(
-      mailboxName: string,
-      openReadOnly: boolean,
-      modifiers: Object,
-      callback: (error: Error, mailbox: Connection.Box) => void
-    ): void
     /** Closes the currently open mailbox. If autoExpunge is true, any messages marked as Deleted in the currently open mailbox will be removed if the mailbox was NOT opened in read-only mode. If autoExpunge is false, you disconnect, or you open another mailbox, messages marked as Deleted will NOT be removed from the currently open mailbox. */
     closeBox(callback: (error: Error) => void): void
     closeBox(autoExpunge: boolean, callback: (error: Error) => void): void

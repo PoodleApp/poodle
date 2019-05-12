@@ -17,6 +17,7 @@
     "test": "jest --runInBand"
   },
   "dependencies": {
+    "@types/better-queue": "^3.8.0",
     "@types/better-sqlite3": "^5.2.3",
     "@types/concat-stream": "^1.6.0",
     "@types/graphql": "^14.0.7",
@@ -24,9 +25,11 @@
     "@types/mailparser": "^2.4.0",
     "@types/node": "^11.11.8",
     "@types/node-fetch": "^2.1.7",
+    "@types/node-uuid": "^0.0.28",
     "@types/nodemailer": "^4.6.7",
     "@types/xdg-basedir": "^2.0.0",
     "base64-stream": "^1.0.0",
+    "better-queue": "^3.8.10",
     "better-sqlite3": "^5.4.0",
     "better-sqlite3-helper": "^2.0.2",
     "concat-stream": "^2.0.0",
@@ -42,8 +45,10 @@
     "keytar": "^4.6.0",
     "libqp": "^1.1.0",
     "mailparser": "^2.6.0",
+    "mkdirp": "^0.5.1",
     "moment": "^2.24.0",
     "node-fetch": "^2.3.0",
+    "node-uuid": "^1.4.8",
     "nodemailer": "^6.0.0",
     "xdg-basedir": "^3.0.0",
     "xoauth2": "^1.2.0"

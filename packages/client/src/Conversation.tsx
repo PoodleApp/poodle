@@ -13,6 +13,14 @@ export default function Conversation({ accountId, conversationId }: Props) {
   const { data, error, loading } = graphql.useGetConversationQuery({
     variables: { id: conversationId! }
   })
+  const setIsRead = graphql.useSetIsReadMutation({
+    variables: { conversationId: conversationId!, isRead: true }
+  })
+  React.useEffect(() => {
+    if (data && !error && !loading) {
+      setIsRead()
+    }
+  }, [data, error, loading, setIsRead])
 
   // TODO: is there a way to guarantee that `accountId` and `conversationId` are available?
   if (!accountId || !conversationId) {

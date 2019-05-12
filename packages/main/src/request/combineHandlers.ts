@@ -28,7 +28,17 @@ type ActionCreators<HM extends HandlerMap<any>> = {
   ) => Action<Result<HM[K]>, Payload<HM[K]>>
 }
 
-type ActionTypes<HM extends HandlerMap<any>> = { [K in keyof HM]: K }
+type ActionTags<HM extends HandlerMap<any>> = { [K in keyof HM]: K }
+
+type ActionTypeMap<T> = T extends ActionCreators<infer HM>
+  ? { [K in keyof HM]: Action<Result<HM[K]>, Payload<HM[K]>, K> }
+  : never
+
+export type ActionTypes<T extends ActionCreators<any>> = ActionTypeMap<
+  T
+>[keyof T]
+
+export type ActionResult<T> = T extends Action<infer R, any, any> ? R : never
 
 // `combineHandlers` calls two other functions to compute an action creator map,
 // and a perform. Actions produced by generated action creators have a `type`
@@ -39,7 +49,7 @@ export function combineHandlers<Context, HM extends HandlerMap<Context>>(
   handlers: HM
 ): {
   actions: ActionCreators<HM>
-  actionTypes: ActionTypes<HM>
+  actionTypes: ActionTags<HM>
   perform: <T>(
     context: Context,
     action: Action<T>
@@ -64,7 +74,7 @@ function extractActionCreators<HM extends HandlerMap<any>>(
 
 function extractActionTypes<HM extends HandlerMap<any>>(
   handlers: HM
-): ActionTypes<HM> {
+): ActionTags<HM> {
   const actionTypes: any = {}
   for (const type of Object.keys(handlers)) {
     actionTypes[type] = type

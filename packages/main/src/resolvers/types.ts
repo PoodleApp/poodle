@@ -12,6 +12,8 @@ export interface Conversation {
   messages: MessageRecord[]
 }
 
+export type ConversationMutations = {}
+
 export interface Message {
   id: string
   date: string

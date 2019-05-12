@@ -12,4 +12,5 @@ generates:
         Account: ../resolvers/types#Account
         AccountMutations: ../resolvers/types#AccountMutations
         Conversation: ../resolvers/types#Conversation
+        ConversationMutations: ../resolvers/types#ConversationMutations
         Message: ../resolvers/types#Message

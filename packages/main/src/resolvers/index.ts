@@ -9,10 +9,12 @@ export const resolvers: Resolvers = {
     ...conversation.queries
   },
   Mutation: {
-    ...account.mutations
+    ...account.mutations,
+    ...conversation.mutations
   },
   Account: account.Account,
   AccountMutations: account.AccountMutations,
   Conversation: conversation.Conversation,
+  ConversationMutations: conversation.ConversationMutations,
   Message: message.Message
 }

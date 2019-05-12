@@ -36,7 +36,8 @@ create table message_participants(
 create table message_flags(
   id integer primary key,
   message_id integer not null references messages(id) on delete cascade,
-  flag text not null
+  flag text not null,
+  unique(message_id, flag)
 );
 
 create table message_gmail_labels (

@@ -57,6 +57,15 @@ export type Conversation = {
   subject?: Maybe<Scalars["String"]>
 }
 
+export type ConversationMutations = {
+  setIsRead: Conversation
+}
+
+export type ConversationMutationsSetIsReadArgs = {
+  id: Scalars["ID"]
+  isRead: Scalars["Boolean"]
+}
+
 export type Message = {
   id: Scalars["ID"]
   date: Scalars["String"]
@@ -67,6 +76,7 @@ export type Message = {
 
 export type Mutation = {
   accounts: AccountMutations
+  conversations: ConversationMutations
 }
 
 export type Presentable = {
@@ -93,6 +103,7 @@ import {
   Account,
   AccountMutations,
   Conversation,
+  ConversationMutations,
   Message
 } from "../resolvers/types"
 
@@ -208,6 +219,18 @@ export type ConversationResolvers<Context = any, ParentType = Conversation> = {
   subject?: Resolver<Maybe<Scalars["String"]>, ParentType, Context>
 }
 
+export type ConversationMutationsResolvers<
+  Context = any,
+  ParentType = ConversationMutations
+> = {
+  setIsRead?: Resolver<
+    Conversation,
+    ParentType,
+    Context,
+    ConversationMutationsSetIsReadArgs
+  >
+}
+
 export type MessageResolvers<Context = any, ParentType = Message> = {
   id?: Resolver<Scalars["ID"], ParentType, Context>
   date?: Resolver<Scalars["String"], ParentType, Context>
@@ -218,6 +241,7 @@ export type MessageResolvers<Context = any, ParentType = Message> = {
 
 export type MutationResolvers<Context = any, ParentType = Mutation> = {
   accounts?: Resolver<AccountMutations, ParentType, Context>
+  conversations?: Resolver<ConversationMutations, ParentType, Context>
 }
 
 export type PresentableResolvers<Context = any, ParentType = Presentable> = {
@@ -244,6 +268,7 @@ export type Resolvers<Context = any> = {
   Address?: AddressResolvers<Context>
   Content?: ContentResolvers<Context>
   Conversation?: ConversationResolvers<Context>
+  ConversationMutations?: ConversationMutationsResolvers<Context>
   Message?: MessageResolvers<Context>
   Mutation?: MutationResolvers<Context>
   Presentable?: PresentableResolvers<Context>

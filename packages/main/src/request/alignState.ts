@@ -51,9 +51,13 @@ async function openBox(
   if (boxMatches && accessMatches) {
     // No change necessary
   } else {
-    await closeBox
+    await closeBox(false, connection)
     await promises.lift1(cb =>
-      connection.openBox(boxName, boxSpec.readonly || true, cb)
+      connection.openBox(
+        boxName,
+        boxSpec.readonly == null ? true : boxSpec.readonly,
+        cb
+      )
     )
   }
 }

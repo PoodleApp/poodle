@@ -254,6 +254,31 @@ export function persistBody(
   insertInto("message_bodies", { message_struct_id: result.id, content })
 }
 
+// TODO: What is the proper way to provide a list of values in a query?
+export function addFlag({
+  accountId,
+  box,
+  uids,
+  flag
+}: {
+  accountId: ID
+  box: { name: string }
+  uids: number[]
+  flag: string
+}) {
+  db.prepare(
+    `
+      insert or ignore into message_flags (message_id, flag)
+      select messages.id, @flag from messages
+      join boxes on box_id = boxes.id
+      where
+        messages.account_id = @accountId
+        and messages.uid in (${uids.join(", ")})
+        and boxes.name = @boxName
+    `
+  ).run({ accountId, boxName: box.name, flag })
+}
+
 function insertInto(table: string, values: Record<string, unknown>): ID {
   const keys = Object.keys(values)
   const { lastInsertRowid } = db

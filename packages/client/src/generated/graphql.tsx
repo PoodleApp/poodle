@@ -57,6 +57,15 @@ export type Conversation = {
   subject?: Maybe<Scalars["String"]>
 }
 
+export type ConversationMutations = {
+  setIsRead: Conversation
+}
+
+export type ConversationMutationsSetIsReadArgs = {
+  id: Scalars["ID"]
+  isRead: Scalars["Boolean"]
+}
+
 export type Message = {
   id: Scalars["ID"]
   date: Scalars["String"]
@@ -67,6 +76,7 @@ export type Message = {
 
 export type Mutation = {
   accounts: AccountMutations
+  conversations: ConversationMutations
 }
 
 export type Presentable = {
@@ -193,6 +203,25 @@ export type SyncMutation = { __typename?: "Mutation" } & {
                 "host" | "mailbox" | "name"
               >
             }
+        >
+      }
+  }
+}
+
+export type SetIsReadMutationVariables = {
+  conversationId: Scalars["ID"]
+  isRead: Scalars["Boolean"]
+}
+
+export type SetIsReadMutation = { __typename?: "Mutation" } & {
+  conversations: { __typename?: "ConversationMutations" } & {
+    setIsRead: { __typename?: "Conversation" } & Pick<
+      Conversation,
+      "id" | "date" | "isRead" | "subject"
+    > & {
+        from: { __typename?: "Address" } & Pick<
+          Address,
+          "host" | "mailbox" | "name"
         >
       }
   }
@@ -895,4 +924,157 @@ export function useSyncMutation(
     SyncDocument,
     baseOptions
   )
+}
+export const SetIsReadDocument: DocumentNode = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "setIsRead" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "conversationId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } }
+          },
+          directives: []
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "isRead" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "Boolean" }
+            }
+          },
+          directives: []
+        }
+      ],
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "conversations" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "setIsRead" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "id" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "conversationId" }
+                      }
+                    },
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "isRead" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "isRead" }
+                      }
+                    }
+                  ],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "id" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "date" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "from" },
+                        arguments: [],
+                        directives: [],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "host" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "mailbox" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "name" },
+                              arguments: [],
+                              directives: []
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "isRead" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "subject" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+export type SetIsReadMutationFn = ReactApollo.MutationFn<
+  SetIsReadMutation,
+  SetIsReadMutationVariables
+>
+
+export function useSetIsReadMutation(
+  baseOptions?: ReactApolloHooks.MutationHookOptions<
+    SetIsReadMutation,
+    SetIsReadMutationVariables
+  >
+) {
+  return ReactApolloHooks.useMutation<
+    SetIsReadMutation,
+    SetIsReadMutationVariables
+  >(SetIsReadDocument, baseOptions)
 }

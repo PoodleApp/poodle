@@ -10,6 +10,7 @@ import {
   HeaderValue
 } from "../models/Message"
 import * as kefirUtil from "../util/kefir"
+import * as promises from "../util/promises"
 import alignState from "./alignState"
 import { combineHandlers } from "./combineHandlers"
 import * as state from "./state"
@@ -49,6 +50,20 @@ type SerializedHeaders = Array<[string, HeaderValue]>
 const headersSelection = "HEADER"
 
 export const { actions, perform } = combineHandlers({
+  addFlags(
+    connection: Connection,
+    box: BoxSpecifier,
+    source: imap.MessageSource,
+    flags: string[]
+  ): R<void> {
+    return withBox(connection, box, () => {
+      const result = promises.lift0(cb =>
+        connection.addFlags(source, flags, cb)
+      )
+      return kefir.fromPromise(result)
+    })
+  },
+
   end(connection: Connection): R<undefined> {
     connection.end()
     return kefir.constant(undefined)

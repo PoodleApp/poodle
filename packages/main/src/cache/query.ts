@@ -31,6 +31,16 @@ function getBoxRecord(accountId: ID, box: { name: string }): { id: ID } | null {
     .get({ account_id: accountId, name: box.name })
 }
 
+export function getBox(boxId: ID): { id: ID; name: string } | null {
+  return db
+    .prepare(
+      `
+        select id, name from boxes where id = ?
+      `
+    )
+    .get(boxId)
+}
+
 interface Thread {
   id: string
   messages: Message[]

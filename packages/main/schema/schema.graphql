@@ -21,6 +21,10 @@ type Conversation {
   subject: String
 }
 
+type ConversationMutations {
+  setIsRead(id: ID!, isRead: Boolean!): Conversation!
+}
+
 type Message {
   id: ID!
   date: String!
@@ -50,6 +54,7 @@ type Content {
 
 type Mutation {
   accounts: AccountMutations!
+  conversations: ConversationMutations!
 }
 
 type Query {

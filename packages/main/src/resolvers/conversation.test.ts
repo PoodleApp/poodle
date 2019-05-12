@@ -1,10 +1,10 @@
 import { graphql } from "graphql"
 import Connection from "imap"
 import * as cache from "../cache"
-import { inbox, testThread } from "../cache/testFixtures"
+import { testThread } from "../cache/testFixtures"
 import db from "../db"
 import ConnectionManager from "../managers/ConnectionManager"
-import { mockFetchImplementation } from "../request/testHelpers"
+import { mockConnection, mockFetchImplementation } from "../request/testHelpers"
 import schema from "../schema"
 import { sync } from "../sync"
 import { mock } from "../testHelpers"
@@ -12,6 +12,8 @@ import { mock } from "../testHelpers"
 jest.mock("imap")
 
 let accountId: cache.ID
+let connectionManager: ConnectionManager
+let conversationId: string
 
 beforeEach(async () => {
   const { lastInsertRowid } = db
@@ -19,22 +21,24 @@ beforeEach(async () => {
     .run("jesse@sitr.us")
   accountId = lastInsertRowid
 
-  const boxes = {
-    INBOX: { attribs: ["\\Inbox"] }
-  }
-  mock(Connection.prototype.getBoxes).mockImplementation((cb: any) => {
-    cb(null, boxes)
-  })
-  mock(Connection.prototype.fetch).mockImplementation(mockFetchImplementation())
-  mock(Connection.prototype.connect).mockReturnValue(undefined)
-
-  const connectionManager = new ConnectionManager(async () => {
-    const conn = new Connection({})
-    conn.state = "connected"
-    ;(conn as any)._box = inbox
-    return conn
-  })
+  connectionManager = mockConnection()
   await sync(accountId, connectionManager)
+
+  conversationId = (await graphql(
+    schema,
+    `
+      query getConversations($accountId: ID!) {
+        account(id: $accountId) {
+          conversations {
+            id
+          }
+        }
+      }
+    `,
+    null,
+    null,
+    { accountId }
+  )).data!.account.conversations[0].id
 })
 
 it("gets metadata for a conversation from cache", async () => {
@@ -140,6 +144,51 @@ it("gets a list of presentable elements for a conversation", async () => {
             ]
           }
         ]
+      }
+    }
+  })
+})
+
+it("marks a conversation as read", async () => {
+  mock(Connection.prototype.fetch).mockImplementation(
+    mockFetchImplementation({
+      thread: [
+        {
+          attributes: { ...testThread[0].attributes, flags: ["\\Answered"] },
+          headers: testThread[0].headers
+        },
+        {
+          attributes: { ...testThread[1].attributes, flags: [] },
+          headers: testThread[1].headers
+        }
+      ]
+    })
+  )
+  await sync(accountId, connectionManager)
+
+  const result = await graphql(
+    schema,
+    `
+      mutation setIsRead($conversationId: ID!, $isRead: Boolean!) {
+        conversations {
+          setIsRead(id: $conversationId, isRead: $isRead) {
+            id
+            isRead
+          }
+        }
+      }
+    `,
+    null,
+    null,
+    { conversationId, isRead: true }
+  )
+  expect(result).toEqual({
+    data: {
+      conversations: {
+        setIsRead: {
+          id: conversationId,
+          isRead: true
+        }
       }
     }
   })

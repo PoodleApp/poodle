@@ -1,15 +1,86 @@
 import { EventEmitter } from "events"
-import imap from "imap"
+import { default as Connection, default as imap } from "imap"
 import { Readable } from "stream"
 import stringToStream from "string-to-stream"
 import { testContent, testThread } from "../cache/testFixtures"
+import ConnectionManager from "../managers/ConnectionManager"
 import { HeaderValue } from "../models/Message"
+import { mock } from "../testHelpers"
 
 type Message = {
   attributes: imap.ImapMessageAttributes
   headers: SerializedHeaders
 }
 type SerializedHeaders = Array<[string, HeaderValue]>
+
+export function mockConnection({
+  content = testContent,
+  thread = testThread
+}: {
+  content?: typeof testContent
+  thread?: Message[]
+} = {}): ConnectionManager {
+  const boxes = {
+    INBOX: { attribs: ["\\Inbox"] }
+  }
+
+  mock(Connection.prototype.addFlags).mockImplementation(
+    (_source, _flags, cb) => {
+      cb(null as any)
+    }
+  )
+  mock(Connection.prototype.getBoxes).mockImplementation((cb: any) => {
+    cb(null, boxes)
+  })
+  mock(Connection.prototype.fetch).mockImplementation(
+    mockFetchImplementation({
+      content,
+      thread
+    })
+  )
+
+  mock(Connection.prototype.connect).mockReturnValue(undefined)
+
+  mock(Connection.prototype.openBox).mockImplementation(function openBox(
+    this: Connection,
+    name,
+    readOnly,
+    cb
+  ) {
+    const box = {
+      name,
+      readOnly,
+      uidvalidity: 123,
+      uidnext: 456,
+      flags: [],
+      permFlags: [],
+      newKeywords: false,
+      persistentUIDs: true,
+      messages: {
+        total: 2,
+        new: 2,
+        unseen: 2
+      }
+    }
+    ;(this as any)._box = box
+    cb(null as any, box)
+  })
+
+  mock(Connection.prototype.closeBox).mockImplementation(function closeBox(
+    this: Connection,
+    _autoExpunge,
+    cb
+  ) {
+    ;(this as any)._box = null
+    cb(null as any)
+  })
+
+  return new ConnectionManager(async () => {
+    const conn = new Connection({})
+    conn.state = "connected"
+    return conn
+  })
+}
 
 export function mockFetchImplementation({
   content = testContent,

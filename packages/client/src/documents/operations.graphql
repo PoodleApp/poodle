@@ -89,3 +89,19 @@ mutation sync($accountId: ID!) {
     }
   }
 }
+
+mutation setIsRead($conversationId: ID!, $isRead: Boolean!) {
+  conversations {
+    setIsRead(id: $conversationId, isRead: $isRead) {
+      id
+      date
+      from {
+        host
+        mailbox
+        name
+      }
+      isRead
+      subject
+    }
+  }
+}

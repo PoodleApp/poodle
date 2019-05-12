@@ -1,7 +1,14 @@
-import { Seq } from "immutable"
+import { List, Seq } from "immutable"
 import * as cache from "../cache"
-import { ConversationResolvers, QueryResolvers } from "../generated/graphql"
+import {
+  ConversationResolvers,
+  ConversationMutationsResolvers,
+  MutationResolvers,
+  QueryResolvers
+} from "../generated/graphql"
 import { contentParts } from "../models/Message"
+import * as queue from "../queue"
+import { nonNull } from "../util/array"
 import * as types from "./types"
 
 export const Conversation: ConversationResolvers = {
@@ -46,10 +53,60 @@ export const Conversation: ConversationResolvers = {
   }
 }
 
+export const ConversationMutations: ConversationMutationsResolvers = {
+  async setIsRead(_parent, { id, isRead }) {
+    if (!isRead) {
+      throw new Error(
+        "Marking a conversation as unread is not yet implemented."
+      )
+    }
+    const thread = getConversation(id)
+    if (!thread) {
+      throw new Error(`Cannot find conversation with ID, ${id}`)
+    }
+    setIsRead(thread.messages)
+    return thread
+  }
+}
+
+function setIsRead(messages: cache.Message[]) {
+  const grouped = Seq(messages)
+    .filter(message => !cache.getFlags(message.id).includes("\\Seen"))
+    .groupBy(message => List([message.account_id, message.box_id] as const))
+  for (const [grouping, msgs] of grouped) {
+    const accountId = grouping.get(0)
+    const boxId = grouping.get(1)
+    const box = boxId && cache.getBox(boxId)
+    if (!accountId || !box) {
+      continue
+    }
+    const uids = msgs.map(message => message.uid).filter(nonNull)
+    if (!uids.isEmpty()) {
+      queue.enqueue(
+        queue.actions.markAsRead({
+          accountId: String(accountId),
+          box,
+          uids: uids.valueSeq().toArray()
+        })
+      )
+    }
+  }
+}
+
 export const queries: Partial<QueryResolvers> = {
   conversation(_parent, { id }): types.Conversation | null {
-    return cache.getThread(id)
+    return getConversation(id)
   }
+}
+
+export const mutations: Partial<MutationResolvers> = {
+  conversations() {
+    return {}
+  }
+}
+
+export function getConversation(id: string): types.Conversation | null {
+  return cache.getThread(id)
 }
 
 export function getConversations(account: types.Account): types.Conversation[] {

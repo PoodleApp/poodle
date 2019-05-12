@@ -6,6 +6,7 @@ export type SerializedHeaders = Array<[string, HeaderValue]>
 
 export interface Message {
   id: ID
+  account_id: ID
   box_id?: ID
   date: string
   envelope_date?: string
