@@ -194,6 +194,35 @@ it("marks a conversation as read", async () => {
   })
 })
 
+it("marks a conversation as unread", async () => {
+  const result = await graphql(
+    schema,
+    `
+      mutation setIsRead($conversationId: ID!, $isRead: Boolean!) {
+        conversations {
+          setIsRead(id: $conversationId, isRead: $isRead) {
+            id
+            isRead
+          }
+        }
+      }
+    `,
+    null,
+    null,
+    { conversationId, isRead: false }
+  )
+  expect(result).toEqual({
+    data: {
+      conversations: {
+        setIsRead: {
+          id: conversationId,
+          isRead: false
+        }
+      }
+    }
+  })
+})
+
 afterEach(() => {
   db.prepare("delete from accounts").run()
 })

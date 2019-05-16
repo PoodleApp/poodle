@@ -58,7 +58,7 @@ export default class SqliteStore<T> implements BetterQueue.Store<T> {
         )
         .get({ taskId, lock: "" })
       if (row == null) {
-        return null
+        return undefined // Failure result must be `undefined`, not `null`!
       }
       return JSON.parse(row.task)
     })

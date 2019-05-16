@@ -273,10 +273,39 @@ export function addFlag({
       join boxes on box_id = boxes.id
       where
         messages.account_id = @accountId
-        and messages.uid in (${uids.join(", ")})
         and boxes.name = @boxName
+        and messages.uid in (${uids.join(", ")})
     `
   ).run({ accountId, boxName: box.name, flag })
+}
+
+// TODO: What is the proper way to provide a list of values in a query?
+export function delFlags({
+  accountId,
+  box,
+  uids,
+  flags
+}: {
+  accountId: ID
+  box: { name: string }
+  uids: number[]
+  flags: string[]
+}) {
+  db.prepare(
+    `
+      delete from message_flags
+      where
+        message_id in (
+          select messages.id from messages
+          join boxes on box_id = boxes.id
+          where
+            messages.account_id = @accountId
+            and boxes.name = @boxName
+            and uid in (${uids.join(", ")})
+        )
+        and flag in (${flags.map(f => `'${f}'`).join(", ")})
+    `
+  ).run({ accountId, boxName: box.name })
 }
 
 function insertInto(table: string, values: Record<string, unknown>): ID {

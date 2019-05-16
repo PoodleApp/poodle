@@ -34,16 +34,37 @@ export const { actions, actionTypes, perform } = combineHandlers({
         ])
       )
     )
+  },
+
+  unmarkAsRead(
+    _context: unknown,
+    {
+      accountId,
+      box,
+      uids
+    }: { accountId: ID; box: { name: string }; uids: number[] }
+  ): R<void> {
+    return withConnectionManager(accountId, connectionManager =>
+      connectionManager.request(
+        request.actions.delFlags({ name: box.name, readonly: false }, uids, [
+          "\\Seen"
+        ])
+      )
+    )
   }
 })
 
 type Task = ActionTypes<typeof actions>
 
-export function enqueue<T extends Task>(action: T): R<ActionResult<T>> {
+export function enqueue(action: Task): R<ActionResult<typeof action>> {
   if (action.type === actionTypes.markAsRead) {
     cache.addFlag({ ...payload(action), flag: "\\Seen" })
+  } else if (action.type === actionTypes.unmarkAsRead) {
+    cache.delFlags({ ...payload(action), flags: ["\\Seen"] })
   }
-  const result = promises.lift1<ActionResult<T>>(cb => queue.push(action, cb))
+  const result = promises.lift1<ActionResult<typeof action>>(cb =>
+    queue.push(action, cb)
+  )
   return kefir.fromPromise(result)
 }
 
@@ -66,7 +87,7 @@ function processTask(
   cb: ((error: Error) => void) &
     ((error: null, result: ActionResult<typeof task>) => void)
 ) {
-  perform(undefined, task).observe({
+  perform(1, task).observe({
     value(v) {
       cb(null, v)
     },
@@ -86,11 +107,15 @@ const store =
         path: getDbPath()
       })
 
-const queue = new BetterQueue<Task>(processTask, {
-  maxRetries: 3,
-  maxTimeout: 5000,
-  retryDelay: 5000,
-  store
+export const queue = new BetterQueue<Task>(processTask, {
+  maxRetries: Infinity, // keep retrying until we come online
+  maxTimeout: process.env.NODE_ENV === "test" ? 150 : 10000,
+  retryDelay: process.env.NODE_ENV === "test" ? 1 : 10000,
+  store,
+  merge(_oldTask, newTask, cb) {
+    console.log("merge", _oldTask, newTask)
+    cb(null, newTask)
+  }
 })
 
 export function getQueuedTasks(): Array<Action<unknown>> {

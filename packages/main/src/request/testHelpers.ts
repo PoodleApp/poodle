@@ -29,6 +29,11 @@ export function mockConnection({
       cb(null as any)
     }
   )
+  mock(Connection.prototype.delFlags).mockImplementation(
+    (_source, _flags, cb) => {
+      cb(null as any)
+    }
+  )
   mock(Connection.prototype.getBoxes).mockImplementation((cb: any) => {
     cb(null, boxes)
   })

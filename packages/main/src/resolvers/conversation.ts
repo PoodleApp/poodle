@@ -55,23 +55,21 @@ export const Conversation: ConversationResolvers = {
 
 export const ConversationMutations: ConversationMutationsResolvers = {
   async setIsRead(_parent, { id, isRead }) {
-    if (!isRead) {
-      throw new Error(
-        "Marking a conversation as unread is not yet implemented."
-      )
-    }
     const thread = getConversation(id)
     if (!thread) {
       throw new Error(`Cannot find conversation with ID, ${id}`)
     }
-    setIsRead(thread.messages)
+    setIsRead(thread.messages, isRead)
     return thread
   }
 }
 
-function setIsRead(messages: cache.Message[]) {
+function setIsRead(messages: cache.Message[], isRead: boolean) {
   const grouped = Seq(messages)
-    .filter(message => !cache.getFlags(message.id).includes("\\Seen"))
+    .filter(message => {
+      const seen = cache.getFlags(message.id).includes("\\Seen")
+      return isRead ? !seen : seen
+    })
     .groupBy(message => List([message.account_id, message.box_id] as const))
   for (const [grouping, msgs] of grouped) {
     const accountId = grouping.get(0)
@@ -81,9 +79,17 @@ function setIsRead(messages: cache.Message[]) {
       continue
     }
     const uids = msgs.map(message => message.uid).filter(nonNull)
-    if (!uids.isEmpty()) {
+    if (!uids.isEmpty() && isRead) {
       queue.enqueue(
         queue.actions.markAsRead({
+          accountId: String(accountId),
+          box,
+          uids: uids.valueSeq().toArray()
+        })
+      )
+    } else if (!uids.isEmpty() && !isRead) {
+      queue.enqueue(
+        queue.actions.unmarkAsRead({
           accountId: String(accountId),
           box,
           uids: uids.valueSeq().toArray()

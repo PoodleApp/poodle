@@ -64,6 +64,20 @@ export const { actions, perform } = combineHandlers({
     })
   },
 
+  delFlags(
+    connection: Connection,
+    box: BoxSpecifier,
+    source: imap.MessageSource,
+    flags: string[]
+  ): R<void> {
+    return withBox(connection, box, () => {
+      const result = promises.lift0(cb =>
+        connection.delFlags(source, flags, cb)
+      )
+      return kefir.fromPromise(result)
+    })
+  },
+
   end(connection: Connection): R<undefined> {
     connection.end()
     return kefir.constant(undefined)
