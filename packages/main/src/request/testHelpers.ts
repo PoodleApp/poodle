@@ -21,7 +21,8 @@ export function mockConnection({
   thread?: Message[]
 } = {}): ConnectionManager {
   const boxes = {
-    INBOX: { attribs: ["\\Inbox"] }
+    INBOX: { attribs: ["\\Inbox"] },
+    "[Gmail]/All Mail": { attribs: ["\\All"] }
   }
 
   mock(Connection.prototype.addFlags).mockImplementation(
@@ -56,7 +57,7 @@ export function mockConnection({
       name,
       readOnly,
       uidvalidity: 123,
-      uidnext: 456,
+      uidnext: testThread[1].attributes.uid + 1,
       flags: [],
       permFlags: [],
       newKeywords: false,

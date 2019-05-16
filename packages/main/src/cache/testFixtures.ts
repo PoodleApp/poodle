@@ -14,6 +14,22 @@ export const inbox: imap.Box = {
   readOnly: true
 }
 
+export const allMail: imap.Box = {
+  name: "[Gmail]/All Mail",
+  readOnly: true,
+  uidvalidity: 123,
+  uidnext: 7688,
+  flags: [],
+  permFlags: [],
+  newKeywords: false,
+  persistentUIDs: true,
+  messages: {
+    total: 2,
+    new: 0,
+    unseen: 0
+  }
+}
+
 export const testThread: Array<{
   attributes: imap.ImapMessageAttributes
   headers: Array<[string, HeaderValue]>

@@ -238,3 +238,9 @@ export function isHeaders(x: FetchResponse): x is Headers {
 export function isMessage(x: FetchResponse): x is Message {
   return x.type === MESSAGE
 }
+
+export function messageAttributes(
+  x: FetchResponse
+): imap.ImapMessageAttributes {
+  return isMessage(x) ? x.attributes : x.messageAttributes
+}

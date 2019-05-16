@@ -1,6 +1,6 @@
 import Connection from "imap"
 import * as cache from "../cache"
-import { inbox, testThread } from "../cache/testFixtures"
+import { allMail, testThread } from "../cache/testFixtures"
 import db from "../db"
 import AccountManager from "../managers/AccountManager"
 import { mockConnection } from "../request/testHelpers"
@@ -40,7 +40,7 @@ it("marks a conversation as read", async () => {
     .enqueue(
       queue.actions.markAsRead({
         accountId: String(accountId),
-        box: inbox,
+        box: allMail,
         uids: [7687]
       })
     )
@@ -72,7 +72,7 @@ it("marks a conversation as unread", async () => {
     .enqueue(
       queue.actions.unmarkAsRead({
         accountId: String(accountId),
-        box: inbox,
+        box: allMail,
         uids: [7687]
       })
     )
@@ -105,7 +105,7 @@ it.skip("replaces pending read status change when a new change is queued", async
     .enqueue(
       queue.actions.markAsRead({
         accountId: String(accountId),
-        box: inbox,
+        box: allMail,
         uids: [7687]
       })
     )
@@ -114,7 +114,7 @@ it.skip("replaces pending read status change when a new change is queued", async
     .enqueue(
       queue.actions.unmarkAsRead({
         accountId: String(accountId),
-        box: inbox,
+        box: allMail,
         uids: [7687]
       })
     )

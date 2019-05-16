@@ -108,14 +108,10 @@ const store =
       })
 
 export const queue = new BetterQueue<Task>(processTask, {
-  maxRetries: Infinity, // keep retrying until we come online
+  maxRetries: 3,
   maxTimeout: process.env.NODE_ENV === "test" ? 150 : 10000,
   retryDelay: process.env.NODE_ENV === "test" ? 1 : 10000,
-  store,
-  merge(_oldTask, newTask, cb) {
-    console.log("merge", _oldTask, newTask)
-    cb(null, newTask)
-  }
+  store
 })
 
 export function getQueuedTasks(): Array<Action<unknown>> {

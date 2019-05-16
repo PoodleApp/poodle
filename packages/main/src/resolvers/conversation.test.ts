@@ -4,10 +4,12 @@ import * as cache from "../cache"
 import { testThread } from "../cache/testFixtures"
 import db from "../db"
 import ConnectionManager from "../managers/ConnectionManager"
+import { queue } from "../queue"
 import { mockConnection, mockFetchImplementation } from "../request/testHelpers"
 import schema from "../schema"
 import { sync } from "../sync"
 import { mock } from "../testHelpers"
+import * as promises from "../util/promises"
 
 jest.mock("imap")
 
@@ -223,6 +225,7 @@ it("marks a conversation as unread", async () => {
   })
 })
 
-afterEach(() => {
+afterEach(async () => {
   db.prepare("delete from accounts").run()
+  await promises.lift0(cb => queue.destroy(cb))
 })

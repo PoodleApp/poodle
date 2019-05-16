@@ -2,6 +2,22 @@ import imap from "imap"
 import db from "../db"
 import { ID, Message } from "./types"
 
+export function firstSeenUid(accountId: ID, box: { name: string }): number {
+  const boxRecord = getBoxRecord(accountId, box)
+  if (!boxRecord) {
+    return 0
+  }
+  const result: { max_uid: number | null } = db
+    .prepare(
+      `
+        select min(uid) as max_uid from messages
+        where box_id = ?
+      `
+    )
+    .get(boxRecord.id)
+  return result.max_uid || 0
+}
+
 export function lastSeenUid(accountId: ID, box: { name: string }): number {
   const boxRecord = getBoxRecord(accountId, box)
   if (!boxRecord) {
@@ -168,9 +184,16 @@ export function getBody(
   return result && result.content
 }
 
-export function partsMissingBodies(params: {
+export function partsMissingBodies({
+  accountId,
+  boxId,
+  minUid = 0,
+  maxUid = 0
+}: {
   accountId: ID
   boxId: ID
+  minUid?: number
+  maxUid?: number
 }): Array<{ uid: number; boxName: string; part: imap.ImapMessagePart }> {
   return db
     .prepare(
@@ -186,9 +209,11 @@ export function partsMissingBodies(params: {
           and messages.account_id = @accountId
           and bodies.content is null
           and structs.rgt = structs.lft + 1
+          and messages.uid >= @minUid
+          and (@maxUid <= 0 or messages.uid <= @maxUid)
       `
     )
-    .all(params)
+    .all({ accountId, boxId, minUid, maxUid })
     .map(row => ({
       uid: row.uid,
       boxName: row.boxName,

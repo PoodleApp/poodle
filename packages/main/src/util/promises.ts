@@ -1,4 +1,4 @@
-export function lift0(fn: (cb: (err: any) => void) => any): Promise<void> {
+export function lift0(fn: (cb: (err?: any) => void) => any): Promise<void> {
   return new Promise((resolve, reject) => {
     fn(err => {
       if (err) {

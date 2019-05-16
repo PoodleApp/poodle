@@ -1,9 +1,9 @@
 import Connection from "imap"
 import * as cache from "./cache"
-import { inbox, testThread } from "./cache/testFixtures"
+import { testThread } from "./cache/testFixtures"
 import db from "./db"
 import ConnectionManager from "./managers/ConnectionManager"
-import { mockFetchImplementation } from "./request/testHelpers"
+import { mockConnection, mockFetchImplementation } from "./request/testHelpers"
 import { sync } from "./sync"
 import { mock } from "./testHelpers"
 
@@ -18,40 +18,22 @@ beforeEach(() => {
     .run("jesse@sitr.us")
   accountId = lastInsertRowid
 
-  const boxes = {
-    INBOX: {
-      attribs: ["\\Inbox"],
-      uidnext: cache.lastSeenUid(accountId, { name: "INBOX" }) + 1
-    }
-  }
-  mock(Connection.prototype.getBoxes).mockImplementation((cb: any) => {
-    cb(null, boxes)
-  })
-  mock(Connection.prototype.fetch).mockImplementation(mockFetchImplementation())
-  mock(Connection.prototype.connect).mockReturnValue(undefined)
-
-  connectionManager = new ConnectionManager(async () => {
-    const conn = new Connection({})
-    conn.state = "connected"
-    ;(conn as any)._box = inbox
-    return conn
-  })
+  connectionManager = mockConnection()
 })
 
-it("records metadata for INBOX", async () => {
+it("records metadata for mailbox", async () => {
   await sync(accountId, connectionManager)
   expect(db.prepare("select * from boxes").all()).toMatchObject([
-    { account_id: accountId, name: "INBOX", uidvalidity: 9999 }
+    { account_id: accountId, name: "[Gmail]/All Mail", uidvalidity: 123 }
   ])
 })
 
-it("downloads messages from INBOX", async () => {
+it("downloads messages", async () => {
   await sync(accountId, connectionManager)
   const messages = db
     .prepare(
       `
-        select boxes.account_id, messages.uid from messages
-        join boxes on messages.box_id = boxes.id
+        select account_id, uid from messages
       `
     )
     .all()
@@ -121,14 +103,14 @@ it("gets updated labels for messages that are already downloaded", async () => {
         {
           attributes: {
             ...testThread[0].attributes,
-            "x-gm-labels": ["\\Important", "\\Sent"]
+            "x-gm-labels": ["\\Inbox", "\\Sent"]
           },
           headers: testThread[0].headers
         },
         {
           attributes: {
             ...testThread[1].attributes,
-            "x-gm-labels": ["\\Sent"]
+            "x-gm-labels": ["\\Inbox", "\\Sent", "Followup"]
           },
           headers: testThread[1].headers
         }
@@ -149,8 +131,10 @@ it("gets updated labels for messages that are already downloaded", async () => {
       )
       .all()
   ).toMatchObject([
-    { uid: 7467, label: "\\Important" },
+    { uid: 7467, label: "\\Inbox" },
     { uid: 7467, label: "\\Sent" },
+    { uid: 7687, label: "Followup" },
+    { uid: 7687, label: "\\Inbox" },
     { uid: 7687, label: "\\Sent" }
   ])
 })
