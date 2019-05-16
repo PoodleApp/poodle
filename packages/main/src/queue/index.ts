@@ -19,6 +19,23 @@ type ID = string
 type R<T> = kefir.Observable<T, Error>
 
 export const { actions, actionTypes, perform } = combineHandlers({
+  archive(
+    _context: unknown,
+    {
+      accountId,
+      box,
+      uids
+    }: { accountId: ID; box: { name: string }; uids: number[] }
+  ): R<void> {
+    return withConnectionManager(accountId, connectionManager =>
+      connectionManager.request(
+        request.actions.delLabels({ name: box.name, readonly: false }, uids, [
+          "\\Inbox"
+        ])
+      )
+    )
+  },
+
   markAsRead(
     _context: unknown,
     {
@@ -57,7 +74,9 @@ export const { actions, actionTypes, perform } = combineHandlers({
 type Task = ActionTypes<typeof actions>
 
 export function enqueue(action: Task): R<ActionResult<typeof action>> {
-  if (action.type === actionTypes.markAsRead) {
+  if (action.type === actionTypes.archive) {
+    cache.delLabels({ ...payload(action), labels: ["\\Inbox"] })
+  } else if (action.type === actionTypes.markAsRead) {
     cache.addFlag({ ...payload(action), flag: "\\Seen" })
   } else if (action.type === actionTypes.unmarkAsRead) {
     cache.delFlags({ ...payload(action), flags: ["\\Seen"] })
@@ -107,10 +126,12 @@ const store =
         path: getDbPath()
       })
 
+const isTest = process.env.NODE_ENV
+
 export const queue = new BetterQueue<Task>(processTask, {
   maxRetries: 3,
-  maxTimeout: process.env.NODE_ENV === "test" ? 150 : 10000,
-  retryDelay: process.env.NODE_ENV === "test" ? 1 : 10000,
+  maxTimeout: isTest ? 150 : 10000,
+  retryDelay: isTest ? 1 : 10000,
   store
 })
 

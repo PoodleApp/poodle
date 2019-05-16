@@ -1,6 +1,7 @@
-import { Link, Redirect, RouteComponentProps } from "@reach/router"
+import { Link, Redirect, RouteComponentProps, navigate } from "@reach/router"
 import * as React from "react"
 import * as graphql from "./generated/graphql"
+import useArchive from "./hooks/useArchive"
 import DisplayContent from "./DisplayContent"
 import Participant from "./Participant"
 
@@ -12,6 +13,10 @@ type Props = RouteComponentProps & {
 export default function Conversation({ accountId, conversationId }: Props) {
   const { data, error, loading } = graphql.useGetConversationQuery({
     variables: { id: conversationId! }
+  })
+  const archive = useArchive({
+    accountId: accountId!,
+    conversationId: conversationId!
   })
   const setIsRead = graphql.useSetIsReadMutation({
     variables: { conversationId: conversationId!, isRead: true }
@@ -38,17 +43,30 @@ export default function Conversation({ accountId, conversationId }: Props) {
     return <div>Conversation not found</div>
   }
 
-  const { presentableElements, subject } = data.conversation
+  const { labels, presentableElements, subject } = data.conversation
+
+  const onArchive = async () => {
+    await archive()
+    navigate(`/accounts/${accountId}/dashboard`)
+  }
 
   return (
     <section>
       <header>
         <h1>{subject}</h1>
+        {labels
+          ? labels.map(label => (
+              <span className="label" key={label}>
+                {label}
+              </span>
+            ))
+          : null}
       </header>
       <nav>
         <Link to={`/accounts/${accountId}/dashboard`}>
           &lt;&lt; back to dashboard
-        </Link>
+        </Link>{" "}
+        <button onClick={onArchive}>Archive</button>
       </nav>
       {presentableElements.map(presentable => (
         <Presentable key={presentable.id} {...presentable} />

@@ -6483,10 +6483,9 @@ ignore@^4.0.6:
   resolved "https://registry.yarnpkg.com/ignore/-/ignore-4.0.6.tgz#750e3db5862087b4737ebac8207ffd1ef27b25fc"
   integrity sha512-cyFDKrqc/YdcWFniJhzI42+AzS+gNwmUzOSFcRCQYwySuBBBy/KjuxWLZ/FHEH6Moq1NizMOBWyTcv8O4OZIMg==
 
-imap@^0.8.19:
+imap@signpost/node-imap#master:
   version "0.8.19"
-  resolved "https://registry.yarnpkg.com/imap/-/imap-0.8.19.tgz#3678873934ab09cea6ba48741f284da2af59d8d5"
-  integrity sha1-NniHOTSrCc6mukh0HyhNoq9Z2NU=
+  resolved "https://codeload.github.com/signpost/node-imap/tar.gz/6f57f7c98da7efb0cb0745a7bb404165f9145cd1"
   dependencies:
     readable-stream "1.1.x"
     utf7 ">=1.0.2"

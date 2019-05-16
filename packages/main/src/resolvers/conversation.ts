@@ -21,6 +21,14 @@ export const Conversation: ConversationResolvers = {
     return cache.getParticipants(latest.id, "from")[0]
   },
 
+  labels({ messages }) {
+    return Seq(messages)
+      .flatMap(message => cache.getLabels(message.id))
+      .toSet()
+      .toArray()
+      .sort()
+  },
+
   presentableElements({ messages }: types.Conversation) {
     return messages.map(message => ({
       id: String(message.id),
@@ -54,6 +62,23 @@ export const Conversation: ConversationResolvers = {
 }
 
 export const ConversationMutations: ConversationMutationsResolvers = {
+  async archive(_parent, { id }) {
+    const thread = getConversation(id)
+    if (!thread) {
+      throw new Error(`Cannot find conversation with ID, ${id}`)
+    }
+    updateAction(thread.messages, (accountId, box, uids) => {
+      queue.enqueue(
+        queue.actions.archive({
+          accountId: String(accountId),
+          box,
+          uids
+        })
+      )
+    })
+    return thread
+  },
+
   async setIsRead(_parent, { id, isRead }) {
     const thread = getConversation(id)
     if (!thread) {
@@ -65,12 +90,38 @@ export const ConversationMutations: ConversationMutationsResolvers = {
 }
 
 function setIsRead(messages: cache.Message[], isRead: boolean) {
-  const grouped = Seq(messages)
-    .filter(message => {
-      const seen = cache.getFlags(message.id).includes("\\Seen")
-      return isRead ? !seen : seen
-    })
-    .groupBy(message => List([message.account_id, message.box_id] as const))
+  const filtered = messages.filter(message => {
+    const seen = cache.getFlags(message.id).includes("\\Seen")
+    return isRead ? !seen : seen
+  })
+  updateAction(filtered, (accountId, box, uids) => {
+    if (isRead) {
+      queue.enqueue(
+        queue.actions.markAsRead({
+          accountId: String(accountId),
+          box,
+          uids
+        })
+      )
+    } else {
+      queue.enqueue(
+        queue.actions.unmarkAsRead({
+          accountId: String(accountId),
+          box,
+          uids
+        })
+      )
+    }
+  })
+}
+
+function updateAction(
+  messages: cache.Message[],
+  fn: (accountId: cache.ID, box: cache.Box, uids: number[]) => void
+) {
+  const grouped = Seq(messages).groupBy(message =>
+    List([message.account_id, message.box_id] as const)
+  )
   for (const [grouping, msgs] of grouped) {
     const accountId = grouping.get(0)
     const boxId = grouping.get(1)
@@ -79,22 +130,8 @@ function setIsRead(messages: cache.Message[], isRead: boolean) {
       continue
     }
     const uids = msgs.map(message => message.uid).filter(nonNull)
-    if (!uids.isEmpty() && isRead) {
-      queue.enqueue(
-        queue.actions.markAsRead({
-          accountId: String(accountId),
-          box,
-          uids: uids.valueSeq().toArray()
-        })
-      )
-    } else if (!uids.isEmpty() && !isRead) {
-      queue.enqueue(
-        queue.actions.unmarkAsRead({
-          accountId: String(accountId),
-          box,
-          uids: uids.valueSeq().toArray()
-        })
-      )
+    if (!uids.isEmpty()) {
+      fn(accountId, box, uids.valueSeq().toArray())
     }
   }
 }
@@ -106,8 +143,8 @@ export const queries: Partial<QueryResolvers> = {
 }
 
 export const mutations: Partial<MutationResolvers> = {
-  conversations() {
-    return {}
+  conversations(_parent, params) {
+    return params
   }
 }
 
@@ -115,8 +152,16 @@ export function getConversation(id: string): types.Conversation | null {
   return cache.getThread(id)
 }
 
-export function getConversations(account: types.Account): types.Conversation[] {
+export function getConversations(
+  account: types.Account,
+  { label }: { label?: string | null }
+): types.Conversation[] {
   return Seq(cache.getThreads(account.id))
+    .filter(({ messages }) =>
+      label
+        ? messages.some(message => cache.getLabels(message.id).includes(label))
+        : true
+    )
     .sortBy(lastUpdated)
     .reverse()
     .toArray()

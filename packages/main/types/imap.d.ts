@@ -495,6 +495,23 @@ declare module "imap" {
       options: Connection.AppendOptions,
       callback: (error: Error) => void
     ): void
+
+    // Gmail-specific methods
+    setLabels(
+      source: Connection.MessageSource,
+      labels: unknown,
+      callback: (error: Error | null) => void
+    )
+    addLabels(
+      source: Connection.MessageSource,
+      labels: unknown,
+      callback: (error: Error | null) => void
+    )
+    delLabels(
+      source: Connection.MessageSource,
+      labels: unknown,
+      callback: (error: Error | null) => void
+    )
   }
 
   export default Connection

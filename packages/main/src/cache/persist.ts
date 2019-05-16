@@ -308,6 +308,35 @@ export function delFlags({
   ).run({ accountId, boxName: box.name })
 }
 
+// TODO: What is the proper way to provide a list of values in a query?
+export function delLabels({
+  accountId,
+  box,
+  uids,
+  labels
+}: {
+  accountId: ID
+  box: { name: string }
+  uids: number[]
+  labels: string[]
+}) {
+  db.prepare(
+    `
+      delete from message_gmail_labels
+      where
+        message_id in (
+          select messages.id from messages
+          join boxes on box_id = boxes.id
+          where
+            messages.account_id = @accountId
+            and boxes.name = @boxName
+            and uid in (${uids.join(", ")})
+        )
+        and label in (${labels.map(f => `'${f}'`).join(", ")})
+    `
+  ).run({ accountId, boxName: box.name })
+}
+
 function insertInto(table: string, values: Record<string, unknown>): ID {
   const keys = Object.keys(values)
   const { lastInsertRowid } = db

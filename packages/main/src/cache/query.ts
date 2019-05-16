@@ -1,6 +1,6 @@
 import imap from "imap"
 import db from "../db"
-import { ID, Message } from "./types"
+import { Box, ID, Message } from "./types"
 
 export function firstSeenUid(accountId: ID, box: { name: string }): number {
   const boxRecord = getBoxRecord(accountId, box)
@@ -47,7 +47,7 @@ function getBoxRecord(accountId: ID, box: { name: string }): { id: ID } | null {
     .get({ account_id: accountId, name: box.name })
 }
 
-export function getBox(boxId: ID): { id: ID; name: string } | null {
+export function getBox(boxId: ID): Box | null {
   return db
     .prepare(
       `
@@ -114,6 +114,13 @@ export function getFlags(messageId: ID): string[] {
     .prepare("select flag from message_flags where message_id = ?")
     .all(messageId)
     .map(({ flag }) => flag)
+}
+
+export function getLabels(messageId: ID): string[] {
+  return db
+    .prepare("select label from message_gmail_labels where message_id = ?")
+    .all(messageId)
+    .map(({ label }) => label)
 }
 
 interface CachedMessagePart {

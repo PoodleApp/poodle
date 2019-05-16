@@ -39,7 +39,7 @@
     "graphql": "^14.2.0",
     "graphql-tools": "^4.0.4",
     "graphql-transport-electron": "^1.0.1",
-    "imap": "^0.8.19",
+    "imap": "signpost/node-imap#master",
     "immutable": "^4.0.0-rc.12",
     "kefir": "^3.8.6",
     "keytar": "^4.6.0",

@@ -2,7 +2,7 @@ type Account {
   id: ID!
   email: String!
   loggedIn: Boolean!
-  conversations: [Conversation!]!
+  conversations(label: String): [Conversation!]!
   messages: [Message!]!
 }
 
@@ -16,12 +16,14 @@ type Conversation {
   id: ID!
   date: String!
   from: Address!
+  labels: [String!]
   presentableElements: [Presentable!]!
   isRead: Boolean!
   subject: String
 }
 
 type ConversationMutations {
+  archive(id: ID!): Conversation!
   setIsRead(id: ID!, isRead: Boolean!): Conversation!
 }
 

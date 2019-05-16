@@ -18,6 +18,10 @@ export type Account = {
   messages: Array<Message>
 }
 
+export type AccountConversationsArgs = {
+  label?: Maybe<Scalars["String"]>
+}
+
 export type AccountMutations = {
   create: Account
   authenticate: Account
@@ -52,13 +56,19 @@ export type Conversation = {
   id: Scalars["ID"]
   date: Scalars["String"]
   from: Address
+  labels?: Maybe<Array<Scalars["String"]>>
   presentableElements: Array<Presentable>
   isRead: Scalars["Boolean"]
   subject?: Maybe<Scalars["String"]>
 }
 
 export type ConversationMutations = {
+  archive: Conversation
   setIsRead: Conversation
+}
+
+export type ConversationMutationsArchiveArgs = {
+  id: Scalars["ID"]
 }
 
 export type ConversationMutationsSetIsReadArgs = {
@@ -117,7 +127,7 @@ export type GetAccountQuery = { __typename?: "Query" } & {
         conversations: Array<
           { __typename?: "Conversation" } & Pick<
             Conversation,
-            "id" | "date" | "isRead" | "subject"
+            "id" | "date" | "isRead" | "labels" | "subject"
           > & {
               from: { __typename?: "Address" } & Pick<
                 Address,
@@ -163,7 +173,7 @@ export type GetConversationQuery = { __typename?: "Query" } & {
   conversation: Maybe<
     { __typename?: "Conversation" } & Pick<
       Conversation,
-      "id" | "isRead" | "subject"
+      "id" | "isRead" | "labels" | "subject"
     > & {
         presentableElements: Array<
           { __typename?: "Presentable" } & Pick<Presentable, "id" | "date"> & {
@@ -196,7 +206,7 @@ export type SyncMutation = { __typename?: "Mutation" } & {
         conversations: Array<
           { __typename?: "Conversation" } & Pick<
             Conversation,
-            "id" | "date" | "isRead" | "subject"
+            "id" | "date" | "isRead" | "labels" | "subject"
           > & {
               from: { __typename?: "Address" } & Pick<
                 Address,
@@ -217,7 +227,25 @@ export type SetIsReadMutation = { __typename?: "Mutation" } & {
   conversations: { __typename?: "ConversationMutations" } & {
     setIsRead: { __typename?: "Conversation" } & Pick<
       Conversation,
-      "id" | "date" | "isRead" | "subject"
+      "id" | "date" | "isRead" | "labels" | "subject"
+    > & {
+        from: { __typename?: "Address" } & Pick<
+          Address,
+          "host" | "mailbox" | "name"
+        >
+      }
+  }
+}
+
+export type ArchiveMutationVariables = {
+  conversationId: Scalars["ID"]
+}
+
+export type ArchiveMutation = { __typename?: "Mutation" } & {
+  conversations: { __typename?: "ConversationMutations" } & {
+    archive: { __typename?: "Conversation" } & Pick<
+      Conversation,
+      "id" | "date" | "isRead" | "labels" | "subject"
     > & {
         from: { __typename?: "Address" } & Pick<
           Address,
@@ -349,7 +377,17 @@ export const GetAccountDocument: DocumentNode = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "conversations" },
-                  arguments: [],
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "label" },
+                      value: {
+                        kind: "StringValue",
+                        value: "\\Inbox",
+                        block: false
+                      }
+                    }
+                  ],
                   directives: [],
                   selectionSet: {
                     kind: "SelectionSet",
@@ -398,6 +436,12 @@ export const GetAccountDocument: DocumentNode = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "isRead" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "labels" },
                         arguments: [],
                         directives: []
                       },
@@ -745,6 +789,12 @@ export const GetConversationDocument: DocumentNode = {
                 },
                 {
                   kind: "Field",
+                  name: { kind: "Name", value: "labels" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
                   name: { kind: "Name", value: "subject" },
                   arguments: [],
                   directives: []
@@ -886,6 +936,12 @@ export const SyncDocument: DocumentNode = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "isRead" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "labels" },
                               arguments: [],
                               directives: []
                             },
@@ -1047,6 +1103,12 @@ export const SetIsReadDocument: DocumentNode = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "labels" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "subject" },
                         arguments: [],
                         directives: []
@@ -1077,4 +1139,140 @@ export function useSetIsReadMutation(
     SetIsReadMutation,
     SetIsReadMutationVariables
   >(SetIsReadDocument, baseOptions)
+}
+export const ArchiveDocument: DocumentNode = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "archive" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "conversationId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } }
+          },
+          directives: []
+        }
+      ],
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "conversations" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "archive" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "id" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "conversationId" }
+                      }
+                    }
+                  ],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "id" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "date" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "from" },
+                        arguments: [],
+                        directives: [],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "host" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "mailbox" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "name" },
+                              arguments: [],
+                              directives: []
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "isRead" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "labels" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "subject" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+export type ArchiveMutationFn = ReactApollo.MutationFn<
+  ArchiveMutation,
+  ArchiveMutationVariables
+>
+
+export function useArchiveMutation(
+  baseOptions?: ReactApolloHooks.MutationHookOptions<
+    ArchiveMutation,
+    ArchiveMutationVariables
+  >
+) {
+  return ReactApolloHooks.useMutation<
+    ArchiveMutation,
+    ArchiveMutationVariables
+  >(ArchiveDocument, baseOptions)
 }

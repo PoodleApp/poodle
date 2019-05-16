@@ -1,3 +1,7 @@
 .unread {
   font-weight: bold;
 }
+
+.label {
+  background-color: gray;
+}

@@ -18,6 +18,10 @@ export type Account = {
   messages: Array<Message>
 }
 
+export type AccountConversationsArgs = {
+  label?: Maybe<Scalars["String"]>
+}
+
 export type AccountMutations = {
   create: Account
   authenticate: Account
@@ -52,13 +56,19 @@ export type Conversation = {
   id: Scalars["ID"]
   date: Scalars["String"]
   from: Address
+  labels?: Maybe<Array<Scalars["String"]>>
   presentableElements: Array<Presentable>
   isRead: Scalars["Boolean"]
   subject?: Maybe<Scalars["String"]>
 }
 
 export type ConversationMutations = {
+  archive: Conversation
   setIsRead: Conversation
+}
+
+export type ConversationMutationsArchiveArgs = {
+  id: Scalars["ID"]
 }
 
 export type ConversationMutationsSetIsReadArgs = {
@@ -180,7 +190,12 @@ export type AccountResolvers<Context = any, ParentType = Account> = {
   id?: Resolver<Scalars["ID"], ParentType, Context>
   email?: Resolver<Scalars["String"], ParentType, Context>
   loggedIn?: Resolver<Scalars["Boolean"], ParentType, Context>
-  conversations?: Resolver<Array<Conversation>, ParentType, Context>
+  conversations?: Resolver<
+    Array<Conversation>,
+    ParentType,
+    Context,
+    AccountConversationsArgs
+  >
   messages?: Resolver<Array<Message>, ParentType, Context>
 }
 
@@ -214,6 +229,7 @@ export type ConversationResolvers<Context = any, ParentType = Conversation> = {
   id?: Resolver<Scalars["ID"], ParentType, Context>
   date?: Resolver<Scalars["String"], ParentType, Context>
   from?: Resolver<Address, ParentType, Context>
+  labels?: Resolver<Maybe<Array<Scalars["String"]>>, ParentType, Context>
   presentableElements?: Resolver<Array<Presentable>, ParentType, Context>
   isRead?: Resolver<Scalars["Boolean"], ParentType, Context>
   subject?: Resolver<Maybe<Scalars["String"]>, ParentType, Context>
@@ -223,6 +239,12 @@ export type ConversationMutationsResolvers<
   Context = any,
   ParentType = ConversationMutations
 > = {
+  archive?: Resolver<
+    Conversation,
+    ParentType,
+    Context,
+    ConversationMutationsArchiveArgs
+  >
   setIsRead?: Resolver<
     Conversation,
     ParentType,

@@ -19,8 +19,8 @@ export const Account: AccountResolvers = {
     return AccountManager.isLoggedIn(account.id)
   },
 
-  conversations(account: types.Account) {
-    return conversation.getConversations(account)
+  conversations(account: types.Account, params) {
+    return conversation.getConversations(account, params)
   },
 
   messages(account: types.Account): types.Message[] {

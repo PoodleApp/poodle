@@ -13,7 +13,7 @@ query getAccount($accountId: ID!) {
     id
     email
     loggedIn
-    conversations {
+    conversations(label: "\\Inbox") {
       id
       date
       from {
@@ -22,6 +22,7 @@ query getAccount($accountId: ID!) {
         name
       }
       isRead
+      labels
       subject
     }
   }
@@ -65,6 +66,7 @@ query getConversation($id: ID!) {
       }
     }
     isRead
+    labels
     subject
   }
 }
@@ -84,6 +86,7 @@ mutation sync($accountId: ID!) {
           name
         }
         isRead
+        labels
         subject
       }
     }
@@ -101,6 +104,24 @@ mutation setIsRead($conversationId: ID!, $isRead: Boolean!) {
         name
       }
       isRead
+      labels
+      subject
+    }
+  }
+}
+
+mutation archive($conversationId: ID!) {
+  conversations {
+    archive(id: $conversationId) {
+      id
+      date
+      from {
+        host
+        mailbox
+        name
+      }
+      isRead
+      labels
       subject
     }
   }

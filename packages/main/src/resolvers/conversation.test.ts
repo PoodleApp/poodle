@@ -84,6 +84,39 @@ it("gets metadata for a conversation from cache", async () => {
   })
 })
 
+it("gets conversations by label", async () => {
+  const result = await graphql(
+    schema,
+    `
+      query getConversations($accountId: ID!, $label: String) {
+        account(id: $accountId) {
+          conversations(label: $label) {
+            id
+            date
+            from {
+              name
+              mailbox
+              host
+            }
+            isRead
+            subject
+          }
+        }
+      }
+    `,
+    null,
+    null,
+    { accountId, label: "My Label" }
+  )
+  expect(result).toMatchObject({
+    data: {
+      account: {
+        conversations: []
+      }
+    }
+  })
+})
+
 it("gets a list of presentable elements for a conversation", async () => {
   const result = await graphql(
     schema,
@@ -219,6 +252,35 @@ it("marks a conversation as unread", async () => {
         setIsRead: {
           id: conversationId,
           isRead: false
+        }
+      }
+    }
+  })
+})
+
+it("archives a conversation", async () => {
+  const result = await graphql(
+    schema,
+    `
+      mutation archive($conversationId: ID!) {
+        conversations {
+          archive(id: $conversationId) {
+            id
+            labels
+          }
+        }
+      }
+    `,
+    null,
+    null,
+    { conversationId }
+  )
+  expect(result).toEqual({
+    data: {
+      conversations: {
+        archive: {
+          id: conversationId,
+          labels: ["\\Important", "\\Sent"]
         }
       }
     }
