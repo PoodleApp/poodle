@@ -20,7 +20,7 @@ tmux send-keys -t poodle-dev "yarn codegen:watch" C-m
 tmux select-pane -R -t poodle-dev
 
 tmux send-keys -t poodle-dev "cd $DIR/../packages/main" C-m
-tmux send-keys -t poodle-dev "yarn start" C-m
+tmux send-keys -t poodle-dev "wait-on http://localhost:3000/ && yarn start" C-m
 
 tmux split-window -v -t poodle-dev
 tmux send-keys -t poodle-dev "cd $DIR/../packages/main" C-m
