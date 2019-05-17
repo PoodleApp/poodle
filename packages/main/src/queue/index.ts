@@ -1,4 +1,5 @@
 import BetterQueue from "better-queue"
+import * as fs from "fs"
 import * as kefir from "kefir"
 import * as path from "path"
 import xdgBasedir from "xdg-basedir"
@@ -119,14 +120,17 @@ function processTask(
   })
 }
 
-const store =
-  process.env.NODE_ENV === "test"
-    ? new SqliteStore<Task>({ memory: true })
-    : new SqliteStore<Task>({
-        path: getDbPath()
-      })
-
 const isTest = process.env.NODE_ENV
+
+const store = isTest
+  ? new SqliteStore<Task>({ memory: true })
+  : new SqliteStore<Task>({
+      path: getDbPath()
+    })
+
+if (process.env.NODE_ENV !== "test") {
+  fs.chmodSync(getDbPath(), 0o600)
+}
 
 export const queue = new BetterQueue<Task>(processTask, {
   maxRetries: 3,

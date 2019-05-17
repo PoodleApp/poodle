@@ -1,9 +1,15 @@
 import DB from "better-sqlite3-helper"
+import * as fs from "fs"
 import * as path from "path"
 import xdgBasedir from "xdg-basedir"
 
 const db = process.env.NODE_ENV === "test" ? initTestDb() : initDb()
 db.pragma("foreign_keys = ON")
+
+if (process.env.NODE_ENV !== "test") {
+  fs.chmodSync(getDbPath(), 0o600)
+}
+
 export default db
 
 function initDb() {
@@ -11,7 +17,8 @@ function initDb() {
     path: getDbPath(),
     migrate: {
       migrationsPath: getMigrationsPath()
-    }
+    },
+    WAL: false
   })
 }
 
@@ -20,7 +27,8 @@ function initTestDb() {
     memory: true,
     migrate: {
       migrationsPath: getMigrationsPath()
-    }
+    },
+    WAL: false
   })
 }
 
