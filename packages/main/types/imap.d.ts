@@ -6,6 +6,10 @@
 /// <reference types="node" />
 
 declare module "imap" {
+  export type Callback<T> = ((error: Error) => void) &
+    ((error: null, value: T) => void)
+  export type Callback0 = (error: Error | null) => void
+
   namespace Connection {
     // The property names of these interfaces match the documentation (where type names were given).
 
@@ -279,59 +283,56 @@ declare module "imap" {
 
         UID:            any;    // Messages with UIDs corresponding to the specified UID set. Ranges are permitted (e.g. '2504:2507' or '*' or '2504:*').
         */
-      search(
-        criteria: any[],
-        callback: (error: Error, uids: UID[]) => void
-      ): void
+      search(criteria: any[], callback: Callback<UID[]>): void
       /** Fetches message(s) in the currently open mailbox; source can be a single message identifier, a message identifier range (e.g. '2504:2507' or '*' or '2504:*'), an array of message identifiers, or an array of message identifier ranges. */
       fetch(source: Connection.MessageSource, options: FetchOptions): ImapFetch
       /** Copies message(s) in the currently open mailbox to another mailbox. */
       copy(
         source: Connection.MessageSource,
         mailboxName: string,
-        callback: (error: Error) => void
+        callback: Callback0
       ): void
       /** Moves message(s) in the currently open mailbox to another mailbox. Note: The message(s) in the destination mailbox will have a new message UID. */
       move(
         source: Connection.MessageSource,
         mailboxName: string,
-        callback: (error: Error) => void
+        callback: Callback0
       ): void
       /** Adds flag(s) to message(s). */
       addFlags(
         source: Connection.MessageSource,
         flags: any,
-        callback: (error: Error) => void
+        callback: Callback0
       ): void
       /** Removes flag(s) from message(s). */
       delFlags(
         source: Connection.MessageSource,
         flags: any,
-        callback: (error: Error) => void
+        callback: Callback0
       ): void
       /** Sets the flag(s) for message(s). */
       setFlags(
         source: Connection.MessageSource,
         flags: any,
-        callback: (error: Error) => void
+        callback: Callback0
       ): void
       /** Adds keyword(s) to message(s). keywords is either a single keyword or an array of keywords. */
       addKeywords(
         source: Connection.MessageSource,
         keywords: any /* string|string[] */,
-        callback: (error: Error) => void
+        callback: Callback0
       ): void
       /** Removes keyword(s) from message(s). keywords is either a single keyword or an array of keywords. */
       delKeywords(
         source: Connection.MessageSource,
         keywords: any /* string|string[] */,
-        callback: (error: Error) => void
+        callback: Callback0
       ): void
       /** Sets keyword(s) for message(s). keywords is either a single keyword or an array of keywords. */
       setKeywords(
         source: Connection.MessageSource,
         keywords: any /* string|string[] */,
-        callback: (error: Error) => void
+        callback: Callback0
       ): void
       /** Checks if the server supports the specified capability. */
       serverSupports(capability: string): boolean
@@ -345,10 +346,7 @@ declare module "imap" {
 
     // from MessageFunctions
     /** Searches the currently open mailbox for messages using given criteria. criteria is a list describing what you want to find. For criteria types that require arguments, use an array instead of just the string criteria type name (e.g. ['FROM', 'foo@bar.com']). Prefix criteria types with an "!" to negate. */
-    search(
-      criteria: any[],
-      callback: (error: Error, uids: Connection.UID[]) => void
-    ): void
+    search(criteria: any[], callback: Callback<Connection.UID[]>): void
     /** Fetches message(s) in the currently open mailbox. */
     fetch(
       source: Connection.MessageSource,
@@ -358,49 +356,49 @@ declare module "imap" {
     copy(
       source: Connection.MessageSource,
       mailboxName: string,
-      callback: (error: Error) => void
+      callback: Callback0
     ): void
     /** Moves message(s) in the currently open mailbox to another mailbox. Note: The message(s) in the destination mailbox will have a new message UID. */
     move(
       source: Connection.MessageSource,
       mailboxName: string,
-      callback: (error: Error) => void
+      callback: Callback0
     ): void
     /** Adds flag(s) to message(s). */
     addFlags(
       source: Connection.MessageSource,
       flags: any,
-      callback: (error: Error) => void
+      callback: Callback0
     ): void
     /** Removes flag(s) from message(s). */
     delFlags(
       source: Connection.MessageSource,
       flags: any,
-      callback: (error: Error) => void
+      callback: Callback0
     ): void
     /** Sets the flag(s) for message(s). */
     setFlags(
       source: Connection.MessageSource,
       flags: any,
-      callback: (error: Error) => void
+      callback: Callback0
     ): void
     /** Adds keyword(s) to message(s). keywords is either a single keyword or an array of keywords. */
     addKeywords(
       source: Connection.MessageSource,
       keywords: any /* string|string[] */,
-      callback: (error: Error) => void
+      callback: Callback0
     ): void
     /** Removes keyword(s) from message(s). keywords is either a single keyword or an array of keywords. */
     delKeywords(
       source: Connection.MessageSource,
       keywords: any /* string|string[] */,
-      callback: (error: Error) => void
+      callback: Callback0
     ): void
     /** Sets keyword(s) for message(s). keywords is either a single keyword or an array of keywords. */
     setKeywords(
       source: Connection.MessageSource,
       keywords: any /* string|string[] */,
-      callback: (error: Error) => void
+      callback: Callback0
     ): void
     /** Checks if the server supports the specified capability. */
     serverSupports(capability: string): boolean
@@ -435,65 +433,49 @@ declare module "imap" {
     /** Immediately destroys the connection to the server. */
     destroy(): void
     /** Opens a specific mailbox that exists on the server. mailboxName should include any necessary prefix/path. modifiers is used by IMAP extensions. */
-    openBox(
-      mailboxName: string,
-      callback: (error: Error, mailbox: Connection.Box) => void
-    ): void
+    openBox(mailboxName: string, callback: Callback<Connection.Box>): void
     openBox(
       mailboxName: string,
       openReadOnly: boolean,
-      callback: (error: Error, mailbox: Connection.Box) => void
+      callback: Callback<Connection.Box>
     ): void
     /** Closes the currently open mailbox. If autoExpunge is true, any messages marked as Deleted in the currently open mailbox will be removed if the mailbox was NOT opened in read-only mode. If autoExpunge is false, you disconnect, or you open another mailbox, messages marked as Deleted will NOT be removed from the currently open mailbox. */
-    closeBox(callback: (error: Error) => void): void
-    closeBox(autoExpunge: boolean, callback: (error: Error) => void): void
+    closeBox(callback: Callback0): void
+    closeBox(autoExpunge: boolean, callback: Callback0): void
     /** Creates a new mailbox on the server. mailboxName should include any necessary prefix/path. */
-    addBox(mailboxName: string, callback: (error: Error) => void): void
+    addBox(mailboxName: string, callback: Callback0): void
     /** Removes a specific mailbox that exists on the server. mailboxName should including any necessary prefix/path. */
-    delBox(mailboxName: string, callback: (error: Error) => void): void
+    delBox(mailboxName: string, callback: Callback0): void
     /** Renames a specific mailbox that exists on the server. Both oldMailboxName and newMailboxName should include any necessary prefix/path. Note: Renaming the 'INBOX' mailbox will instead cause all messages in 'INBOX' to be moved to the new mailbox. */
     renameBox(
       oldMailboxName: string,
       newMailboxName: string,
-      callback: (error: Error, mailbox: Connection.Box) => void
+      callback: Callback<Connection.Box>
     ): void
     /** Subscribes to a specific mailbox that exists on the server. mailboxName should include any necessary prefix/path. */
-    subscribeBox(mailboxName: string, callback: (error: Error) => void): void
+    subscribeBox(mailboxName: string, callback: Callback0): void
     /** Unsubscribes from a specific mailbox that exists on the server. mailboxName should include any necessary prefix/path. */
-    unsubscribeBox(mailboxName: string, callback: (error: Error) => void): void
+    unsubscribeBox(mailboxName: string, callback: Callback0): void
     /** Fetches information about a mailbox other than the one currently open. Note: There is no guarantee that this will be a fast operation on the server. Also, do not call this on the currently open mailbox. */
-    status(
-      mailboxName: string,
-      callback: (error: Error, mailbox: Connection.Box) => void
-    ): void
+    status(mailboxName: string, callback: Callback<Connection.Box>): void
     /** Obtains the full list of mailboxes. If nsPrefix is not specified, the main personal namespace is used. */
-    getBoxes(
-      callback: (error: Error, mailboxes: Connection.MailBoxes) => void
-    ): void
-    getBoxes(
-      nsPrefix: string,
-      callback: (error: Error, mailboxes: Connection.MailBoxes) => void
-    ): void
+    getBoxes(callback: Callback<Connection.MailBoxes>): void
+    getBoxes(nsPrefix: string, callback: Callback<Connection.MailBoxes>): void
     /** Obtains the full list of subscribed mailboxes. If nsPrefix is not specified, the main personal namespace is used. */
-    getSubscribedBoxes(
-      callback: (error: Error, mailboxes: Connection.MailBoxes) => void
-    ): void
+    getSubscribedBoxes(callback: Callback<Connection.MailBoxes>): void
     getSubscribedBoxes(
       nsPrefix: string,
-      callback: (error: Error, mailboxes: Connection.MailBoxes) => void
+      callback: Callback<Connection.MailBoxes>
     ): void
     /** Permanently removes all messages flagged as Deleted in the currently open mailbox. If the server supports the 'UIDPLUS' capability, uids can be supplied to only remove messages that both have their uid in uids and have the \Deleted flag set. Note: At least on Gmail, performing this operation with any currently open mailbox that is not the Spam or Trash mailbox will merely archive any messages marked as Deleted (by moving them to the 'All Mail' mailbox). */
-    expunge(callback: (error: Error) => void): void
-    expunge(
-      uids: Connection.MessageSource,
-      callback: (error: Error) => void
-    ): void
+    expunge(callback: Callback0): void
+    expunge(uids: Connection.MessageSource, callback: Callback0): void
     /** Appends a message to selected mailbox. msgData is a string or Buffer containing an RFC-822 compatible MIME message. Valid options properties are: */
-    append(msgData: any, callback: (error: Error) => void): void
+    append(msgData: any, callback: Callback0): void
     append(
       msgData: any,
       options: Connection.AppendOptions,
-      callback: (error: Error) => void
+      callback: Callback0
     ): void
 
     // Gmail-specific methods
@@ -501,17 +483,17 @@ declare module "imap" {
       source: Connection.MessageSource,
       labels: unknown,
       callback: (error: Error | null) => void
-    )
+    ): void
     addLabels(
       source: Connection.MessageSource,
       labels: unknown,
       callback: (error: Error | null) => void
-    )
+    ): void
     delLabels(
       source: Connection.MessageSource,
       labels: unknown,
       callback: (error: Error | null) => void
-    )
+    ): void
   }
 
   export default Connection

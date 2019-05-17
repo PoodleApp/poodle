@@ -1,4 +1,8 @@
-export function lift0(fn: (cb: (err?: any) => void) => any): Promise<void> {
+export type Callback<T> = ((error: Error) => void) &
+  ((error: null | undefined, value: T) => void)
+export type Callback0 = (error?: Error | null) => void
+
+export function lift0(fn: (cb: Callback0) => any): Promise<void> {
   return new Promise((resolve, reject) => {
     fn(err => {
       if (err) {
@@ -10,11 +14,9 @@ export function lift0(fn: (cb: (err?: any) => void) => any): Promise<void> {
   })
 }
 
-export function lift1<T>(
-  fn: (cb: (err: any, value: T) => void) => any
-): Promise<T> {
+export function lift1<T>(fn: (cb: Callback<T>) => any): Promise<T> {
   return new Promise((resolve, reject) => {
-    fn((err, value) => {
+    fn((err: Error | null | undefined, value?: T) => {
       if (err) {
         reject(err)
       } else {

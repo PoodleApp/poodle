@@ -1,7 +1,5 @@
 /*
  * Provide type-level bookkeeping for IMAP connection state
- *
- * @flow
  */
 
 import imap from "imap"
@@ -29,9 +27,7 @@ export async function findBox(
   const matcher = nameOrAttrib.startsWith("\\")
     ? boxByAttribute(nameOrAttrib)
     : boxByName(nameOrAttrib)
-  const boxes = await promises.lift1(
-    (cb: (err: Error, boxes: imap.MailBoxes) => void) => conn.getBoxes(cb)
-  )
+  const boxes = await promises.lift1<imap.MailBoxes>(cb => conn.getBoxes(cb))
   return findBoxByPredicate(matcher, boxes)
 }
 
@@ -40,7 +36,7 @@ export async function openBox(
   readonly: boolean,
   connection: Connection
 ): Promise<OpenBox> {
-  const box = await promises.lift1((cb: (err: Error, box: imap.Box) => void) =>
+  const box = await promises.lift1<imap.Box>(cb =>
     connection.openBox(boxName, readonly, cb)
   )
   return { box, connection }

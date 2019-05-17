@@ -94,8 +94,8 @@ async function findBox(
   p: (box: imap.Folder, boxName: string) => boolean,
   connection: Connection
 ): Promise<{ name: string; box: imap.Folder }> {
-  const boxes = await promises.lift1(
-    (cb: (err: Error, boxes: imap.MailBoxes) => void) => connection.getBoxes(cb)
+  const boxes = await promises.lift1<imap.MailBoxes>(cb =>
+    connection.getBoxes(cb)
   )
   const result = B.findBox(p, boxes)
   if (result) {

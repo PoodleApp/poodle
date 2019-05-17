@@ -133,7 +133,9 @@ export const { actions, perform } = combineHandlers({
 
   getBoxes(connection: Connection, nsPrefix?: string): R<imap.MailBoxes> {
     return kefir.fromNodeCallback(cb =>
-      nsPrefix ? connection.getBoxes(nsPrefix, cb) : connection.getBoxes(cb)
+      nsPrefix
+        ? connection.getBoxes(nsPrefix, cb as any)
+        : connection.getBoxes(cb as any)
     )
   },
 
@@ -147,7 +149,7 @@ export const { actions, perform } = combineHandlers({
     criteria: any[]
   ): R<imap.UID[]> {
     return withBox(connection, box, () =>
-      kefir.fromNodeCallback(cb => connection.search(criteria, cb))
+      kefir.fromNodeCallback(cb => connection.search(criteria, cb as any))
     )
   }
 })
