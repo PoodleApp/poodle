@@ -2,6 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self';
+        connect-src 'self' ws://localhost:3000;
+        script-src 'self' chrome-extension:;
+        style-src 'self' 'unsafe-inline' http://fonts.googleapis.com;
+        img-src 'self' data: mid:;
+        child-src 'self' data:;
+        font-src 'self' http://fonts.gstatic.com;
+        media-src 'self';
+        form-action 'none';
+        " />
     <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta
       name="viewport"
@@ -22,7 +35,7 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>React App</title>
+    <title>Poodle</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
