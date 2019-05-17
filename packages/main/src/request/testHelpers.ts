@@ -1,5 +1,6 @@
 import { EventEmitter } from "events"
 import { default as Connection, default as imap } from "imap"
+import { Range, Seq, Set } from "immutable"
 import { Readable } from "stream"
 import stringToStream from "string-to-stream"
 import { testContent, testThread } from "../cache/testFixtures"
@@ -27,17 +28,17 @@ export function mockConnection({
 
   mock(Connection.prototype.addFlags).mockImplementation(
     (_source, _flags, cb) => {
-      cb(null as any)
+      cb(null)
     }
   )
   mock(Connection.prototype.delFlags).mockImplementation(
     (_source, _flags, cb) => {
-      cb(null as any)
+      cb(null)
     }
   )
   mock(Connection.prototype.delLabels).mockImplementation(
     (_source, _labels, cb) => {
-      cb(null as any)
+      cb(null)
     }
   )
   mock(Connection.prototype.getBoxes).mockImplementation((cb: any) => {
@@ -49,6 +50,25 @@ export function mockConnection({
       thread
     })
   )
+
+  mock(Connection.prototype.search).mockImplementation((criteria, cb) => {
+    let uids = Set()
+    for (const c of criteria) {
+      if (c instanceof Array && c[0] === "HEADER" && c[1] === "Message-ID") {
+        const messageId = c[2]
+        uids = uids.concat(
+          testThread
+            .filter(({ headers }) =>
+              headers.some(
+                ([key, value]) => key === "message-id" && value === messageId
+              )
+            )
+            .map(({ attributes }) => attributes.uid)
+        )
+      }
+    }
+    cb(null, uids.valueSeq().toArray())
+  })
 
   mock(Connection.prototype.connect).mockReturnValue(undefined)
 
@@ -74,7 +94,7 @@ export function mockConnection({
       }
     }
     ;(this as any)._box = box
-    cb(null as any, box)
+    cb(null, box)
   })
 
   mock(Connection.prototype.closeBox).mockImplementation(function closeBox(
@@ -83,7 +103,7 @@ export function mockConnection({
     cb
   ) {
     ;(this as any)._box = null
-    cb(null as any)
+    cb(null)
   })
 
   return new ConnectionManager(async () => {
@@ -159,16 +179,29 @@ function messagesMatchingSource(
   thread: Message[],
   source: imap.MessageSource
 ): Message[] {
-  if (typeof source !== "string") {
-    throw new Error(`Unable to parse source, ${source}`)
+  let uids: Seq.Indexed<number>
+  if (source instanceof Array) {
+    uids = Seq(
+      (source as any[]).map((uid: string | number) =>
+        typeof uid === "string" ? parseInt(uid, 10) : uid
+      )
+    )
+  } else if (typeof source === "string") {
+    uids = parseRange(source)
+  } else {
+    throw new Error(`Cannot parse fetch source: ${source}`)
   }
+  return thread.filter(message => {
+    const uid = message.attributes.uid
+    return uids.includes(uid)
+  })
+}
+
+function parseRange(source: string): Seq.Indexed<number> {
   const [start, end] = source.split(":").map(b => parseInt(b, 10))
   const firstUid = isNaN(start) ? 1 : start
   const lastUid = end != null ? (isNaN(end) ? Infinity : end) : firstUid
-  return thread.filter(message => {
-    const uid = message.attributes.uid
-    return firstUid <= uid && uid <= lastUid
-  })
+  return Range(firstUid, lastUid + 1)
 }
 
 function getBodies(options: imap.FetchOptions): string[] {

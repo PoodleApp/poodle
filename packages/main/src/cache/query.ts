@@ -1,4 +1,5 @@
 import imap from "imap"
+import { Collection } from "immutable"
 import db from "../db"
 import { Box, ID, Message } from "./types"
 
@@ -194,13 +195,11 @@ export function getBody(
 export function partsMissingBodies({
   accountId,
   boxId,
-  minUid = 0,
-  maxUid = 0
+  uids
 }: {
   accountId: ID
   boxId: ID
-  minUid?: number
-  maxUid?: number
+  uids?: Collection.Indexed<number>
 }): Array<{ uid: number; boxName: string; part: imap.ImapMessagePart }> {
   return db
     .prepare(
@@ -216,16 +215,31 @@ export function partsMissingBodies({
           and messages.account_id = @accountId
           and bodies.content is null
           and structs.rgt = structs.lft + 1
-          and messages.uid >= @minUid
-          and (@maxUid <= 0 or messages.uid <= @maxUid)
+          ${uids ? `and messages.uid in (${uids.join(", ")})` : ""}
       `
     )
-    .all({ accountId, boxId, minUid, maxUid })
+    .all({ accountId, boxId })
     .map(row => ({
       uid: row.uid,
       boxName: row.boxName,
       part: toImapMessagePart(row)
     }))
+}
+
+export function missingMessageIds(accountId: ID): string[] {
+  return db
+    .prepare(
+      `
+        select referenced_id from message_references as refs
+        left outer join messages as referenced
+          on referenced.envelope_messageId = refs.referenced_id
+        join messages
+          on messages.id = refs.message_id
+        where messages.account_id = ? and referenced.id is null
+      `
+    )
+    .all(accountId)
+    .map(row => row.referenced_id)
 }
 
 function toImapMessagePart(part: CachedMessagePart): imap.ImapMessagePart {

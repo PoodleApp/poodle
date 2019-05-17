@@ -1,10 +1,11 @@
 import Connection from "imap"
+import { Range } from "immutable"
 import * as cache from "./cache"
 import { testThread } from "./cache/testFixtures"
 import db from "./db"
 import ConnectionManager from "./managers/ConnectionManager"
 import { mockConnection, mockFetchImplementation } from "./request/testHelpers"
-import { sync } from "./sync"
+import { sync, fetchQuery } from "./sync"
 import { mock } from "./testHelpers"
 
 jest.mock("imap")
@@ -153,6 +154,17 @@ it("removes messages from cache if removed server-side", async () => {
   expect(db.prepare("select uid from messages").all()).toEqual([{ uid: 7687 }])
 })
 
+it("downloads any missing messages to get complete conversations", async () => {
+  await sync(accountId, connectionManager)
+  db.prepare(`delete from messages where uid = ?`).run(7467)
+  await sync(accountId, connectionManager)
+  expect(cache.getThreads(accountId)).toMatchObject([
+    {
+      messages: [{ uid: 7467 }, { uid: 7687 }]
+    }
+  ])
+})
+
 it("downloads bodies for messages", async () => {
   await sync(accountId, connectionManager)
   expect(
@@ -200,6 +212,10 @@ it("downloads bodies for messages", async () => {
       content: "A reply appears."
     }
   ])
+})
+
+it("uses UID ranges for smaller fetch requests", () => {
+  expect(fetchQuery(Range(30020, 30000, -1))).toBe("30001:30020")
 })
 
 afterEach(() => {
