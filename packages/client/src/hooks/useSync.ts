@@ -1,18 +1,12 @@
 import * as React from "react"
 import * as graphql from "../generated/graphql"
 
-export default function useSync({ accountId }: { accountId: string }) {
+export default function useSync(variables: { accountId: string }) {
   const _sync = graphql.useSyncMutation({
-    update(cache, response) {
-      if (response.data) {
-        cache.writeQuery({
-          query: graphql.GetAccountDocument,
-          variables: { accountId },
-          data: { account: response.data.accounts.sync }
-        })
-      }
+    refetchQueries() {
+      return [{ query: graphql.GetAccountDocument, variables }]
     },
-    variables: { accountId }
+    variables
   })
   const [loading, setLoading] = React.useState(0)
   async function sync() {
