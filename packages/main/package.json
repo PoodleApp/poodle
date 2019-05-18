@@ -34,6 +34,7 @@
     "better-sqlite3-helper": "^2.0.2",
     "concat-stream": "^2.0.0",
     "electron": "^4.1.0",
+    "electron-context-menu": "^0.12.1",
     "email-addresses": "^3.0.3",
     "googleapis": "^39.1.0",
     "graphql": "^14.2.0",

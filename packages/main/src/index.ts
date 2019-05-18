@@ -1,7 +1,11 @@
 // Modules to control application life and create native browser window
 import { app, BrowserWindow, ipcMain } from "electron"
+import contextMenu from "electron-context-menu"
 import { createIpcExecutor, createSchemaLink } from "graphql-transport-electron"
 import schema from "./schema"
+
+// Provide a right-click menu in the UI.
+contextMenu()
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
