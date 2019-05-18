@@ -13,6 +13,10 @@ const styles = {
     overflowWrap: "break-word",
     padding: `${spacing.desktopKeylineIncrement * 1}px`,
     paddingTop: 0
+  },
+
+  textContent: {
+    whiteSpace: "pre-wrap"
   }
 }
 
@@ -26,8 +30,10 @@ export default function DisplayContent({
 }: Props) {
   if (type === "text" && subtype === "html") {
     return displayHtml(content, style)
-  } else if (type === "text") {
+  } else if (type === "text" && subtype === "markdown") {
     return displayMarkdown(content, style)
+  } else if (type === "text") {
+    return displayText(content, style)
   } else {
     return displayUnknown({ type, subtype, content }, style)
   }
@@ -45,6 +51,19 @@ function displayHtml(text: string, style?: Object) {
       onClick={handleExternalLink}
       style={style || styles.body}
     />
+  )
+}
+
+function displayText(text: string, style?: Object) {
+  const content = repa(text)
+  return (
+    <div
+      className="text-content"
+      onClick={handleExternalLink}
+      style={style || { ...styles.body, ...styles.textContent }}
+    >
+      {content}
+    </div>
   )
 }
 
@@ -96,5 +115,3 @@ function handleExternalLink(event: React.MouseEvent<HTMLElement, MouseEvent>) {
     shell.openExternal(target.href)
   }
 }
-
-// export default (provideContent(DisplayContent): React.ComponentType<OwnProps>)
