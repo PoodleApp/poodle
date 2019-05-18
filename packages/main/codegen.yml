@@ -11,6 +11,6 @@ generates:
       mappers:
         Account: ../resolvers/types#Account
         AccountMutations: ../resolvers/types#AccountMutations
-        Conversation: ../resolvers/types#Conversation
+        Conversation: ../models/conversation#Conversation
         ConversationMutations: ../resolvers/types#ConversationMutations
         Message: ../resolvers/types#Message

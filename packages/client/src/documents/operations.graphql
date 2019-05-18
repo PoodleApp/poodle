@@ -126,3 +126,28 @@ mutation archive($conversationId: ID!) {
     }
   }
 }
+
+mutation reply($accountId: ID!, $conversationId: ID!, $content: ContentInput!) {
+  conversations {
+    reply(accountId: $accountId, id: $conversationId, content: $content) {
+      id
+      presentableElements {
+        id
+        contents {
+          type
+          subtype
+          content
+        }
+        date
+        from {
+          name
+          mailbox
+          host
+        }
+      }
+      isRead
+      labels
+      subject
+    }
+  }
+}

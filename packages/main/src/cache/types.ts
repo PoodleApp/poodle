@@ -4,6 +4,11 @@ import { HeaderValue } from "../models/Message"
 export type ID = Integer.IntLike
 export type SerializedHeaders = Array<[string, HeaderValue]>
 
+export interface Account {
+  id: ID
+  email: string
+}
+
 export interface Box {
   id: ID
   name: string
@@ -20,6 +25,7 @@ export interface Message {
   envelope_subject?: string
   modseq?: string
   uid?: number
+  updatedAt?: string
   x_gm_msgid?: string
   x_gm_thrid?: string
 }

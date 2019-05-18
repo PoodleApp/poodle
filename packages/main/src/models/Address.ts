@@ -1,5 +1,6 @@
 import * as addrs from "email-addresses"
 import imap from "imap"
+import { Seq } from "immutable"
 import { URI, mailtoUri } from "./uri"
 
 export type Email = string
@@ -33,8 +34,8 @@ export default class Address {
 }
 
 // TODO: normalize when comparing
-export function equals(x: Address, y: Address): boolean {
-  return x.email === y.email
+export function equals(x: imap.Address, y: imap.Address): boolean {
+  return x.host === y.host && x.mailbox === y.mailbox
 }
 
 export function build({
@@ -54,10 +55,10 @@ export function build({
     : new Address({ mailbox, host })
 }
 
-const specialChar = /[()<>\[\]:;@\\,."]/
+const specialChar = /[()<>[]:;@\\,."]/
 
 // Print an address according to RFC 5322
-export function formatAddress(a: Address): string {
+export function formatAddress(a: imap.Address): string {
   const rawName = a.name
   if (!rawName) {
     return `${a.mailbox}@${a.host}`
@@ -69,8 +70,10 @@ export function formatAddress(a: Address): string {
 }
 
 // Print list of addresses as a single string according to RFC 5322
-export function formatAddressList(as: Address[]): string {
-  return as.map(formatAddress).join(", ")
+export function formatAddressList(as: Iterable<imap.Address>): string {
+  return Seq(as)
+    .map(formatAddress)
+    .join(", ")
 }
 
 // Parse a list of addresses according to RFC 5322
@@ -93,4 +96,9 @@ export function parseAddressList(
         host: p.domain
       })
   )
+}
+
+// TODO: better normalization
+export function normalizedEmail({ mailbox, host }: imap.Address): string {
+  return `${mailbox.toLocaleLowerCase()}@${host.toLocaleLowerCase()}`
 }

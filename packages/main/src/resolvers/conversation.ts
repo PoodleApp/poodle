@@ -1,27 +1,29 @@
 import { List, Seq } from "immutable"
 import * as cache from "../cache"
+import { composeReply } from "../compose"
 import {
   ConversationResolvers,
   ConversationMutationsResolvers,
   MutationResolvers,
   QueryResolvers
 } from "../generated/graphql"
+import * as C from "../models/conversation"
 import { contentParts } from "../models/Message"
 import * as queue from "../queue"
 import { nonNull } from "../util/array"
 import * as types from "./types"
 
 export const Conversation: ConversationResolvers = {
-  date(conversation: types.Conversation) {
+  date(conversation: C.Conversation) {
     return lastUpdated(conversation)
   },
 
-  from({ messages }: types.Conversation) {
+  from({ messages }: C.Conversation) {
     const latest = messages[messages.length - 1]
     return cache.getParticipants(latest.id, "from")[0]
   },
 
-  labels({ messages }) {
+  labels({ messages }: C.Conversation) {
     return Seq(messages)
       .flatMap(message => cache.getLabels(message.id))
       .toSet()
@@ -29,7 +31,7 @@ export const Conversation: ConversationResolvers = {
       .sort()
   },
 
-  presentableElements({ messages }: types.Conversation) {
+  presentableElements({ messages }: C.Conversation) {
     return messages.map(message => ({
       id: String(message.id),
       contents: contentParts(cache.getStruct(message.id))
@@ -49,24 +51,20 @@ export const Conversation: ConversationResolvers = {
     }))
   },
 
-  isRead({ messages }: types.Conversation) {
+  isRead({ messages }: C.Conversation) {
     return messages.every(message =>
       cache.getFlags(message.id).includes("\\Seen")
     )
   },
 
-  subject({ messages }: types.Conversation) {
-    const earliest = messages[0]
-    return earliest.envelope_subject || null
+  subject(conversation: C.Conversation) {
+    return C.getSubject(conversation) || null
   }
 }
 
 export const ConversationMutations: ConversationMutationsResolvers = {
   async archive(_parent, { id }) {
-    const thread = getConversation(id)
-    if (!thread) {
-      throw new Error(`Cannot find conversation with ID, ${id}`)
-    }
+    const thread = mustGetConversation(id)
     updateAction(thread.messages, (accountId, box, uids) => {
       queue.enqueue(
         queue.actions.archive({
@@ -79,11 +77,23 @@ export const ConversationMutations: ConversationMutationsResolvers = {
     return thread
   },
 
-  async setIsRead(_parent, { id, isRead }) {
-    const thread = getConversation(id)
-    if (!thread) {
-      throw new Error(`Cannot find conversation with ID, ${id}`)
+  async reply(_parent, { accountId, id, content }) {
+    const account = cache.getAccount(accountId)
+    const conversation = mustGetConversation(id)
+    if (!account) {
+      throw new Error(`Could not find account with ID, ${accountId}`)
     }
+    queue.enqueue(
+      queue.actions.sendMessage({
+        accountId,
+        message: composeReply({ account, content, conversation })
+      })
+    )
+    return mustGetConversation(id)
+  },
+
+  async setIsRead(_parent, { id, isRead }) {
+    const thread = mustGetConversation(id)
     setIsRead(thread.messages, isRead)
     return thread
   }
@@ -137,7 +147,7 @@ function updateAction(
 }
 
 export const queries: Partial<QueryResolvers> = {
-  conversation(_parent, { id }): types.Conversation | null {
+  conversation(_parent, { id }): C.Conversation | null {
     return getConversation(id)
   }
 }
@@ -148,14 +158,22 @@ export const mutations: Partial<MutationResolvers> = {
   }
 }
 
-export function getConversation(id: string): types.Conversation | null {
+export function getConversation(id: string): C.Conversation | null {
   return cache.getThread(id)
+}
+
+function mustGetConversation(id: string): C.Conversation {
+  const conversation = getConversation(id)
+  if (!conversation) {
+    throw new Error(`Cannot find conversation with ID, ${id}`)
+  }
+  return conversation
 }
 
 export function getConversations(
   account: types.Account,
   { label }: { label?: string | null }
-): types.Conversation[] {
+): C.Conversation[] {
   return Seq(cache.getThreads(account.id))
     .filter(({ messages }) =>
       label
@@ -168,7 +186,7 @@ export function getConversations(
 }
 
 // Returns the date of the latest message
-function lastUpdated({ messages }: types.Conversation): string {
+function lastUpdated({ messages }: C.Conversation): string {
   const latest = messages[messages.length - 1]
   return latest.date
 }

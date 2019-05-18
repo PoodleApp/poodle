@@ -71,6 +71,7 @@ export default function Conversation({ accountId, conversationId }: Props) {
       {presentableElements.map(presentable => (
         <Presentable key={presentable.id} {...presentable} />
       ))}
+      <ReplyForm accountId={accountId} conversationId={conversationId} />
     </section>
   )
 }
@@ -86,5 +87,37 @@ function Presentable(presentable: graphql.Presentable) {
         <DisplayContent key={i} {...content} />
       ))}
     </div>
+  )
+}
+
+function ReplyForm({
+  accountId,
+  conversationId
+}: {
+  accountId: string
+  conversationId: string
+}) {
+  const [content, setContent] = React.useState("")
+  const [loading, setLoading] = React.useState(false)
+  const reply = graphql.useReplyMutation()
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setLoading(true)
+    await reply({
+      variables: {
+        accountId,
+        conversationId,
+        content: { type: "text", subtype: "plain", content }
+      }
+    })
+    setLoading(false)
+  }
+  return (
+    <form onSubmit={onSubmit}>
+      <textarea onChange={e => setContent(e.target.value)} value={content} />
+      <button type="submit" disabled={loading}>
+        Reply
+      </button>
+    </form>
   )
 }

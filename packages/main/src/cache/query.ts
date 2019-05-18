@@ -1,7 +1,7 @@
 import imap from "imap"
 import { Collection } from "immutable"
 import db from "../db"
-import { Box, ID, Message } from "./types"
+import { Account, Box, ID, Message } from "./types"
 
 export function firstSeenUid(accountId: ID, box: { name: string }): number {
   const boxRecord = getBoxRecord(accountId, box)
@@ -33,6 +33,10 @@ export function lastSeenUid(accountId: ID, box: { name: string }): number {
     )
     .get(boxRecord.id)
   return result.max_uid || 0
+}
+
+export function getAccount(accountId: ID): Account | null {
+  return db.prepare("select * from accounts where id = ?").get(accountId)
 }
 
 function getBoxRecord(accountId: ID, box: { name: string }): { id: ID } | null {
@@ -85,6 +89,11 @@ export function getThread(threadId: string): Thread | null {
   return { id: threadId, messages }
 }
 
+export function getThreadByMessage(message: Message): Thread {
+  const thread = message.x_gm_thrid && getThread(message.x_gm_thrid)
+  return thread || { id: "", messages: [message] }
+}
+
 export function getMessages(accountId: ID): Message[] {
   return db
     .prepare(
@@ -95,10 +104,20 @@ export function getMessages(accountId: ID): Message[] {
     .all(accountId)
 }
 
+export function getMessage(messageId: ID): Message | null {
+  return db
+    .prepare(
+      `
+        select * from messages where id = ?
+      `
+    )
+    .get(messageId)
+}
+
 export function getParticipants(
   messageId: ID,
   type: string
-): Array<{ host: string; mailbox: string; name: string | null }> {
+): Array<{ host: string; mailbox: string; name?: string }> {
   return db
     .prepare(
       `
@@ -176,8 +195,11 @@ export function getStruct(messageId: ID): imap.ImapMessageStruct {
 
 export function getBody(
   messageId: ID,
-  { partID }: imap.ImapMessagePart
+  { partID }: { partID?: string }
 ): Buffer | null {
+  if (!partID) {
+    throw new Error("cannot retrieve a part body without a part ID")
+  }
   const result = db
     .prepare(
       `

@@ -1,10 +1,11 @@
 /*
  * This poorly-named module ensures that each logged-in account is matched with
- * exactly one `ConnectionManager`
+ * exactly one `ConnectionManager` and one SMTP `Transporter`.
  */
 
 import keytar from "keytar"
-import { getConnectionFactory } from "../account"
+import mailer, { Transporter } from "nodemailer"
+import { getConnectionFactory, getSmtpConfig } from "../account"
 import db from "../db"
 import {
   OAuthCredentials,
@@ -19,11 +20,15 @@ type ID = string
 
 export default class AccountManager {
   static connectionManagers: Record<ID, ConnectionManager> = {}
+  static smtpTransporters: Record<ID, Transporter> = {}
 
   static async addAccount(account: Account) {
     const token = await loadAccessToken(account)
     if (token) {
-      await this.addConnectionManager(account, token)
+      await Promise.all([
+        this.addConnectionManager(account, token),
+        this.addSmtpTransporter(account, token)
+      ])
     }
   }
 
@@ -52,6 +57,24 @@ export default class AccountManager {
     return this.connectionManagers[accountId]
   }
 
+  static async addSmtpTransporter(
+    account: Account,
+    credentials: OAuthCredentials
+  ) {
+    const smtpConfig = await getSmtpConfig({
+      type: "google",
+      email: account.email,
+      client_id,
+      client_secret,
+      credentials
+    })
+    this.smtpTransporters[account.id] = mailer.createTransport(smtpConfig)
+  }
+
+  static getSmtpTransporter(accountId: ID): Transporter | undefined {
+    return this.smtpTransporters[accountId]
+  }
+
   static isLoggedIn(accountId: ID): boolean {
     return accountId in this.connectionManagers
   }
@@ -62,6 +85,7 @@ export default class AccountManager {
     const token = await loadAccessToken(account)
     if (token) {
       AccountManager.addConnectionManager(account, token)
+      AccountManager.addSmtpTransporter(account, token)
     }
   }
 })()
@@ -69,6 +93,7 @@ export default class AccountManager {
 if (process.env.NODE_ENV === "test") {
   beforeEach(() => {
     AccountManager.connectionManagers = {}
+    AccountManager.smtpTransporters = {}
   })
 }
 

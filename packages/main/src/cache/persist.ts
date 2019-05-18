@@ -1,5 +1,6 @@
 import imap from "imap"
 import db from "../db"
+import { MessageAttributes } from "../types"
 import { ID, SerializedHeaders } from "./types"
 
 export function persistBoxState(accountId: ID, box: imap.Box): ID {
@@ -40,8 +41,8 @@ export function persistAttributes(
     accountId,
     boxId,
     updatedAt
-  }: { accountId: ID; boxId: ID; updatedAt?: string },
-  attributes: imap.ImapMessageAttributes
+  }: { accountId: ID; boxId?: ID; updatedAt?: string },
+  attributes: MessageAttributes
 ): ID {
   return db.transaction(() => {
     const existing: { id: ID } | null = db
@@ -65,8 +66,8 @@ export function persistAttributes(
 }
 
 function persistNewMessage(
-  { accountId, boxId }: { accountId: ID; boxId: ID },
-  attributes: imap.ImapMessageAttributes,
+  { accountId, boxId }: { accountId: ID; boxId?: ID },
+  attributes: MessageAttributes,
   updatedAt: string | undefined
 ): ID {
   const messageId = insertInto("messages", {
@@ -103,7 +104,7 @@ function persistNewMessage(
 
 function persistMessageUpdates(
   messageId: ID,
-  attributes: imap.ImapMessageAttributes,
+  attributes: MessageAttributes,
   updatedAt: string | undefined
 ) {
   db.prepare("delete from message_flags where message_id = ?").run(messageId)
@@ -204,7 +205,7 @@ function persistReferences(messageId: ID, headers: SerializedHeaders) {
   const referencesHeader = headers.find(([key, _]) => key === "references")
   if (referencesHeader) {
     const value: string | string[] = referencesHeader[1]
-    const references = value instanceof Array ? value : [value]
+    const references = Array.isArray(value) ? value : [value]
     for (const reference of references) {
       insertInto("message_references", {
         message_id: messageId,
@@ -222,6 +223,10 @@ function persistHeaders(messageId: ID, headers: SerializedHeaders) {
       value: JSON.stringify(value)
     })
   }
+}
+
+export function removeMessage(messageId: ID) {
+  db.prepare("delete from messages where id = ?").run(messageId)
 }
 
 export function removeStaleMessages(boxId: ID, updatedAt: string) {

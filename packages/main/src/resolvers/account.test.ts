@@ -1,6 +1,7 @@
 import { graphql } from "graphql"
 import Connection from "imap"
 import keytar from "keytar"
+import mailer from "nodemailer"
 import { getConnectionFactory } from "../account"
 import db from "../db"
 import { Account } from "../generated/graphql"
@@ -12,6 +13,7 @@ import { mock } from "../testHelpers"
 import * as types from "./types"
 
 jest.mock("keytar")
+jest.mock("nodemailer")
 jest.mock("../account")
 jest.mock("../oauth")
 
@@ -23,6 +25,7 @@ beforeEach(() => {
   mock(keytar.setPassword).mockResolvedValue(undefined)
   mock(getConnectionFactory).mockResolvedValue(connectionFactory)
   mock(getAccessToken).mockResolvedValue({ refresh_token: "refresh!" } as any)
+  mock(mailer.createTransport as any).mockResolvedValue({})
 })
 
 it("gets all accounts", async () => {

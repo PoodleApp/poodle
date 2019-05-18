@@ -1,16 +1,9 @@
-import { Message as MessageRecord } from "../cache"
-
 export interface Account {
   id: string
   email: string
 }
 
 export type AccountMutations = {}
-
-export interface Conversation {
-  id: string
-  messages: MessageRecord[]
-}
 
 export type ConversationMutations = {}
 

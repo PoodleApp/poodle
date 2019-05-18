@@ -52,6 +52,12 @@ export type Content = {
   content: Scalars["String"]
 }
 
+export type ContentInput = {
+  type: Scalars["String"]
+  subtype: Scalars["String"]
+  content: Scalars["String"]
+}
+
 export type Conversation = {
   id: Scalars["ID"]
   date: Scalars["String"]
@@ -64,11 +70,18 @@ export type Conversation = {
 
 export type ConversationMutations = {
   archive: Conversation
+  reply: Conversation
   setIsRead: Conversation
 }
 
 export type ConversationMutationsArchiveArgs = {
   id: Scalars["ID"]
+}
+
+export type ConversationMutationsReplyArgs = {
+  accountId: Scalars["ID"]
+  id: Scalars["ID"]
+  content: ContentInput
 }
 
 export type ConversationMutationsSetIsReadArgs = {
@@ -112,10 +125,10 @@ export type QueryConversationArgs = {
 import {
   Account,
   AccountMutations,
-  Conversation,
   ConversationMutations,
   Message
 } from "../resolvers/types"
+import { Conversation } from "../models/conversation"
 
 import { GraphQLResolveInfo } from "graphql"
 
@@ -244,6 +257,12 @@ export type ConversationMutationsResolvers<
     ParentType,
     Context,
     ConversationMutationsArchiveArgs
+  >
+  reply?: Resolver<
+    Conversation,
+    ParentType,
+    Context,
+    ConversationMutationsReplyArgs
   >
   setIsRead?: Resolver<
     Conversation,

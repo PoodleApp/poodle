@@ -109,7 +109,7 @@ declare module "imap" {
       struct?: ImapMessageStruct
       envelope: {
         date: Date
-        subject: string
+        subject: string | null
         from: Address[] | null
         sender: Address[] | null
         replyTo: Address[] | null

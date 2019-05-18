@@ -1,11 +1,15 @@
 import BetterQueue from "better-queue"
+import { Transporter } from "nodemailer"
+import db from "../db"
 import * as fs from "fs"
 import * as kefir from "kefir"
 import * as path from "path"
 import xdgBasedir from "xdg-basedir"
 import * as cache from "../cache"
+import { serialize } from "../compose"
 import AccountManager from "../managers/AccountManager"
 import ConnectionManager from "../managers/ConnectionManager"
+import * as M from "../models/Message"
 import * as request from "../request"
 import {
   Action,
@@ -13,6 +17,7 @@ import {
   ActionTypes,
   combineHandlers
 } from "../request/combineHandlers"
+import { MessageAttributes } from "../types"
 import * as promises from "../util/promises"
 import SqliteStore from "./better-queue-better-sqlite3"
 
@@ -69,23 +74,109 @@ export const { actions, actionTypes, perform } = combineHandlers({
         ])
       )
     )
+  },
+
+  sendMessage(
+    _context: unknown,
+    {
+      accountId,
+      message
+    }: {
+      accountId: ID
+      message: {
+        attributes: MessageAttributes
+        headers: cache.SerializedHeaders
+        bodies: Record<string, Buffer>
+      }
+    },
+    messageId?: ID
+  ): R<void> {
+    if (!messageId) {
+      return kefir.constantError(new Error("message ID is missing"))
+    }
+    return withSmtpTransporter(accountId, transporter => {
+      return kefir.fromPromise(
+        (async () => {
+          const { attributes, headers } = message
+          const bodies = (partID: string) =>
+            cache.getBody(messageId, { partID }) || undefined
+          const mimeNode = serialize({ attributes, headers, bodies })
+          const raw = await promises.lift1<Buffer>(cb => mimeNode.build(cb))
+          return transporter.sendMail({
+            envelope: mimeNode.getEnvelope(),
+            raw
+          })
+        })()
+      )
+    })
   }
 })
 
 type Task = ActionTypes<typeof actions>
 
-export function enqueue(action: Task): R<ActionResult<typeof action>> {
-  if (action.type === actionTypes.archive) {
-    cache.delLabels({ ...payload(action), labels: ["\\Inbox"] })
-  } else if (action.type === actionTypes.markAsRead) {
-    cache.addFlag({ ...payload(action), flag: "\\Seen" })
-  } else if (action.type === actionTypes.unmarkAsRead) {
-    cache.delFlags({ ...payload(action), flags: ["\\Seen"] })
+export function enqueue(action: Task): Promise<ActionResult<typeof action>> {
+  let extra: unknown[] = []
+  switch (action.type) {
+    case actionTypes.archive:
+      cache.delLabels({ ...payload(action), labels: ["\\Inbox"] })
+      break
+    case actionTypes.markAsRead:
+      cache.addFlag({ ...payload(action), flag: "\\Seen" })
+      break
+    case actionTypes.unmarkAsRead:
+      cache.delFlags({ ...payload(action), flags: ["\\Seen"] })
+      break
+    case actionTypes.sendMessage:
+      db.transaction(() => {
+        const {
+          accountId,
+          message: { attributes, headers, bodies }
+        } = payload(action)
+        const updatedAt = new Date().toISOString()
+        const messageId = cache.persistAttributes(
+          { accountId, updatedAt },
+          attributes
+        )
+        extra = [messageId]
+        cache.persistHeadersAndReferences(messageId, headers)
+        for (const [partId, content] of Object.entries(bodies)) {
+          const part = M.getPartByPartId(partId, attributes)
+          if (!part) {
+            throw new Error("Error saving message body")
+          }
+          cache.persistBody(messageId, part, content)
+        }
+      })()
+      break
   }
-  const result = promises.lift1<ActionResult<typeof action>>(cb =>
-    queue.push(action, cb)
+  return promises.lift1<ActionResult<typeof action>>(cb =>
+    queue.push(
+      { ...action, payload: (action.payload as any).concat(extra) },
+      cb
+    )
   )
-  return kefir.fromPromise(result)
+}
+
+class JobFailure extends Error {
+  constructor(cause: Error, public task: Task) {
+    super(cause.message)
+    Object.assign(this, cause)
+  }
+}
+
+function onFailure(
+  _taskId: string,
+  { task }: JobFailure,
+  _stats: { elapsed: number }
+) {
+  switch (task.type) {
+    case actionTypes.sendMessage:
+      const messageId = task.payload[1]
+      if (messageId) {
+        cache.removeMessage(messageId)
+      }
+      break
+  }
 }
 
 function withConnectionManager<T>(
@@ -102,6 +193,20 @@ function withConnectionManager<T>(
   }
 }
 
+function withSmtpTransporter<T>(
+  accountId: ID,
+  fn: (cm: Transporter) => R<T>
+): R<T> {
+  const transporter = AccountManager.getSmtpTransporter(accountId)
+  if (transporter) {
+    return fn(transporter)
+  } else {
+    return kefir.constantError(
+      new Error(`could not get SMTP transporter for account ID, ${accountId}`)
+    )
+  }
+}
+
 function processTask(
   task: Task,
   cb: ((error: Error) => void) &
@@ -112,10 +217,10 @@ function processTask(
       cb(null, v)
     },
     error(e) {
-      cb(e)
+      cb(new JobFailure(e, task))
     },
     end() {
-      cb(new Error("stream ended without a value"))
+      cb(new JobFailure(new Error("stream ended without a value"), task))
     }
   })
 }
@@ -138,6 +243,8 @@ export const queue = new BetterQueue<Task>(processTask, {
   retryDelay: isTest ? 1 : 10000,
   store
 })
+
+queue.on("task_failed", onFailure)
 
 export function getQueuedTasks(): Array<Action<unknown>> {
   return store.getAll()

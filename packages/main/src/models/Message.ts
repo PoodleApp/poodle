@@ -1,6 +1,7 @@
 import imap from "imap"
 import { List, Seq } from "immutable"
 import Moment from "moment"
+import { MessageAttributes } from "../types"
 import Address from "./Address"
 import * as P from "./MessagePart"
 import { URI, midUri, parseMidUri } from "./uri"
@@ -29,7 +30,7 @@ export default class Message {
   from?: Address[]
   inReplyTo: MessageId | null
   receivedDate: Moment.Moment
-  subject?: string
+  subject?: string | null
   to?: Address[]
 
   constructor(msg: imap.ImapMessageAttributes, headers: Headers) {
@@ -177,7 +178,7 @@ export default class Message {
 
 export function getPartByPartId(
   partId: string,
-  msg: imap.ImapMessageAttributes
+  msg: MessageAttributes
 ): imap.ImapMessagePart | undefined {
   return flatParts(msg)
     .filter(part => part.partID === partId)
@@ -247,9 +248,7 @@ function allContentParts(
   return foldPrimaryContent(f, zero, filter, struct)
 }
 
-function flatParts(
-  msg: imap.ImapMessageAttributes
-): Seq.Indexed<imap.ImapMessagePart> {
+function flatParts(msg: MessageAttributes): Seq.Indexed<imap.ImapMessagePart> {
   return rec(getStruct(msg))
 
   function rec(
@@ -450,7 +449,7 @@ function normalizeHeaderValue(v: any): any {
   }
 }
 
-function getStruct(msg: imap.ImapMessageAttributes): imap.ImapMessageStruct {
+function getStruct(msg: MessageAttributes): imap.ImapMessageStruct {
   if (!msg.struct) {
     throw new Error("Message does not include `struct`")
   }

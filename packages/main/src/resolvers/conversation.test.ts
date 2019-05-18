@@ -26,8 +26,7 @@ beforeEach(async () => {
   connectionManager = mockConnection()
   await sync(accountId, connectionManager)
 
-  conversationId = (await graphql(
-    schema,
+  conversationId = (await request(
     `
       query getConversations($accountId: ID!) {
         account(id: $accountId) {
@@ -37,15 +36,12 @@ beforeEach(async () => {
         }
       }
     `,
-    null,
-    null,
     { accountId }
   )).data!.account.conversations[0].id
 })
 
 it("gets metadata for a conversation from cache", async () => {
-  const result = await graphql(
-    schema,
+  const result = await request(
     `
       query getConversations($accountId: ID!) {
         account(id: $accountId) {
@@ -63,8 +59,6 @@ it("gets metadata for a conversation from cache", async () => {
         }
       }
     `,
-    null,
-    null,
     { accountId }
   )
   expect(result).toMatchObject({
@@ -85,8 +79,7 @@ it("gets metadata for a conversation from cache", async () => {
 })
 
 it("gets conversations by label", async () => {
-  const result = await graphql(
-    schema,
+  const result = await request(
     `
       query getConversations($accountId: ID!, $label: String) {
         account(id: $accountId) {
@@ -104,8 +97,6 @@ it("gets conversations by label", async () => {
         }
       }
     `,
-    null,
-    null,
     { accountId, label: "My Label" }
   )
   expect(result).toMatchObject({
@@ -118,8 +109,7 @@ it("gets conversations by label", async () => {
 })
 
 it("gets a list of presentable elements for a conversation", async () => {
-  const result = await graphql(
-    schema,
+  const result = await request(
     `
       query getConversation($conversationId: ID!) {
         conversation(id: $conversationId) {
@@ -141,8 +131,6 @@ it("gets a list of presentable elements for a conversation", async () => {
         }
       }
     `,
-    null,
-    null,
     { conversationId: testThread[0].attributes["x-gm-thrid"] }
   )
   expect(result).toEqual({
@@ -201,8 +189,7 @@ it("marks a conversation as read", async () => {
   )
   await sync(accountId, connectionManager)
 
-  const result = await graphql(
-    schema,
+  const result = await request(
     `
       mutation setIsRead($conversationId: ID!, $isRead: Boolean!) {
         conversations {
@@ -213,8 +200,6 @@ it("marks a conversation as read", async () => {
         }
       }
     `,
-    null,
-    null,
     { conversationId, isRead: true }
   )
   expect(result).toEqual({
@@ -230,8 +215,7 @@ it("marks a conversation as read", async () => {
 })
 
 it("marks a conversation as unread", async () => {
-  const result = await graphql(
-    schema,
+  const result = await request(
     `
       mutation setIsRead($conversationId: ID!, $isRead: Boolean!) {
         conversations {
@@ -242,8 +226,6 @@ it("marks a conversation as unread", async () => {
         }
       }
     `,
-    null,
-    null,
     { conversationId, isRead: false }
   )
   expect(result).toEqual({
@@ -259,8 +241,7 @@ it("marks a conversation as unread", async () => {
 })
 
 it("archives a conversation", async () => {
-  const result = await graphql(
-    schema,
+  const result = await request(
     `
       mutation archive($conversationId: ID!) {
         conversations {
@@ -271,8 +252,6 @@ it("archives a conversation", async () => {
         }
       }
     `,
-    null,
-    null,
     { conversationId }
   )
   expect(result).toEqual({
@@ -286,6 +265,64 @@ it("archives a conversation", async () => {
     }
   })
 })
+
+it("accepts a reply to a conversation", async () => {
+  const result = await request(
+    `
+      mutation reply($accountId: ID!, $conversationId: ID!, $content: ContentInput!) {
+        conversations {
+          reply(accountId: $accountId, id: $conversationId, content: $content) {
+            presentableElements {
+              contents {
+                type
+                subtype
+                content
+              }
+            }
+          }
+        }
+      }
+    `,
+    {
+      accountId,
+      conversationId,
+      content: { type: "text", subtype: "plain", content: "this is a reply" }
+    }
+  )
+  expect(result).toMatchObject({
+    data: {
+      conversations: {
+        reply: {
+          presentableElements: [
+            {
+              contents: [
+                {
+                  type: "text",
+                  subtype: "html",
+                  content: "<p>This is a test.</p>"
+                }
+              ]
+            },
+            {
+              contents: [
+                { type: "text", subtype: "plain", content: "A reply appears." }
+              ]
+            },
+            {
+              contents: [
+                { type: "text", subtype: "plain", content: "this is a reply" }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  })
+})
+
+function request(query: string, variables?: Record<string, any>) {
+  return graphql(schema, query, null, null, variables)
+}
 
 afterEach(async () => {
   db.prepare("delete from accounts").run()

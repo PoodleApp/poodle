@@ -24,6 +24,7 @@ type Conversation {
 
 type ConversationMutations {
   archive(id: ID!): Conversation!
+  reply(accountId: ID!, id: ID!, content: ContentInput!): Conversation!
   setIsRead(id: ID!, isRead: Boolean!): Conversation!
 }
 
@@ -49,6 +50,12 @@ type Presentable {
 }
 
 type Content {
+  type: String!
+  subtype: String!
+  content: String!
+}
+
+input ContentInput {
   type: String!
   subtype: String!
   content: String!

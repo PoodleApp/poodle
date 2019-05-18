@@ -1,6 +1,8 @@
 import { EventEmitter } from "events"
 import { default as Connection, default as imap } from "imap"
 import { Range, Seq, Set } from "immutable"
+import { Transporter } from "nodemailer"
+import Mailer from "nodemailer/lib/mailer"
 import { Readable } from "stream"
 import stringToStream from "string-to-stream"
 import { testContent, testThread } from "../cache/testFixtures"
@@ -173,6 +175,13 @@ export function mockFetchImplementation({
     }, 5)
     return messagesEmitter
   }
+}
+
+export function mockSmtpTransporters(): Transporter {
+  mock(Mailer.prototype.sendMail).mockImplementation(async _mailOptions => {
+    return { success: true }
+  })
+  return new Mailer(null as any, null as any, null as any)
 }
 
 function messagesMatchingSource(
