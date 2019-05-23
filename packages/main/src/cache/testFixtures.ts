@@ -160,7 +160,7 @@ export const testThread: Array<{
           partID: "1",
           type: "text",
           subtype: "plain",
-          params: { charset: "UTF-8" },
+          params: { charset: "us-ascii" },
           id: null,
           description: null,
           encoding: "7BIT",
@@ -227,7 +227,7 @@ export const testThread: Array<{
           text: "Jesse Hallett <hallettj@gmail.com>"
         }
       ],
-      ["content-type", { value: "text/plain", params: { charset: "UTF-8" } }]
+      ["content-type", { value: "text/plain", params: { charset: "us-ascii" } }]
     ]
   }
 ]

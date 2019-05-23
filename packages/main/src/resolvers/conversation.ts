@@ -1,3 +1,4 @@
+import { convert } from "encoding"
 import { List, Seq } from "immutable"
 import * as cache from "../cache"
 import { composeReply } from "../compose"
@@ -37,11 +38,14 @@ export const Conversation: ConversationResolvers = {
       contents: contentParts(cache.getStruct(message.id))
         .map(part => {
           const content = cache.getBody(message.id, part)
-          return content
+          const charset = part.params.charset
+          const decoded =
+            content && (charset ? convert(content, "utf8", charset) : content)
+          return decoded
             ? {
                 type: part.type || "text",
                 subtype: part.subtype || "plain",
-                content: content.toString(part.params.charset || "utf8")
+                content: decoded.toString("utf8")
               }
             : fallbackContent()
         })
