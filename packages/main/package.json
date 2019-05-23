@@ -21,6 +21,7 @@
     "@types/better-sqlite3": "^5.2.3",
     "@types/concat-stream": "^1.6.0",
     "@types/core-js": "^2.5.0",
+    "@types/electron": "^1.6.10",
     "@types/graphql": "^14.0.7",
     "@types/kefir": "^3.8.1",
     "@types/mailparser": "^2.4.0",
