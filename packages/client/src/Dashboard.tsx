@@ -23,6 +23,7 @@ import moment from "moment"
 import * as React from "react"
 import * as graphql from "./generated/graphql"
 import useSync from "./hooks/useSync"
+import AccountSwitcher from "./AccountSwitcher"
 import Avatar from "./Avatar"
 import Participant from "./Participant"
 
@@ -162,9 +163,7 @@ export default function Dashboard({ accountId }: Props) {
           >
             Inbox
           </Typography>
-          <Button color="inherit" href="/accounts">
-            {email}
-          </Button>
+          <AccountSwitcher accountId={accountId} color="inherit" />
           <IconButton
             color="inherit"
             onClick={() => sync().catch(setError)}
