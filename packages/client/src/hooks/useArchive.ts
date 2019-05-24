@@ -1,13 +1,16 @@
 import * as graphql from "../generated/graphql"
 
-export default function useArchive(variables: {
+export default function useArchive({
+  accountId,
+  conversationId
+}: {
   accountId: string
-  conversationId: string
+  conversationId?: string
 }) {
   return graphql.useArchiveMutation({
     refetchQueries() {
-      return [{ query: graphql.GetAccountDocument, variables }]
+      return [{ query: graphql.GetAccountDocument, variables: { accountId } }]
     },
-    variables
+    variables: conversationId ? { conversationId } : undefined
   })
 }

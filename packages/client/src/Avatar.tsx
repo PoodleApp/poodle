@@ -1,14 +1,13 @@
-import MuiAvatar from "@material-ui/core/Avatar"
+import MuiAvatar, { AvatarProps } from "@material-ui/core/Avatar"
 import * as colors from "@material-ui/core/colors"
 import * as React from "react"
 import stringHash from "string-hash"
 
-export default function Avatar({
-  address,
-  ...rest
-}: {
+type Props = AvatarProps & {
   address?: { name?: string | null; mailbox: string; host: string }
-}) {
+}
+
+export default function Avatar({ address, ...rest }: Props) {
   const letter = getLetter(
     (address && (address.name || address.mailbox)) || "?"
   )

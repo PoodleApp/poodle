@@ -1,31 +1,35 @@
 import {
   AppBar,
+  Avatar as MuiAvatar,
   CssBaseline,
   IconButton,
   Toolbar,
   Typography,
-  Button,
   Drawer,
   Divider,
   Paper,
   List,
   ListItem,
   ListItemAvatar,
-  ListItemText
+  ListItemText,
+  colors
 } from "@material-ui/core"
 import { makeStyles } from "@material-ui/core/styles"
+import ArchiveIcon from "@material-ui/icons/Archive"
+import CheckIcon from "@material-ui/icons/Check"
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft"
 import MenuIcon from "@material-ui/icons/Menu"
 import RefreshIcon from "@material-ui/icons/Refresh"
-import { Link, navigate, Redirect, RouteComponentProps } from "@reach/router"
+import { navigate, Redirect, RouteComponentProps } from "@reach/router"
 import clsx from "clsx"
 import moment from "moment"
 import * as React from "react"
 import * as graphql from "./generated/graphql"
+import useArchive from "./hooks/useArchive"
+import * as Sel from "./hooks/useSelectedConversations"
 import useSync from "./hooks/useSync"
 import AccountSwitcher from "./AccountSwitcher"
 import Avatar from "./Avatar"
-import Participant from "./Participant"
 
 type Props = RouteComponentProps & { accountId?: string }
 
@@ -107,10 +111,8 @@ export default function Dashboard({ accountId }: Props) {
   const { data, error, loading } = graphql.useGetAccountQuery({
     variables: { accountId: accountId! }
   })
-  const { loading: syncLoading, sync } = useSync({
-    accountId: accountId!
-  })
-  const [mutationError, setError] = React.useState<Error | null>(null)
+  const conversations = data && data.account && data.account.conversations
+  const [selected, dispatch] = Sel.useSelectedConversations(conversations)
 
   // TODO: is there a way to guarantee that `accountId` is available?
   if (!accountId) {
@@ -123,56 +125,15 @@ export default function Dashboard({ accountId }: Props) {
   if (error) {
     return <div>Error! {error.message}</div>
   }
-  if (mutationError) {
-    return (
-      <div>
-        Error! <pre>{JSON.stringify(mutationError)}</pre>
-        <button onClick={() => setError(null)}>dismiss</button>
-      </div>
-    )
-  }
-
-  const { conversations, email } = data!.account!
 
   return (
     <div className={classes.root}>
       <CssBaseline />
-      <AppBar
-        position="absolute"
-        className={clsx(classes.appBar, open && classes.appBarShift)}
-      >
-        <Toolbar className={classes.toolbar}>
-          <IconButton
-            edge="start"
-            color="inherit"
-            aria-label="open drawer"
-            onClick={setOpen.bind(null, !open)}
-            className={clsx(
-              classes.menuButton,
-              open && classes.menuButtonHidden
-            )}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography
-            component="h1"
-            variant="h6"
-            color="inherit"
-            noWrap
-            className={classes.title}
-          >
-            Inbox
-          </Typography>
-          <AccountSwitcher accountId={accountId} color="inherit" />
-          <IconButton
-            color="inherit"
-            onClick={() => sync().catch(setError)}
-            disabled={syncLoading}
-          >
-            <RefreshIcon />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
+      {selected.length > 0 ? (
+        <SelectedActionsBar accountId={accountId} selected={selected} />
+      ) : (
+        <MainBar accountId={accountId} open={open} setOpen={setOpen} />
+      )}
       <Drawer
         variant="permanent"
         classes={{
@@ -181,7 +142,7 @@ export default function Dashboard({ accountId }: Props) {
         open={open}
       >
         <div className={classes.toolbarIcon}>
-          <IconButton onClick={setOpen.bind(null, !open)}>
+          <IconButton onClick={() => setOpen(false)}>
             <ChevronLeftIcon />
           </IconButton>
         </div>
@@ -189,9 +150,103 @@ export default function Dashboard({ accountId }: Props) {
       </Drawer>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        <Conversations accountId={accountId} conversations={conversations} />
+        <Conversations
+          accountId={accountId}
+          conversations={conversations!}
+          selected={selected}
+          dispatch={dispatch}
+        />
       </main>
     </div>
+  )
+}
+
+function MainBar({
+  accountId,
+  open,
+  setOpen
+}: {
+  accountId: string
+  open: boolean
+  setOpen: (isOpen: boolean) => void
+}) {
+  const classes = useStyles()
+  const { loading: syncLoading, sync } = useSync({
+    accountId: accountId!
+  })
+  const [mutationError, setError] = React.useState<Error | null>(null)
+  if (mutationError) {
+    return (
+      <div>
+        Error! <pre>{JSON.stringify(mutationError)}</pre>
+        <button onClick={() => setError(null)}>dismiss</button>
+      </div>
+    )
+  }
+  return (
+    <AppBar
+      position="absolute"
+      className={clsx(classes.appBar, open && classes.appBarShift)}
+    >
+      <Toolbar className={classes.toolbar}>
+        <IconButton
+          edge="start"
+          color="inherit"
+          aria-label="open drawer"
+          onClick={() => setOpen(true)}
+          className={clsx(classes.menuButton, open && classes.menuButtonHidden)}
+        >
+          <MenuIcon />
+        </IconButton>
+        <Typography
+          component="h1"
+          variant="h6"
+          color="inherit"
+          noWrap
+          className={classes.title}
+        >
+          Inbox
+        </Typography>
+        <AccountSwitcher accountId={accountId} color="inherit" />
+        <IconButton
+          color="inherit"
+          onClick={() => sync().catch(setError)}
+          disabled={syncLoading}
+        >
+          <RefreshIcon />
+        </IconButton>
+      </Toolbar>
+    </AppBar>
+  )
+}
+
+function SelectedActionsBar({
+  accountId,
+  selected
+}: {
+  accountId: string
+  selected: string[]
+}) {
+  const classes = useStyles()
+  const archive = useArchive({ accountId })
+  function onArchive() {
+    for (const conversationId of selected) {
+      archive({ variables: { conversationId } })
+    }
+  }
+  return (
+    <AppBar
+      position="absolute"
+      color="default"
+      className={clsx(classes.appBar)}
+    >
+      <Toolbar className={classes.toolbar}>
+        <span className={classes.title} />
+        <IconButton onClick={onArchive}>
+          <ArchiveIcon />
+        </IconButton>
+      </Toolbar>
+    </AppBar>
   )
 }
 
@@ -207,6 +262,10 @@ const useConversationRowStyles = makeStyles(theme => ({
   },
   inline: {
     display: "inline"
+  },
+  selectedAvatar: {
+    color: "#fff",
+    backgroundColor: colors.blue[500]
   }
 }))
 
@@ -216,63 +275,91 @@ type Conversation = NonNullable<
 
 function Conversations({
   accountId,
-  conversations
+  conversations,
+  selected,
+  dispatch
 }: {
   accountId: string
   conversations: Conversation[]
+  selected: string[]
+  dispatch: (action: Sel.Action) => void
 }) {
   const classes = useConversationRowStyles()
   return (
     <Paper>
       <List className={classes.root}>
-        {conversations.map(({ id, date, isRead, subject, from }, index) => (
-          <React.Fragment key={index}>
-            <ListItem
-              key={id}
-              className={clsx(isRead && classes.read, classes.message)}
-              alignItems="flex-start"
-              onClick={() =>
-                navigate(`/accounts/${accountId}/conversations/${id}`)
-              }
-            >
-              <ListItemAvatar>
-                <Avatar address={from} />
-              </ListItemAvatar>
-              <ListItemText
-                primary={subject || "[no subject]"}
-                secondary={
-                  <>
-                    <Typography
-                      component="span"
-                      variant="body2"
-                      className={classes.inline}
-                      color="textPrimary"
-                    >
-                      {moment(date).calendar()}
-                      {"\u00A0"}
-                      from{" "}
-                      {from
-                        ? from.name || `${from.mailbox}@${from.host}`
-                        : "unknown sender"}
-                    </Typography>
-                    {" — TODO: snippet"}
-                  </>
+        {conversations.map(({ id, date, isRead, subject, from }, index) => {
+          const isSelected = selected.some(i => i === id)
+          const rowId = "conversation-row-" + id
+          return (
+            <React.Fragment key={index}>
+              <ListItem
+                key={id}
+                className={clsx(isRead && classes.read, classes.message)}
+                alignItems="flex-start"
+                onClick={() =>
+                  navigate(`/accounts/${accountId}/conversations/${id}`)
                 }
+                selected={isSelected}
               >
-                {date} &mdash;{" "}
-                <Link to={`/accounts/${accountId}/conversations/${id}`}>
-                  {subject}
-                </Link>{" "}
-                from <Participant {...from} />
-              </ListItemText>
-            </ListItem>
-            {index === conversations.length - 1 ? (
-              ""
-            ) : (
-              <Divider variant="inset" component="li" />
-            )}
-          </React.Fragment>
-        ))}
+                <ListItemAvatar>
+                  {isSelected ? (
+                    <MuiAvatar
+                      role="checkbox"
+                      aria-checked="true"
+                      aria-labelledby={rowId}
+                      className={classes.selectedAvatar}
+                      onClick={event => {
+                        event.stopPropagation()
+                        dispatch(Sel.unselect(id))
+                      }}
+                    >
+                      <CheckIcon />
+                    </MuiAvatar>
+                  ) : (
+                    <Avatar
+                      role="checkbox"
+                      aria-checked="false"
+                      aria-labelledby={rowId}
+                      onClick={event => {
+                        event.stopPropagation()
+                        dispatch(Sel.select(id))
+                      }}
+                      address={from}
+                    />
+                  )}
+                </ListItemAvatar>
+                <ListItemText
+                  id={rowId}
+                  primary={subject || "[no subject]"}
+                  secondary={
+                    <>
+                      <Typography
+                        component="span"
+                        variant="body2"
+                        className={classes.inline}
+                        color="textPrimary"
+                      >
+                        {moment(date).calendar()}
+                        {"\u00A0"}
+                        from{" "}
+                        {from
+                          ? from.name || `${from.mailbox}@${from.host}`
+                          : "unknown sender"}
+                      </Typography>
+                      {" — TODO: snippet"}
+                    </>
+                  }
+                />
+              </ListItem>
+              {index === conversations.length - 1 ? (
+                ""
+              ) : (
+                <Divider variant="inset" component="li" />
+              )}
+            </React.Fragment>
+          )
+        })}
       </List>
     </Paper>
   )

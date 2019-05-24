@@ -12,7 +12,6 @@ export default function AccountSwitcher({ accountId, ...rest }: Props) {
   if (!data || !data.accounts) {
     return null
   }
-  console.log("anchorEl", anchorEl)
   const handleClose = () => setAnchorEl(null)
   const { accounts } = data
   const current = accounts.find(account => account.id === accountId)
