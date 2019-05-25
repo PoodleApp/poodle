@@ -10,7 +10,7 @@ import {
 } from "../generated/graphql"
 import * as C from "../models/conversation"
 import { contentParts } from "../models/Message"
-import * as queue from "../queue"
+import { actions, schedule } from "../queue"
 import { nonNull } from "../util/array"
 import * as types from "./types"
 
@@ -70,8 +70,8 @@ export const ConversationMutations: ConversationMutationsResolvers = {
   async archive(_parent, { id }) {
     const thread = mustGetConversation(id)
     updateAction(thread.messages, (accountId, box, uids) => {
-      queue.enqueue(
-        queue.actions.archive({
+      schedule(
+        actions.archive({
           accountId: String(accountId),
           box,
           uids
@@ -87,8 +87,8 @@ export const ConversationMutations: ConversationMutationsResolvers = {
     if (!account) {
       throw new Error(`Could not find account with ID, ${accountId}`)
     }
-    queue.enqueue(
-      queue.actions.sendMessage({
+    schedule(
+      actions.sendMessage({
         accountId,
         message: composeReply({ account, content, conversation })
       })
@@ -110,16 +110,16 @@ function setIsRead(messages: cache.Message[], isRead: boolean) {
   })
   updateAction(filtered, (accountId, box, uids) => {
     if (isRead) {
-      queue.enqueue(
-        queue.actions.markAsRead({
+      schedule(
+        actions.markAsRead({
           accountId: String(accountId),
           box,
           uids
         })
       )
     } else {
-      queue.enqueue(
-        queue.actions.unmarkAsRead({
+      schedule(
+        actions.unmarkAsRead({
           accountId: String(accountId),
           box,
           uids

@@ -1,8 +1,42 @@
-import BetterQueue from "better-queue"
+/*
+ * Interactions with IMAP and SMTP servers should be scheduled using the queue
+ * defined in this module. Schedule an action using the `actions` action creator
+ * map, and the `schedule` function. For example:
+ *
+ *     schedule(actions.archive({ accountId, box, uids }))
+ *
+ * `schedule` returns a promise that resolves with the value of the promise
+ * returned in the `process` stage (see below). But note that you must not rely
+ * on that promise to keep application state up-to-date because the scheduled
+ * task might not run until after an application restart at which time any
+ * promise callbacks will no longer exist.
+ *
+ * Once in the queue tasks are seralized in a sqlite store so that tasks persist
+ * across application restarts.
+ *
+ * Each action is defined by a handler, which is made up of at least two stages:
+ *
+ * - enqueue : Called immediately. Update the local cache to reflect pending
+ *             changes, and compute parameters for the next stage. The return
+ *             value of the `enqueue` stage is given as an argument to the
+ *             `process` and `failure` stages. The return value *must* be
+ *             serializable.
+ * - process : Called when the task gets to the front of the queue. Make calls
+ *             to IMAP and SMTP services. Returns a promise. The resolved value
+ *             of the promise becomes the resolved value of the promise returned
+ *             by the top-level `schedule` function. An rejected value from the
+ *             `process` promise will be wrapped, and the wrapped value will
+ *             become the rejected value of the promise returned by `schedule`.
+ * - failure : (Optional) Called in case a task fails. Gets two arguments: an
+ *             error value, and the same argument that was given to the
+ *             `process` stage. This is the place to undo changes to the local
+ *             cache to reflect the fact that expected changes did not take
+ *             place server-side.
+ */
+
 import { Transporter } from "nodemailer"
 import db from "../db"
 import * as fs from "fs"
-import * as kefir from "kefir"
 import * as path from "path"
 import xdgBasedir from "xdg-basedir"
 import * as cache from "../cache"
@@ -11,74 +45,103 @@ import AccountManager from "../managers/AccountManager"
 import ConnectionManager from "../managers/ConnectionManager"
 import * as M from "../models/Message"
 import * as request from "../request"
-import {
-  Action,
-  ActionResult,
-  ActionTypes,
-  combineHandlers
-} from "../request/combineHandlers"
 import { MessageAttributes } from "../types"
 import * as promises from "../util/promises"
 import SqliteStore from "./better-queue-better-sqlite3"
+import { Task, combineHandlers, handler } from "./combineHandlers"
 
 type ID = string
-type R<T> = kefir.Observable<T, Error>
 
-export const { actions, actionTypes, perform } = combineHandlers({
-  archive(
-    _context: unknown,
-    {
+const handlers = {
+  archive: handler({
+    enqueue(params: { accountId: ID; box: { name: string }; uids: number[] }) {
+      cache.delLabels({ ...params, labels: ["\\Inbox"] })
+      return params
+    },
+
+    process({
       accountId,
       box,
       uids
-    }: { accountId: ID; box: { name: string }; uids: number[] }
-  ): R<void> {
-    return withConnectionManager(accountId, connectionManager =>
-      connectionManager.request(
-        request.actions.delLabels({ name: box.name, readonly: false }, uids, [
-          "\\Inbox"
-        ])
+    }: {
+      accountId: ID
+      box: { name: string }
+      uids: number[]
+    }): Promise<void> {
+      return withConnectionManager(accountId, connectionManager =>
+        connectionManager
+          .request(
+            request.actions.delLabels(
+              { name: box.name, readonly: false },
+              uids,
+              ["\\Inbox"]
+            )
+          )
+          .toPromise()
       )
-    )
-  },
+    }
+  }),
 
-  markAsRead(
-    _context: unknown,
-    {
+  markAsRead: handler({
+    enqueue(params: { accountId: ID; box: { name: string }; uids: number[] }) {
+      cache.addFlag({ ...params, flag: "\\Seen" })
+      return params
+    },
+
+    process({
       accountId,
       box,
       uids
-    }: { accountId: ID; box: { name: string }; uids: number[] }
-  ): R<void> {
-    return withConnectionManager(accountId, connectionManager =>
-      connectionManager.request(
-        request.actions.addFlags({ name: box.name, readonly: false }, uids, [
-          "\\Seen"
-        ])
+    }: {
+      accountId: ID
+      box: { name: string }
+      uids: number[]
+    }): Promise<void> {
+      return withConnectionManager(accountId, connectionManager =>
+        connectionManager
+          .request(
+            request.actions.addFlags(
+              { name: box.name, readonly: false },
+              uids,
+              ["\\Seen"]
+            )
+          )
+          .toPromise()
       )
-    )
-  },
+    }
+  }),
 
-  unmarkAsRead(
-    _context: unknown,
-    {
+  unmarkAsRead: handler({
+    enqueue(params: { accountId: ID; box: { name: string }; uids: number[] }) {
+      cache.delFlags({ ...params, flags: ["\\Seen"] })
+      return params
+    },
+
+    process({
       accountId,
       box,
       uids
-    }: { accountId: ID; box: { name: string }; uids: number[] }
-  ): R<void> {
-    return withConnectionManager(accountId, connectionManager =>
-      connectionManager.request(
-        request.actions.delFlags({ name: box.name, readonly: false }, uids, [
-          "\\Seen"
-        ])
+    }: {
+      accountId: ID
+      box: { name: string }
+      uids: number[]
+    }): Promise<void> {
+      return withConnectionManager(accountId, connectionManager =>
+        connectionManager
+          .request(
+            request.actions.delFlags(
+              { name: box.name, readonly: false },
+              uids,
+              ["\\Seen"]
+            )
+          )
+          .toPromise()
       )
-    )
-  },
+    }
+  }),
 
-  sendMessage(
-    _context: unknown,
-    {
+  sendMessage: handler({
+    enqueue({
       accountId,
       message
     }: {
@@ -88,15 +151,44 @@ export const { actions, actionTypes, perform } = combineHandlers({
         headers: cache.SerializedHeaders
         bodies: Record<string, Buffer>
       }
+    }) {
+      const { attributes, headers, bodies } = message
+      let messageId: cache.ID | null = null
+      db.transaction(() => {
+        const updatedAt = new Date().toISOString()
+        messageId = cache.persistAttributes(
+          { accountId, updatedAt },
+          attributes
+        )
+        cache.persistHeadersAndReferences(messageId, headers)
+        for (const [partId, content] of Object.entries(bodies)) {
+          const part = M.getPartByPartId(partId, attributes)
+          if (!part) {
+            throw new Error("Error saving message body")
+          }
+          cache.persistBody(messageId, part, content)
+        }
+      })()
+      if (!messageId) {
+        throw new Error("error saving message")
+      }
+      return { accountId, message: { attributes, headers }, messageId }
     },
-    messageId?: ID
-  ): R<void> {
-    if (!messageId) {
-      return kefir.constantError(new Error("message ID is missing"))
-    }
-    return withSmtpTransporter(accountId, transporter => {
-      return kefir.fromPromise(
-        (async () => {
+
+    process({
+      accountId,
+      message,
+      messageId
+    }: {
+      accountId: ID
+      message: {
+        attributes: MessageAttributes
+        headers: cache.SerializedHeaders
+      }
+      messageId: cache.ID
+    }): Promise<void> {
+      return withSmtpTransporter(accountId, transporter => {
+        return (async () => {
           const { attributes, headers } = message
           const bodies = (partID: string) =>
             cache.getBody(messageId, { partID }) || undefined
@@ -107,120 +199,11 @@ export const { actions, actionTypes, perform } = combineHandlers({
             raw
           })
         })()
-      )
-    })
-  }
-})
-
-type Task = ActionTypes<typeof actions>
-
-export function enqueue(action: Task): Promise<ActionResult<typeof action>> {
-  let extra: unknown[] = []
-  switch (action.type) {
-    case actionTypes.archive:
-      cache.delLabels({ ...payload(action), labels: ["\\Inbox"] })
-      break
-    case actionTypes.markAsRead:
-      cache.addFlag({ ...payload(action), flag: "\\Seen" })
-      break
-    case actionTypes.unmarkAsRead:
-      cache.delFlags({ ...payload(action), flags: ["\\Seen"] })
-      break
-    case actionTypes.sendMessage:
-      db.transaction(() => {
-        const {
-          accountId,
-          message: { attributes, headers, bodies }
-        } = payload(action)
-        const updatedAt = new Date().toISOString()
-        const messageId = cache.persistAttributes(
-          { accountId, updatedAt },
-          attributes
-        )
-        extra = [messageId]
-        cache.persistHeadersAndReferences(messageId, headers)
-        for (const [partId, content] of Object.entries(bodies)) {
-          const part = M.getPartByPartId(partId, attributes)
-          if (!part) {
-            throw new Error("Error saving message body")
-          }
-          cache.persistBody(messageId, part, content)
-        }
-      })()
-      break
-  }
-  return promises.lift1<ActionResult<typeof action>>(cb =>
-    queue.push(
-      { ...action, payload: (action.payload as any).concat(extra) },
-      cb
-    )
-  )
-}
-
-class JobFailure extends Error {
-  constructor(cause: Error, public task: Task) {
-    super(cause.message)
-    Object.assign(this, cause)
-  }
-}
-
-function onFailure(
-  _taskId: string,
-  { task }: JobFailure,
-  _stats: { elapsed: number }
-) {
-  switch (task.type) {
-    case actionTypes.sendMessage:
-      const messageId = task.payload[1]
-      if (messageId) {
-        cache.removeMessage(messageId)
-      }
-      break
-  }
-}
-
-function withConnectionManager<T>(
-  accountId: ID,
-  fn: (cm: ConnectionManager) => R<T>
-): R<T> {
-  const connectionManager = AccountManager.getConnectionManager(accountId)
-  if (connectionManager) {
-    return fn(connectionManager)
-  } else {
-    return kefir.constantError(
-      new Error(`could not get connection manager for account ID, ${accountId}`)
-    )
-  }
-}
-
-function withSmtpTransporter<T>(
-  accountId: ID,
-  fn: (cm: Transporter) => R<T>
-): R<T> {
-  const transporter = AccountManager.getSmtpTransporter(accountId)
-  if (transporter) {
-    return fn(transporter)
-  } else {
-    return kefir.constantError(
-      new Error(`could not get SMTP transporter for account ID, ${accountId}`)
-    )
-  }
-}
-
-function processTask(
-  task: Task,
-  cb: ((error: Error) => void) &
-    ((error: null, result: ActionResult<typeof task>) => void)
-) {
-  perform(1, task).observe({
-    value(v) {
-      cb(null, v)
+      })
     },
-    error(e) {
-      cb(new JobFailure(e, task))
-    },
-    end() {
-      cb(new JobFailure(new Error("stream ended without a value"), task))
+
+    failure(_error, { messageId }) {
+      cache.removeMessage(messageId)
     }
   })
 }
@@ -228,8 +211,8 @@ function processTask(
 const isTest = process.env.NODE_ENV
 
 const store = isTest
-  ? new SqliteStore<Task>({ memory: true })
-  : new SqliteStore<Task>({
+  ? new SqliteStore<Task<typeof handlers>>({ memory: true })
+  : new SqliteStore<Task<typeof handlers>>({
       path: getDbPath()
     })
 
@@ -237,16 +220,47 @@ if (process.env.NODE_ENV !== "test") {
   fs.chmodSync(getDbPath(), 0o600)
 }
 
-export const queue = new BetterQueue<Task>(processTask, {
+const queueOptions = {
   maxRetries: 3,
   maxTimeout: isTest ? 150 : 10000,
   retryDelay: isTest ? 1 : 10000,
   store
-})
+} as const
 
-queue.on("task_failed", onFailure)
+export const { actions, queue, schedule } = combineHandlers(
+  queueOptions,
+  handlers
+)
 
-export function getQueuedTasks(): Array<Action<unknown>> {
+async function withConnectionManager<T>(
+  accountId: ID,
+  fn: (cm: ConnectionManager) => Promise<T>
+): Promise<T> {
+  const connectionManager = AccountManager.getConnectionManager(accountId)
+  if (connectionManager) {
+    return fn(connectionManager)
+  } else {
+    throw new Error(
+      `could not get connection manager for account ID, ${accountId}`
+    )
+  }
+}
+
+async function withSmtpTransporter<T>(
+  accountId: ID,
+  fn: (cm: Transporter) => Promise<T>
+): Promise<T> {
+  const transporter = AccountManager.getSmtpTransporter(accountId)
+  if (transporter) {
+    return fn(transporter)
+  } else {
+    throw new Error(
+      `could not get SMTP transporter for account ID, ${accountId}`
+    )
+  }
+}
+
+export function getQueuedTasks(): Array<Task<typeof handlers>> {
   return store.getAll()
 }
 
@@ -258,8 +272,4 @@ function getDbPath() {
     )
   }
   return path.join(cacheDir, "poodle", "queue.sqlite")
-}
-
-function payload<T extends Task>(action: T): T["payload"][0] {
-  return action.payload[0]
 }

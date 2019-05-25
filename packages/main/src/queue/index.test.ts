@@ -9,7 +9,7 @@ import AccountManager from "../managers/AccountManager"
 import { mockConnection, mockSmtpTransporters } from "../request/testHelpers"
 import { sync } from "../sync"
 import { mock } from "../testHelpers"
-import * as queue from "./index"
+import { actions, queue, schedule } from "./index"
 
 jest.mock("imap")
 jest.mock("nodemailer/lib/mailer")
@@ -42,8 +42,8 @@ beforeEach(async () => {
 })
 
 it("marks a conversation as read", async () => {
-  const promise = queue.enqueue(
-    queue.actions.markAsRead({
+  const promise = schedule(
+    actions.markAsRead({
       accountId: String(accountId),
       box: allMail,
       uids: [7687]
@@ -72,8 +72,8 @@ it("marks a conversation as unread", async () => {
   const connectionManager = mockConnection()
   await sync(accountId, connectionManager)
 
-  const promise = queue.enqueue(
-    queue.actions.unmarkAsRead({
+  const promise = schedule(
+    actions.unmarkAsRead({
       accountId: String(accountId),
       box: allMail,
       uids: [7687]
@@ -103,15 +103,15 @@ it.skip("replaces pending read status change when a new change is queued", async
   const connectionManager = AccountManager.connectionManagers[String(accountId)]
   delete AccountManager.connectionManagers[String(accountId)]
 
-  const promise1 = queue.enqueue(
-    queue.actions.markAsRead({
+  const promise1 = schedule(
+    actions.markAsRead({
       accountId: String(accountId),
       box: allMail,
       uids: [7687]
     })
   )
-  const promise2 = queue.enqueue(
-    queue.actions.unmarkAsRead({
+  const promise2 = schedule(
+    actions.unmarkAsRead({
       accountId: String(accountId),
       box: allMail,
       uids: [7687]
@@ -121,7 +121,7 @@ it.skip("replaces pending read status change when a new change is queued", async
   // resume queue
   AccountManager.connectionManagers[String(accountId)] = connectionManager
 
-  queue.queue.resume()
+  queue.resume()
   const flags = db
     .prepare(
       `
@@ -147,8 +147,8 @@ it("sends a message", async () => {
   }
   const message = composeReply({ account, content, conversation })
   message.attributes.date = new Date("2019-05-21T18:51Z")
-  const promise = queue.enqueue(
-    queue.actions.sendMessage({ accountId: String(accountId), message })
+  const promise = schedule(
+    actions.sendMessage({ accountId: String(accountId), message })
   )
 
   expect(cache.getThreads(accountId)[0]).toMatchObject({
@@ -205,8 +205,8 @@ it("removes cached message if message cannot be sent", async () => {
   }
   const message = composeReply({ account, content, conversation })
   message.attributes.date = new Date("2019-05-21T18:51Z")
-  const promise = queue.enqueue(
-    queue.actions.sendMessage({ accountId: String(accountId), message })
+  const promise = schedule(
+    actions.sendMessage({ accountId: String(accountId), message })
   )
 
   expect(cache.getThreads(accountId)[0]).toMatchObject({
