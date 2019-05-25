@@ -51,23 +51,37 @@ class JobFailure<HM extends Handlers> extends Error {
   }
 }
 
+export const DEFAULT_PRIORITY = 50
+export const HIGH_PRIORITY = 80
+export const LOW_PRIORITY = 20
+
 export function handler<EnqueueParams, Result, ProcessParams>(h: {
   enqueue: (params: EnqueueParams) => ProcessParams
   process: (params: ProcessParams) => Promise<Result>
   failure?: (error: Error, params: ProcessParams) => void
+  priority?: number // higher numbers run first
 }): Handler<EnqueueParams, Result, ProcessParams> {
   return h
 }
 
 export function combineHandlers<HM extends Handlers>(
-  queueOptions: Omit<BetterQueue.QueueOptions<Task<HM>, unknown>, "process">,
+  queueOptions: Omit<
+    BetterQueue.QueueOptions<Task<HM>, unknown>,
+    "priority" | "process"
+  >,
   handlers: HM
 ): {
   actions: ActionCreators<HM>
   queue: BetterQueue<Task<HM>>
   schedule: <T>(action: Action<T> & ActionTypes<HM>) => Promise<T>
 } {
-  const queue = new BetterQueue(process(handlers), queueOptions)
+  const queue = new BetterQueue(process(handlers), {
+    ...queueOptions,
+    priority(task, cb) {
+      const priority = handlers[task.type].priority || DEFAULT_PRIORITY
+      cb(null, priority)
+    }
+  })
   queue.on("task_failed", onFailure(handlers))
   return {
     actions: extractActionCreators(handlers),

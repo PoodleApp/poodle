@@ -7,7 +7,7 @@ import {
   QueryResolvers
 } from "../generated/graphql"
 import AccountManager from "../managers/AccountManager"
-import { sync } from "../sync"
+import { actions, schedule } from "../queue"
 import * as conversation from "./conversation"
 import * as message from "./message"
 import * as types from "./types"
@@ -59,7 +59,7 @@ export const AccountMutations: AccountMutationsResolvers = {
     if (!connectionManager) {
       throw new Error(`error syncing: account is not logged in, ${id}`)
     }
-    await sync(id, connectionManager)
+    await schedule(actions.sync({ accountId: id }))
     return account
   }
 }

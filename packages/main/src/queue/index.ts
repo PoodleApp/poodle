@@ -34,21 +34,22 @@
  *             place server-side.
  */
 
-import { Transporter } from "nodemailer"
-import db from "../db"
 import * as fs from "fs"
+import { Transporter } from "nodemailer"
 import * as path from "path"
 import xdgBasedir from "xdg-basedir"
 import * as cache from "../cache"
 import { serialize } from "../compose"
+import db from "../db"
 import AccountManager from "../managers/AccountManager"
 import ConnectionManager from "../managers/ConnectionManager"
 import * as M from "../models/Message"
 import * as request from "../request"
+import { sync } from "../sync"
 import { MessageAttributes } from "../types"
 import * as promises from "../util/promises"
 import SqliteStore from "./better-queue-better-sqlite3"
-import { Task, combineHandlers, handler } from "./combineHandlers"
+import { combineHandlers, handler, LOW_PRIORITY, Task } from "./combineHandlers"
 
 type ID = string
 
@@ -204,6 +205,18 @@ const handlers = {
 
     failure(_error, { messageId }) {
       cache.removeMessage(messageId)
+    }
+  }),
+
+  sync: handler({
+    priority: LOW_PRIORITY,
+    enqueue(params: { accountId: ID }) {
+      return params
+    },
+    process({ accountId }: { accountId: ID }) {
+      return withConnectionManager(accountId, connectionManager =>
+        sync(accountId, connectionManager)
+      )
     }
   })
 }

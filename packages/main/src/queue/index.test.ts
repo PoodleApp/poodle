@@ -229,6 +229,34 @@ it("removes cached message if message cannot be sent", async () => {
   })
 })
 
+describe("sync", () => {
+  it("prioritizes uploading state changes before syncing", async () => {
+    jest.spyOn(queue as any, "process")
+    const promise1 = schedule(actions.sync({ accountId: String(accountId) }))
+    const promise2 = schedule(
+      actions.markAsRead({
+        accountId: String(accountId),
+        box: allMail,
+        uids: [7687]
+      })
+    )
+    await Promise.all([promise1, promise2])
+    expect(mock((queue as any).process).mock.calls).toEqual([
+      [
+        {
+          type: "markAsRead",
+          params: { accountId: String(accountId), box: allMail, uids: [7687] }
+        },
+        expect.any(Function)
+      ],
+      [
+        { type: "sync", params: { accountId: String(accountId) } },
+        expect.any(Function)
+      ]
+    ])
+  })
+})
+
 afterEach(() => {
   db.prepare("delete from accounts").run()
 })
