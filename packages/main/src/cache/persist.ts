@@ -27,6 +27,13 @@ export function persistBoxState(accountId: ID, box: imap.Box): ID {
   })()
 }
 
+export function saveUidLastSeen({ boxId, uid }: { boxId: ID; uid: number }) {
+  db.prepare("update boxes set uidlastseen = @uid where id = @boxId").run({
+    boxId,
+    uid
+  })
+}
+
 const participantTypes = [
   "bcc",
   "cc",

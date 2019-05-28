@@ -3,53 +3,34 @@ import { Collection } from "immutable"
 import db from "../db"
 import { Account, Box, ID, Message } from "./types"
 
-export function firstSeenUid(accountId: ID, box: { name: string }): number {
-  const boxRecord = getBoxRecord(accountId, box)
-  if (!boxRecord) {
-    return 0
-  }
-  const result: { max_uid: number | null } = db
-    .prepare(
-      `
-        select min(uid) as max_uid from messages
-        where box_id = ?
-      `
-    )
-    .get(boxRecord.id)
-  return result.max_uid || 0
+export function lastSeenUid({ boxId }: { boxId: ID }): number {
+  const result = db
+    .prepare("select uidlastseen from boxes where id = ?")
+    .get(boxId)
+  return result ? result.uidlastseen : 0
 }
 
-export function lastSeenUid(accountId: ID, box: { name: string }): number {
-  const boxRecord = getBoxRecord(accountId, box)
-  if (!boxRecord) {
-    return 0
-  }
-  const result: { max_uid: number | null } = db
+export function getCachedUids({
+  accountId,
+  max
+}: {
+  accountId: ID
+  max: number
+}): number[] {
+  return db
     .prepare(
       `
-        select max(uid) as max_uid from messages
-        where box_id = ?
+        select uid from messages
+        where account_id = :accountId and uid <= :max
+        order by uid
       `
     )
-    .get(boxRecord.id)
-  return result.max_uid || 0
+    .all({ accountId, max })
+    .map(row => row.uid)
 }
 
 export function getAccount(accountId: ID): Account | null {
   return db.prepare("select * from accounts where id = ?").get(accountId)
-}
-
-function getBoxRecord(accountId: ID, box: { name: string }): { id: ID } | null {
-  return db
-    .prepare(
-      `
-        select id from boxes
-        where
-          account_id = @account_id and
-          name = @name
-      `
-    )
-    .get({ account_id: accountId, name: box.name })
 }
 
 export function getBox(boxId: ID): Box | null {

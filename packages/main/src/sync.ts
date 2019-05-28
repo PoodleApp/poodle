@@ -36,36 +36,60 @@ async function syncBox(
 ) {
   const box = await manager.request(request.actions.getBox(boxSpec)).toPromise()
   const boxId = cache.persistBoxState(accountId, box)
-  const lastSeen = cache.lastSeenUid(accountId, box)
-  const firstSeen = cache.firstSeenUid(accountId, box)
+  const lastSeen = cache.lastSeenUid({ boxId })
   const updatedAt = new Date().toISOString()
 
+  // Fetch metadata for new messages
+  if (lastSeen < box.uidnext - 1) {
+    await downloadMessagesInBatches({
+      accountId,
+      manager,
+      box,
+      boxId,
+      updatedAt,
+      uids: Range(box.uidnext - 1, lastSeen, -1),
+      filter: event => matchesCachePolicy(request.messageAttributes(event)),
+      shouldContinue: async messagesStream => {
+        const messages = await kefirUtil.takeAll(messagesStream).toPromise()
+        const oldestDate = Seq(messages)
+          .map(message => message.date)
+          .sort()
+          .reverse()
+          .first(null)
+        return !oldestDate || oldestDate >= cachePolicy.since
+      },
+      fetchOptions: {
+        bodies: "HEADER",
+        envelope: true,
+        struct: true
+      }
+    })
+  } else {
+    await captureResponses(
+      { accountId, boxId, updatedAt },
+      manager.request(
+        request.actions.fetch(box, `${lastSeen + 1}:*`, {
+          bodies: "HEADER",
+          envelope: true,
+          struct: true
+        })
+      )
+    ).toPromise()
+  }
+
+  // Record the fact that we have checked for messages up to UID `uidnext - 1`
+  cache.saveUidLastSeen({ boxId, uid: box.uidnext - 1 })
+
+  // Flags-only fetch for updates to old messages
+  const cachedUids = cache.getCachedUids({ accountId, max: lastSeen })
   await downloadMessagesInBatches({
     accountId,
     manager,
     box,
     boxId,
     updatedAt,
-    uids: Range(box.uidnext - 1, lastSeen, -1),
-    filter: event => matchesCachePolicy(request.messageAttributes(event)),
-    shouldContinue: async messagesStream => {
-      const messages = await kefirUtil.takeAll(messagesStream).toPromise()
-      const oldestDate = Seq(messages)
-        .map(message => message.date)
-        .sort()
-        .reverse()
-        .first(null)
-      return !oldestDate || oldestDate >= cachePolicy.since
-    }
+    uids: Seq(cachedUids)
   })
-
-  // Flags-only fetch for updates to old messages
-  if (firstSeen > 0 && lastSeen > 0) {
-    await captureResponses(
-      { accountId, boxId, updatedAt },
-      manager.request(request.actions.fetch(box, `${firstSeen}:${lastSeen}`))
-    ).toPromise()
-  }
 
   cache.removeStaleMessages(boxId, updatedAt)
   await downloadCompleteConversations(accountId, manager, box, boxId, updatedAt)
@@ -110,7 +134,12 @@ async function downloadCompleteConversations(
     box,
     boxId,
     updatedAt,
-    uids: missingUids.valueSeq().map(uid => parseInt(uid, 10))
+    uids: missingUids.valueSeq().map(uid => parseInt(uid, 10)),
+    fetchOptions: {
+      bodies: "HEADER",
+      envelope: true,
+      struct: true
+    }
   })
 }
 
@@ -122,7 +151,8 @@ async function downloadMessagesInBatches({
   updatedAt,
   uids,
   filter = () => true,
-  shouldContinue = async () => true
+  shouldContinue = async () => true,
+  fetchOptions
 }: {
   accountId: cache.ID
   manager: ConnectionManager
@@ -132,6 +162,7 @@ async function downloadMessagesInBatches({
   uids: Seq.Indexed<number>
   filter?: (event: request.FetchResponse) => boolean
   shouldContinue?: (messages: R<imap.ImapMessageAttributes>) => Promise<boolean>
+  fetchOptions?: imap.FetchOptions
 }) {
   const batch = uids.take(BATCH_SIZE)
   const rest = uids.skip(BATCH_SIZE)
@@ -140,11 +171,7 @@ async function downloadMessagesInBatches({
   }
 
   const fetchResponses = manager.request(
-    request.actions.fetch(box, fetchQuery(batch), {
-      bodies: "HEADER",
-      envelope: true,
-      struct: true
-    })
+    request.actions.fetch(box, fetchQuery(batch), fetchOptions)
   )
 
   const continueToNextBatch = shouldContinue(
@@ -183,7 +210,8 @@ async function downloadMessagesInBatches({
       updatedAt,
       uids: rest,
       filter,
-      shouldContinue
+      shouldContinue,
+      fetchOptions
     })
   }
 }
@@ -195,10 +223,10 @@ export function fetchQuery(uids: Seq.Indexed<number>): string | number[] {
       _end,
       _step
     }: { _start: number; _end: number; _step: number } = uids as any
-    if (_step === -1 && _end < _start) {
+    if (_step === -1 && _end + 1 < _start) {
       return `${_end + 1}:${_start}`
     }
-    if (_step === 1 && _start < _end) {
+    if (_step === 1 && _start < _end - 1) {
       return `${_start}:${_end - 1}`
     }
   }

@@ -5,6 +5,7 @@ create table boxes(
   name text not null,
   uidvalidity integer not null,
   uidnext integer,
+  uidlastseen integer,
   unique (account_id, name) on conflict replace
 );
 

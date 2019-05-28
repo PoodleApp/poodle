@@ -1,5 +1,6 @@
 import Connection from "imap"
 import { Range } from "immutable"
+import moment from "moment"
 import * as cache from "./cache"
 import { testThread } from "./cache/testFixtures"
 import db from "./db"
@@ -49,6 +50,26 @@ it("downloads messages", async () => {
         uid: testThread[1].attributes.uid
       }
     ])
+  )
+})
+
+it("downloads complete conversations even if some messages do not match cache policy", async () => {
+  await sync(accountId, connectionManager)
+  mock(Connection.prototype.fetch).mockImplementation(
+    mockFetchImplementation({
+      thread: [
+        {
+          attributes: {
+            ...testThread[0].attributes,
+            date: moment()
+              .subtract(2, "years")
+              .toDate()
+          },
+          headers: testThread[0].headers
+        },
+        testThread[1]
+      ]
+    })
   )
 })
 
@@ -216,6 +237,9 @@ it("downloads bodies for messages", async () => {
 
 it("uses UID ranges for smaller fetch requests", () => {
   expect(fetchQuery(Range(30020, 30000, -1))).toBe("30001:30020")
+  expect(fetchQuery(Range(12, 20))).toBe("12:19")
+  expect(fetchQuery(Range(12, 13))).toEqual([12])
+  expect(fetchQuery(Range(12, 11, -1))).toEqual([12])
 })
 
 afterEach(() => {

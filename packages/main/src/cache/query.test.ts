@@ -25,14 +25,6 @@ beforeEach(() => {
   }
 })
 
-it("gets the largest known UID for a box", () => {
-  expect(cache.lastSeenUid(accountId, inbox)).toBe(7687)
-})
-
-it("reports the largest known UID as zero if box is not on record", () => {
-  expect(cache.lastSeenUid(accountId, { ...inbox, name: "anotherBox" })).toBe(0)
-})
-
 it("gets threads from the cache", () => {
   expect(cache.getThreads(accountId)).toMatchObject([
     {
