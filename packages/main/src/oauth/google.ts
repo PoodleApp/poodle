@@ -1,11 +1,13 @@
+import isDev from "electron-is-dev"
 import { google } from "googleapis"
 import Connection from "imap"
 import { stringify } from "querystring"
 import fetch from "node-fetch"
 import { XOAuth2Generator, createXOAuth2Generator } from "xoauth2"
 import { SmtpConfig } from "../smtp"
+import { ConnectionFactory } from "../types"
 import { lift1 } from "../util/promises"
-import { ConnectionFactory, GoogleAccount, OAuthCredentials } from "./types"
+import { GoogleAccount, OAuthCredentials } from "./types"
 
 export type AccessTokenOpts = {
   scopes: string[]
@@ -76,19 +78,20 @@ export function getTokenGenerator(
 }
 
 export async function getConnection(
-  tokenGen: XOAuth2Generator
+  tokenGen: XOAuth2Generator,
+  config?: Partial<Connection.Config>
 ): Promise<Connection> {
   const token = await lift1((cb: (err: any, value: string) => void) =>
     tokenGen.getToken(cb)
   )
-  return initImap(token)
+  return initImap(token, config)
 }
 
 export async function getConnectionFactory(
   account: GoogleAccount
 ): Promise<ConnectionFactory> {
   const tokGen = await getTokenGenerator(account)
-  return () => getConnection(tokGen)
+  return config => getConnection(tokGen, config)
 }
 
 export async function getSmtpConfig(
@@ -120,7 +123,8 @@ export function initImap(
     xoauth2: token,
     host: "imap.gmail.com",
     port: 993,
-    tls: true
+    tls: true,
+    debug: isDev ? console.log : undefined
   })
   const p: Promise<Connection> = new Promise((resolve, reject) => {
     imap.once("ready", () => resolve(imap))

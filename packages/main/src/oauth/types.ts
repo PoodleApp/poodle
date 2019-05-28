@@ -1,7 +1,3 @@
-import Connection from "imap"
-
-export type ConnectionFactory = () => Promise<Connection>
-
 export const GOOGLE = "google"
 
 export type GoogleAccount = {

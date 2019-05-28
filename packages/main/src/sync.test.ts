@@ -5,11 +5,13 @@ import * as cache from "./cache"
 import { testThread } from "./cache/testFixtures"
 import db from "./db"
 import ConnectionManager from "./managers/ConnectionManager"
+import { publishMessageUpdates } from "./pubsub"
 import { mockConnection, mockFetchImplementation } from "./request/testHelpers"
 import { sync, fetchQuery } from "./sync"
 import { mock } from "./testHelpers"
 
 jest.mock("imap")
+jest.mock("./pubsub")
 
 let accountId: cache.ID
 let connectionManager: ConnectionManager
@@ -242,7 +244,12 @@ it("uses UID ranges for smaller fetch requests", () => {
   expect(fetchQuery(Range(12, 11, -1))).toEqual([12])
 })
 
+it("sends notifications that messages have been updated", async () => {
+  await sync(accountId, connectionManager)
+  expect(publishMessageUpdates).toHaveBeenCalledTimes(2)
+})
+
 afterEach(() => {
-  jest.restoreAllMocks()
+  jest.resetAllMocks()
   db.prepare("delete from accounts").run()
 })

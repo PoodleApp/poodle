@@ -1,6 +1,7 @@
 import * as google from "../oauth/google"
 import { SmtpConfig } from "../smtp"
-import { ConnectionFactory, ImapAccount } from "./types"
+import { ConnectionFactory } from "../types"
+import { ImapAccount } from "./types"
 import * as types from "./types"
 
 export * from "./types"

@@ -1,10 +1,14 @@
-import imap from "imap"
+import { default as Connection, default as imap } from "imap"
 import { Omit } from "./util/types"
 
 export type AccountMetadata = {
   email: Email
   capabilities: string[]
 }
+
+export type ConnectionFactory = (
+  config?: Partial<Connection.Config>
+) => Promise<Connection>
 
 export type Email = string
 

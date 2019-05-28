@@ -5,6 +5,7 @@ import moment from "moment"
 import * as cache from "./cache"
 import ConnectionManager from "./managers/ConnectionManager"
 import { getPartByPartId } from "./models/Message"
+import { publishMessageUpdates } from "./pubsub"
 import * as request from "./request"
 import * as kefirUtil from "./util/kefir"
 
@@ -38,8 +39,10 @@ async function syncBox(
   const boxId = cache.persistBoxState(accountId, box)
   const lastSeen = cache.lastSeenUid({ boxId })
   const updatedAt = new Date().toISOString()
+  const filter = (event: request.FetchResponse) =>
+    matchesCachePolicy(request.messageAttributes(event))
 
-  // Fetch metadata for new messages
+  // Fetch new messages
   if (lastSeen < box.uidnext - 1) {
     await downloadMessagesInBatches({
       accountId,
@@ -48,7 +51,7 @@ async function syncBox(
       boxId,
       updatedAt,
       uids: Range(box.uidnext - 1, lastSeen, -1),
-      filter: event => matchesCachePolicy(request.messageAttributes(event)),
+      filter,
       shouldContinue: async messagesStream => {
         const messages = await kefirUtil.takeAll(messagesStream).toPromise()
         const oldestDate = Seq(messages)
@@ -62,6 +65,26 @@ async function syncBox(
         bodies: "HEADER",
         envelope: true,
         struct: true
+      },
+      afterEachBatch: async batch => {
+        for (const { uid, part } of cache.partsMissingBodies({
+          accountId,
+          boxId,
+          uids: batch
+        })) {
+          await captureResponses(
+            { accountId, boxId, updatedAt },
+            manager
+              .request(
+                request.actions.fetch(box, String(uid), {
+                  bodies: part.partID,
+                  struct: true
+                })
+              )
+              .filter(filter)
+          ).toPromise()
+          publishMessageUpdates(null)
+        }
       }
     })
   } else {
@@ -110,6 +133,8 @@ async function syncBox(
       )
     ).toPromise()
   }
+
+  publishMessageUpdates(null)
 }
 
 async function downloadCompleteConversations(
@@ -152,6 +177,7 @@ async function downloadMessagesInBatches({
   uids,
   filter = () => true,
   shouldContinue = async () => true,
+  afterEachBatch,
   fetchOptions
 }: {
   accountId: cache.ID
@@ -162,6 +188,7 @@ async function downloadMessagesInBatches({
   uids: Seq.Indexed<number>
   filter?: (event: request.FetchResponse) => boolean
   shouldContinue?: (messages: R<imap.ImapMessageAttributes>) => Promise<boolean>
+  afterEachBatch?: (batch: Seq.Indexed<number>) => Promise<void>
   fetchOptions?: imap.FetchOptions
 }) {
   const batch = uids.take(BATCH_SIZE)
@@ -183,22 +210,8 @@ async function downloadMessagesInBatches({
     fetchResponses.filter(filter)
   ).toPromise()
 
-  for (const { uid, part } of cache.partsMissingBodies({
-    accountId,
-    boxId,
-    uids: batch
-  })) {
-    await captureResponses(
-      { accountId, boxId, updatedAt },
-      manager
-        .request(
-          request.actions.fetch(box, String(uid), {
-            bodies: part.partID,
-            struct: true
-          })
-        )
-        .filter(filter)
-    ).toPromise()
+  if (afterEachBatch) {
+    await afterEachBatch(batch)
   }
 
   if (await continueToNextBatch) {

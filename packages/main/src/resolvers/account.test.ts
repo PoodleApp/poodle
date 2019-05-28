@@ -6,10 +6,11 @@ import { getConnectionFactory } from "../account"
 import db from "../db"
 import { Account } from "../generated/graphql"
 import ConnectionManager from "../managers/ConnectionManager"
-import { ConnectionFactory, OAuthCredentials, getAccessToken } from "../oauth"
+import { OAuthCredentials, getAccessToken } from "../oauth"
 import schema from "../schema"
 import * as sync from "../sync"
 import { mock } from "../testHelpers"
+import { ConnectionFactory } from "../types"
 import * as types from "./types"
 
 jest.mock("keytar")
@@ -268,51 +269,56 @@ it("indicates whether an account is logged in", async () => {
   })
 })
 
-it("syncs an account", async () => {
-  ;(sync as any).sync = jest.fn().mockResolvedValue(undefined)
-  mock(keytar.getPassword).mockResolvedValue(
-    JSON.stringify({ refresh_token: "refresh! " })
-  )
+describe("sync", () => {
+  let accountId: string
 
-  const createResult = await graphql(
-    schema,
-    `
-      mutation createAccount($email: String!) {
-        accounts {
-          create(email: $email) {
-            id
+  beforeEach(async () => {
+    ;(sync as any).sync = jest.fn().mockResolvedValue(undefined)
+    mock(keytar.getPassword).mockResolvedValue(
+      JSON.stringify({ refresh_token: "refresh! " })
+    )
+    const createResult = await graphql(
+      schema,
+      `
+        mutation createAccount($email: String!) {
+          accounts {
+            create(email: $email) {
+              id
+            }
           }
         }
-      }
-    `,
-    null,
-    null,
-    { email: "eve@test.com" }
-  )
-  const accountId = createResult.data!.accounts.create.id
-
-  const syncResult = await graphql(
-    schema,
-    `
-      mutation sync($id: ID!) {
-        accounts {
-          sync(id: $id) {
-            id
-          }
-        }
-      }
-    `,
-    null,
-    null,
-    { id: accountId }
-  )
-  expect(syncResult).toMatchObject({
-    data: { accounts: { sync: { id: accountId } } }
+      `,
+      null,
+      null,
+      { email: "eve@test.com" }
+    )
+    accountId = createResult.data!.accounts.create.id
   })
-  expect(sync.sync).toHaveBeenCalledWith(
-    accountId,
-    expect.any(ConnectionManager)
-  )
+
+  it("syncs an account", async () => {
+    const syncResult = await graphql(
+      schema,
+      `
+        mutation sync($id: ID!) {
+          accounts {
+            sync(id: $id) {
+              id
+            }
+          }
+        }
+      `,
+      null,
+      null,
+      { id: accountId }
+    )
+    expect(syncResult).toMatchObject({
+      data: { accounts: { sync: { id: accountId } } }
+    })
+    expect(sync.sync).toHaveBeenCalledWith(
+      accountId,
+      expect.any(ConnectionManager)
+    )
+  })
 })
 
 afterEach(() => {

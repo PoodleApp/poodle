@@ -1,7 +1,3 @@
-import Connection from "imap"
-
-export type ConnectionFactory = () => Promise<Connection>
-
 // TODO: accept other account types
 export type ImapAccount = GoogleAccount
 

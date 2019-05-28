@@ -10,7 +10,7 @@
 
 import Connection from "imap"
 import * as kefir from "kefir"
-import { ConnectionFactory } from "../account"
+import { ConnectionFactory } from "../types"
 import { Action, perform } from "../request"
 import JobQueue from "./JobQueue"
 
@@ -24,29 +24,48 @@ type Result = any
  */
 export default class ConnectionManager {
   private conn: Promise<Connection> | null | undefined
-  private connectionFactory: ConnectionFactory
   private queue: JobQueue<Action<any>, Result>
 
-  constructor(connectionFactory: ConnectionFactory) {
-    this.connectionFactory = connectionFactory
+  constructor(
+    private connectionFactory: ConnectionFactory,
+    private options: {
+      keepalive?: boolean
+      onConnect?: () => void
+      onUpdates?: (newMessageCount: number) => void
+    } = {}
+  ) {
     this.queue = new JobQueue(this.process.bind(this))
+    if (options.keepalive) {
+      this.getConn()
+    }
   }
 
   request<T>(action: Action<T>): kefir.Observable<T, Error> {
     return this.queue.process(action)
   }
 
-  // TODO: close connection after a period of inactivity
   private async getConn(): Promise<Connection> {
     if (!this.conn) {
-      const connPromise = this.connectionFactory().then(conn => {
+      const connPromise = this.connectionFactory({
+        keepalive: Boolean(this.options.keepalive)
+      }).then(conn => {
         const onClose = () => {
           if (this.conn === connPromise) {
             this.conn = null
           }
+          if (this.options.keepalive) {
+            this.getConn()
+          }
         }
         conn.addListener("close", onClose)
         conn.addListener("end", onClose)
+        if (this.options.onUpdates) {
+          conn.addListener("mail", this.options.onUpdates)
+          conn.addListener("update", this.options.onUpdates)
+        }
+        if (this.options.onConnect) {
+          this.options.onConnect()
+        }
         return conn
       })
       this.conn = connPromise

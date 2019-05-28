@@ -13,6 +13,7 @@ import {
   client_id,
   client_secret
 } from "../oauth"
+import { actions, schedule } from "../queue"
 import ConnectionManager from "./ConnectionManager"
 
 type Account = { id: ID; email: string }
@@ -49,7 +50,16 @@ export default class AccountManager {
         client_id,
         client_secret,
         credentials
-      })
+      }),
+      {
+        keepalive: true,
+        onConnect() {
+          schedule(actions.sync({ accountId: account.id }))
+        },
+        onUpdates() {
+          schedule(actions.sync({ accountId: account.id }))
+        }
+      }
     )
   }
 
