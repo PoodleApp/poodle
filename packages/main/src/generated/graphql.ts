@@ -65,6 +65,7 @@ export type Conversation = {
   labels?: Maybe<Array<Scalars["String"]>>
   presentableElements: Array<Presentable>
   isRead: Scalars["Boolean"]
+  snippet?: Maybe<Scalars["String"]>
   subject?: Maybe<Scalars["String"]>
 }
 
@@ -245,6 +246,7 @@ export type ConversationResolvers<Context = any, ParentType = Conversation> = {
   labels?: Resolver<Maybe<Array<Scalars["String"]>>, ParentType, Context>
   presentableElements?: Resolver<Array<Presentable>, ParentType, Context>
   isRead?: Resolver<Scalars["Boolean"], ParentType, Context>
+  snippet?: Resolver<Maybe<Scalars["String"]>, ParentType, Context>
   subject?: Resolver<Maybe<Scalars["String"]>, ParentType, Context>
 }
 

@@ -19,6 +19,7 @@ type Conversation {
   labels: [String!]
   presentableElements: [Presentable!]!
   isRead: Boolean!
+  snippet: String
   subject: String
 }
 

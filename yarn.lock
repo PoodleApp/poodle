@@ -1726,6 +1726,11 @@
   resolved "https://registry.yarnpkg.com/@types/history/-/history-4.7.2.tgz#0e670ea254d559241b6eeb3894f8754991e73220"
   integrity sha512-ui3WwXmjTaY73fOQ3/m3nnajU/Orhi6cEu5rzX+BrAAJxa3eITXZ5ch9suPqtM03OWhAHhPSyBGCN4UKoxO20Q==
 
+"@types/html-to-text@^1.4.31":
+  version "1.4.31"
+  resolved "https://registry.yarnpkg.com/@types/html-to-text/-/html-to-text-1.4.31.tgz#3b73aa59f127551cc0ce615346caa730e7622f9f"
+  integrity sha512-9vTFw6vYZNnjPOep9WRXs7cw0vg04pAZgcX9bqx70q1BNT7y9sOJovpbiNIcSNyHF/6LscLvGhtb5Og1T0UEvA==
+
 "@types/integer@*":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@types/integer/-/integer-1.0.0.tgz#f5b313876012fad0afeb5318f03cb871064eb33e"
@@ -5238,6 +5243,11 @@ esrever@^0.1.0:
   resolved "https://registry.yarnpkg.com/esrever/-/esrever-0.1.0.tgz#3240c4abf5cccbbe12c7c4edd95ff613c856deed"
   integrity sha1-MkDEq/XMy74Sx8Tt2V/2E8hW3u0=
 
+esrever@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/esrever/-/esrever-0.2.0.tgz#96e9d28f4f1b1a76784cd5d490eaae010e7407b8"
+  integrity sha1-lunSj08bGnZ4TNXUkOquAQ50B7g=
+
 estraverse@^4.0.0, estraverse@^4.1.0, estraverse@^4.1.1, estraverse@^4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/estraverse/-/estraverse-4.2.0.tgz#0dee3fed31fcd469618ce7342099fc1afa0bdb13"
@@ -6542,6 +6552,16 @@ html-to-text@5.0.0:
     htmlparser2 "^3.10.1"
     lodash "^4.17.11"
     optimist "^0.6.1"
+
+html-to-text@^5.1.1:
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/html-to-text/-/html-to-text-5.1.1.tgz#2d89db7bf34bc7bcb7d546b1b228991a16926e87"
+  integrity sha512-Bci6bD/JIfZSvG4s0gW/9mMKwBRoe/1RWLxUME/d6WUSZCdY7T60bssf/jFf7EYXRyqU4P5xdClVqiYU0/ypdA==
+  dependencies:
+    he "^1.2.0"
+    htmlparser2 "^3.10.1"
+    lodash "^4.17.11"
+    minimist "^1.2.0"
 
 html-webpack-plugin@4.0.0-beta.5:
   version "4.0.0-beta.5"
@@ -9307,6 +9327,14 @@ node-dir@^0.1.17:
   integrity sha1-X1Zl2TNRM1yqvvjxxVRRbPXx5OU=
   dependencies:
     minimatch "^3.0.2"
+
+node-email-reply-parser@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/node-email-reply-parser/-/node-email-reply-parser-0.1.1.tgz#94017db2748d11d545989b9fa3b591dedc94b2bf"
+  integrity sha512-E0WT9dv9wYlQ2V6QlJ4AgAb3D31Ajlx0d5bLwiaGkRBc86yzPikCl8QwqBfAABlzZskrforHQLl2gx6t2wAzWg==
+  dependencies:
+    esrever "^0.2.0"
+    lodash "^4.17.4"
 
 node-eta@^0.9.0:
   version "0.9.0"

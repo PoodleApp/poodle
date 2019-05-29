@@ -1,5 +1,7 @@
 import { convert } from "encoding"
+import * as htmlToText from "html-to-text"
 import { List, Seq } from "immutable"
+import replyParser from "node-email-reply-parser"
 import * as cache from "../cache"
 import { composeReply } from "../compose"
 import {
@@ -35,21 +37,7 @@ export const Conversation: ConversationResolvers = {
   presentableElements({ messages }: C.Conversation) {
     return messages.map(message => ({
       id: String(message.id),
-      contents: contentParts(cache.getStruct(message.id))
-        .map(part => {
-          const content = cache.getBody(message.id, part)
-          const charset = part.params.charset
-          const decoded =
-            content && (charset ? convert(content, "utf8", charset) : content)
-          return decoded
-            ? {
-                type: part.type || "text",
-                subtype: part.subtype || "plain",
-                content: decoded.toString("utf8")
-              }
-            : fallbackContent()
-        })
-        .toArray(),
+      contents: getContentParts(message).toArray(),
       date: message.date,
       from: cache.getParticipants(message.id, "from")[0]
     }))
@@ -59,6 +47,20 @@ export const Conversation: ConversationResolvers = {
     return messages.every(message =>
       cache.getFlags(message.id).includes("\\Seen")
     )
+  },
+
+  snippet({ messages }: C.Conversation) {
+    const latest = messages[messages.length - 1]
+    const content = getContentParts(latest).first(null)
+    const visible = content && replyParser(content.content, true)
+    const plainText =
+      visible && content && content.subtype === "html"
+        ? htmlToText.fromString(visible, {
+            ignoreHref: true,
+            ignoreImage: true
+          })
+        : visible
+    return plainText && plainText.slice(0, 1024)
   },
 
   subject(conversation: C.Conversation) {
@@ -193,6 +195,24 @@ export function getConversations(
 function lastUpdated({ messages }: C.Conversation): string {
   const latest = messages[messages.length - 1]
   return latest.date
+}
+
+function getContentParts(
+  message: cache.Message
+): List<{ type: string; subtype: string; content: string }> {
+  return contentParts(cache.getStruct(message.id)).map(part => {
+    const content = cache.getBody(message.id, part)
+    const charset = part.params.charset
+    const decoded =
+      content && (charset ? convert(content, "utf8", charset) : content)
+    return decoded
+      ? {
+          type: part.type || "text",
+          subtype: part.subtype || "plain",
+          content: decoded.toString("utf8")
+        }
+      : fallbackContent()
+  })
 }
 
 function fallbackContent() {

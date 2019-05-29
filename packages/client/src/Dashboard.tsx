@@ -266,6 +266,13 @@ const useConversationRowStyles = makeStyles(theme => ({
   selectedAvatar: {
     color: "#fff",
     backgroundColor: colors.blue[500]
+  },
+  snippetText: {
+    overflow: "hidden",
+    display: "-webkit-box",
+    textOverflow: "ellipsis",
+    "-webkit-line-clamp": 2,
+    "-webkit-box-orient": "vertical"
   }
 }))
 
@@ -288,78 +295,83 @@ function Conversations({
   return (
     <Paper>
       <List className={classes.root}>
-        {conversations.map(({ id, date, isRead, subject, from }, index) => {
-          const isSelected = selected.some(i => i === id)
-          const rowId = "conversation-row-" + id
-          return (
-            <React.Fragment key={index}>
-              <ListItem
-                key={id}
-                className={clsx(isRead && classes.read, classes.message)}
-                alignItems="flex-start"
-                onClick={() =>
-                  navigate(`/accounts/${accountId}/conversations/${id}`)
-                }
-                selected={isSelected}
-              >
-                <ListItemAvatar>
-                  {isSelected ? (
-                    <MuiAvatar
-                      role="checkbox"
-                      aria-checked="true"
-                      aria-labelledby={rowId}
-                      className={classes.selectedAvatar}
-                      onClick={event => {
-                        event.stopPropagation()
-                        dispatch(Sel.unselect(id))
-                      }}
-                    >
-                      <CheckIcon />
-                    </MuiAvatar>
-                  ) : (
-                    <Avatar
-                      role="checkbox"
-                      aria-checked="false"
-                      aria-labelledby={rowId}
-                      onClick={event => {
-                        event.stopPropagation()
-                        dispatch(Sel.select(id))
-                      }}
-                      address={from}
-                    />
-                  )}
-                </ListItemAvatar>
-                <ListItemText
-                  id={rowId}
-                  primary={subject || "[no subject]"}
-                  secondary={
-                    <>
-                      <Typography
-                        component="span"
-                        variant="body2"
-                        className={classes.inline}
-                        color="textPrimary"
-                      >
-                        {moment(date).calendar()}
-                        {"\u00A0"}
-                        from{" "}
-                        {from
-                          ? from.name || `${from.mailbox}@${from.host}`
-                          : "unknown sender"}
-                      </Typography>
-                      {" — TODO: snippet"}
-                    </>
+        {conversations.map(
+          ({ id, date, isRead, snippet, subject, from }, index) => {
+            const isSelected = selected.some(i => i === id)
+            const rowId = "conversation-row-" + id
+            return (
+              <React.Fragment key={index}>
+                <ListItem
+                  key={id}
+                  className={clsx(isRead && classes.read, classes.message)}
+                  alignItems="flex-start"
+                  onClick={() =>
+                    navigate(`/accounts/${accountId}/conversations/${id}`)
                   }
-                />
-              </ListItem>
-              {index === conversations.length - 1 ? (
-                ""
-              ) : (
-                <Divider variant="inset" component="li" />
-              )}
-            </React.Fragment>
-          )
-        })}
+                  selected={isSelected}
+                >
+                  <ListItemAvatar>
+                    {isSelected ? (
+                      <MuiAvatar
+                        role="checkbox"
+                        aria-checked="true"
+                        aria-labelledby={rowId}
+                        className={classes.selectedAvatar}
+                        onClick={event => {
+                          event.stopPropagation()
+                          dispatch(Sel.unselect(id))
+                        }}
+                      >
+                        <CheckIcon />
+                      </MuiAvatar>
+                    ) : (
+                      <Avatar
+                        role="checkbox"
+                        aria-checked="false"
+                        aria-labelledby={rowId}
+                        onClick={event => {
+                          event.stopPropagation()
+                          dispatch(Sel.select(id))
+                        }}
+                        address={from}
+                      />
+                    )}
+                  </ListItemAvatar>
+                  <ListItemText
+                    id={rowId}
+                    primary={subject || "[no subject]"}
+                    secondary={
+                      <>
+                        <Typography
+                          component="span"
+                          variant="body2"
+                          className={classes.inline}
+                          color="textPrimary"
+                        >
+                          {moment(date).calendar()}
+                          {"\u00A0"}
+                          from{" "}
+                          {from
+                            ? from.name || `${from.mailbox}@${from.host}`
+                            : "unknown sender"}
+                        </Typography>
+                        {` — ${snippet}`}
+                      </>
+                    }
+                    classes={{
+                      secondary: classes.snippetText
+                    }}
+                  />
+                </ListItem>
+                {index === conversations.length - 1 ? (
+                  ""
+                ) : (
+                  <Divider variant="inset" component="li" />
+                )}
+              </React.Fragment>
+            )
+          }
+        )}
       </List>
     </Paper>
   )

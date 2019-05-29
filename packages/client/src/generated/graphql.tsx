@@ -65,6 +65,7 @@ export type Conversation = {
   labels?: Maybe<Array<Scalars["String"]>>
   presentableElements: Array<Presentable>
   isRead: Scalars["Boolean"]
+  snippet?: Maybe<Scalars["String"]>
   subject?: Maybe<Scalars["String"]>
 }
 
@@ -140,7 +141,7 @@ export type GetAccountQuery = { __typename?: "Query" } & {
         conversations: Array<
           { __typename?: "Conversation" } & Pick<
             Conversation,
-            "id" | "date" | "isRead" | "labels" | "subject"
+            "id" | "date" | "isRead" | "labels" | "snippet" | "subject"
           > & {
               from: { __typename?: "Address" } & Pick<
                 Address,
@@ -186,7 +187,7 @@ export type GetConversationQuery = { __typename?: "Query" } & {
   conversation: Maybe<
     { __typename?: "Conversation" } & Pick<
       Conversation,
-      "id" | "isRead" | "labels" | "subject"
+      "id" | "isRead" | "labels" | "snippet" | "subject"
     > & {
         presentableElements: Array<
           { __typename?: "Presentable" } & Pick<Presentable, "id" | "date"> & {
@@ -219,7 +220,7 @@ export type SyncMutation = { __typename?: "Mutation" } & {
         conversations: Array<
           { __typename?: "Conversation" } & Pick<
             Conversation,
-            "id" | "date" | "isRead" | "labels" | "subject"
+            "id" | "date" | "isRead" | "labels" | "snippet" | "subject"
           > & {
               from: { __typename?: "Address" } & Pick<
                 Address,
@@ -240,7 +241,7 @@ export type SetIsReadMutation = { __typename?: "Mutation" } & {
   conversations: { __typename?: "ConversationMutations" } & {
     setIsRead: { __typename?: "Conversation" } & Pick<
       Conversation,
-      "id" | "date" | "isRead" | "labels" | "subject"
+      "id" | "date" | "isRead" | "labels" | "snippet" | "subject"
     > & {
         from: { __typename?: "Address" } & Pick<
           Address,
@@ -258,7 +259,7 @@ export type ArchiveMutation = { __typename?: "Mutation" } & {
   conversations: { __typename?: "ConversationMutations" } & {
     archive: { __typename?: "Conversation" } & Pick<
       Conversation,
-      "id" | "date" | "isRead" | "labels" | "subject"
+      "id" | "date" | "isRead" | "labels" | "snippet" | "subject"
     > & {
         from: { __typename?: "Address" } & Pick<
           Address,
@@ -278,7 +279,7 @@ export type ReplyMutation = { __typename?: "Mutation" } & {
   conversations: { __typename?: "ConversationMutations" } & {
     reply: { __typename?: "Conversation" } & Pick<
       Conversation,
-      "id" | "isRead" | "labels" | "subject"
+      "id" | "isRead" | "labels" | "snippet" | "subject"
     > & {
         presentableElements: Array<
           { __typename?: "Presentable" } & Pick<Presentable, "id" | "date"> & {
@@ -485,6 +486,12 @@ export const GetAccountDocument: DocumentNode = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "labels" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "snippet" },
                         arguments: [],
                         directives: []
                       },
@@ -838,6 +845,12 @@ export const GetConversationDocument: DocumentNode = {
                 },
                 {
                   kind: "Field",
+                  name: { kind: "Name", value: "snippet" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
                   name: { kind: "Name", value: "subject" },
                   arguments: [],
                   directives: []
@@ -985,6 +998,12 @@ export const SyncDocument: DocumentNode = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "labels" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "snippet" },
                               arguments: [],
                               directives: []
                             },
@@ -1152,6 +1171,12 @@ export const SetIsReadDocument: DocumentNode = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "snippet" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "subject" },
                         arguments: [],
                         directives: []
@@ -1283,6 +1308,12 @@ export const ArchiveDocument: DocumentNode = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "labels" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "snippet" },
                         arguments: [],
                         directives: []
                       },
@@ -1508,6 +1539,12 @@ export const ReplyDocument: DocumentNode = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "labels" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "snippet" },
                         arguments: [],
                         directives: []
                       },

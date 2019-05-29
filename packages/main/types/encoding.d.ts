@@ -3,5 +3,5 @@ declare module "encoding" {
     text: Buffer | string,
     toCharset: string,
     fromCharset?: string
-  )
+  ): Buffer
 }

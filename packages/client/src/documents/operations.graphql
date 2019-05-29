@@ -23,6 +23,7 @@ query getAccount($accountId: ID!) {
       }
       isRead
       labels
+      snippet
       subject
     }
   }
@@ -67,6 +68,7 @@ query getConversation($id: ID!) {
     }
     isRead
     labels
+    snippet
     subject
   }
 }
@@ -87,6 +89,7 @@ mutation sync($accountId: ID!) {
         }
         isRead
         labels
+        snippet
         subject
       }
     }
@@ -105,6 +108,7 @@ mutation setIsRead($conversationId: ID!, $isRead: Boolean!) {
       }
       isRead
       labels
+      snippet
       subject
     }
   }
@@ -122,6 +126,7 @@ mutation archive($conversationId: ID!) {
       }
       isRead
       labels
+      snippet
       subject
     }
   }
@@ -147,6 +152,7 @@ mutation reply($accountId: ID!, $conversationId: ID!, $content: ContentInput!) {
       }
       isRead
       labels
+      snippet
       subject
     }
   }
