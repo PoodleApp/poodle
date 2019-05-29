@@ -2,6 +2,10 @@
 import { app, BrowserWindow, ipcMain } from "electron"
 import contextMenu from "electron-context-menu"
 import { createIpcExecutor, createSchemaLink } from "graphql-transport-electron"
+import notifier from "node-notifier"
+import * as path from "path"
+import { formatAddressList } from "./models/Address"
+import { newMessages } from "./pubsub"
 import schema from "./schema"
 
 // Provide a right-click menu in the UI.
@@ -39,7 +43,18 @@ function createWindow() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on("ready", createWindow)
+app.on("ready", async () => {
+  createWindow()
+  for await (const message of newMessages) {
+    if (message.flags.includes("\\Important") && Notification.isSupported()) {
+      notifier.notify({
+        title: message.envelope.subject || "[no subject]",
+        message: formatAddressList(message.envelope.from || []),
+        icon: path.join(__dirname, "..", "..", "..", "assets", "poodle.png")
+      })
+    }
+  }
+})
 
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {
