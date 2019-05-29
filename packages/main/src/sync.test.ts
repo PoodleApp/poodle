@@ -5,7 +5,7 @@ import * as cache from "./cache"
 import { testThread } from "./cache/testFixtures"
 import db from "./db"
 import ConnectionManager from "./managers/ConnectionManager"
-import { publishMessageUpdates } from "./pubsub"
+import { publishMessageUpdates, publishNewMessage } from "./pubsub"
 import { mockConnection, mockFetchImplementation } from "./request/testHelpers"
 import { sync, fetchQuery } from "./sync"
 import { mock } from "./testHelpers"
@@ -247,6 +247,9 @@ it("uses UID ranges for smaller fetch requests", () => {
 it("sends notifications that messages have been updated", async () => {
   await sync(accountId, connectionManager)
   expect(publishMessageUpdates).toHaveBeenCalledTimes(2)
+  expect(publishNewMessage).toHaveBeenCalledTimes(2)
+  expect(publishNewMessage).toHaveBeenCalledWith(testThread[0].attributes)
+  expect(publishNewMessage).toHaveBeenCalledWith(testThread[1].attributes)
 })
 
 afterEach(() => {

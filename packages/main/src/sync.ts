@@ -5,11 +5,12 @@ import moment from "moment"
 import * as cache from "./cache"
 import ConnectionManager from "./managers/ConnectionManager"
 import { getPartByPartId } from "./models/Message"
-import { publishMessageUpdates } from "./pubsub"
+import { publishMessageUpdates, publishNewMessage } from "./pubsub"
 import * as request from "./request"
 import * as kefirUtil from "./util/kefir"
 
 type R<T> = kefir.Observable<T, Error>
+type UID = number
 
 const cachePolicy = {
   boxes: [{ attribute: "\\All" }],
@@ -44,7 +45,7 @@ async function syncBox(
 
   // Fetch new messages
   if (lastSeen < box.uidnext - 1) {
-    await downloadMessagesInBatches({
+    const newMessages = await downloadMessagesInBatches({
       accountId,
       manager,
       box,
@@ -52,8 +53,7 @@ async function syncBox(
       updatedAt,
       uids: Range(box.uidnext - 1, lastSeen, -1),
       filter,
-      shouldContinue: async messagesStream => {
-        const messages = await kefirUtil.takeAll(messagesStream).toPromise()
+      shouldContinue: messages => {
         const oldestDate = Seq(messages)
           .map(message => message.date)
           .sort()
@@ -82,11 +82,14 @@ async function syncBox(
                 })
               )
               .filter(filter)
-          ).toPromise()
+          )
           publishMessageUpdates(null)
         }
       }
     })
+    for (const message of newMessages) {
+      publishNewMessage(message)
+    }
   } else {
     await captureResponses(
       { accountId, boxId, updatedAt },
@@ -97,7 +100,7 @@ async function syncBox(
           struct: true
         })
       )
-    ).toPromise()
+    )
   }
 
   // Record the fact that we have checked for messages up to UID `uidnext - 1`
@@ -131,7 +134,7 @@ async function syncBox(
           struct: true
         })
       )
-    ).toPromise()
+    )
   }
 
   publishMessageUpdates(null)
@@ -176,7 +179,7 @@ async function downloadMessagesInBatches({
   updatedAt,
   uids,
   filter = () => true,
-  shouldContinue = async () => true,
+  shouldContinue = () => true,
   afterEachBatch,
   fetchOptions
 }: {
@@ -187,35 +190,31 @@ async function downloadMessagesInBatches({
   updatedAt: string
   uids: Seq.Indexed<number>
   filter?: (event: request.FetchResponse) => boolean
-  shouldContinue?: (messages: R<imap.ImapMessageAttributes>) => Promise<boolean>
+  shouldContinue?: (messages: imap.ImapMessageAttributes[]) => boolean
   afterEachBatch?: (batch: Seq.Indexed<number>) => Promise<void>
   fetchOptions?: imap.FetchOptions
-}) {
+}): Promise<imap.ImapMessageAttributes[]> {
   const batch = uids.take(BATCH_SIZE)
   const rest = uids.skip(BATCH_SIZE)
   if (batch.isEmpty()) {
-    return
+    return []
   }
 
   const fetchResponses = manager.request(
     request.actions.fetch(box, fetchQuery(batch), fetchOptions)
   )
 
-  const continueToNextBatch = shouldContinue(
-    fetchResponses.filter(request.isMessage).map(m => m.attributes)
-  )
-
-  await captureResponses(
+  const messages = await captureResponses(
     { accountId, boxId, updatedAt },
     fetchResponses.filter(filter)
-  ).toPromise()
+  )
 
   if (afterEachBatch) {
     await afterEachBatch(batch)
   }
 
-  if (await continueToNextBatch) {
-    await downloadMessagesInBatches({
+  if (shouldContinue(messages)) {
+    const nextBatch = await downloadMessagesInBatches({
       accountId,
       manager,
       box,
@@ -226,6 +225,9 @@ async function downloadMessagesInBatches({
       shouldContinue,
       fetchOptions
     })
+    return messages.concat(nextBatch)
+  } else {
+    return messages
   }
 }
 
@@ -249,37 +251,33 @@ export function fetchQuery(uids: Seq.Indexed<number>): string | number[] {
 function captureResponses(
   context: { accountId: cache.ID; boxId: cache.ID; updatedAt: string },
   responses: R<request.FetchResponse>
-): R<void> {
-  return (
-    responses
-      .flatMap(event => {
-        try {
-          if (request.isMessage(event)) {
-            cache.persistAttributes(context, event.attributes)
-          }
+): Promise<imap.ImapMessageAttributes[]> {
+  const messageStream = responses.flatMap(event => {
+    try {
+      if (request.isMessage(event)) {
+        cache.persistAttributes(context, event.attributes)
+        return kefir.constant(event.attributes)
+      }
 
-          if (request.isHeaders(event)) {
-            const id = cache.persistAttributes(context, event.messageAttributes)
-            cache.persistHeadersAndReferences(id, event.headers)
-          }
+      if (request.isHeaders(event)) {
+        const id = cache.persistAttributes(context, event.messageAttributes)
+        cache.persistHeadersAndReferences(id, event.headers)
+      }
 
-          if (request.isBody(event)) {
-            const id = cache.persistAttributes(context, event.messageAttributes)
-            const part = getPartByPartId(event.which, event.messageAttributes)
-            if (part) {
-              cache.persistBody(id, part, event.data)
-            }
-          }
-
-          return kefir.constant(undefined)
-        } catch (error) {
-          return kefir.constantError(error)
+      if (request.isBody(event)) {
+        const id = cache.persistAttributes(context, event.messageAttributes)
+        const part = getPartByPartId(event.which, event.messageAttributes)
+        if (part) {
+          cache.persistBody(id, part, event.data)
         }
-      })
-      // Insert a value before the end of the stream so that calling
-      // `.toPromise()` resolves to a value in case the responses stream is empty.
-      .beforeEnd(() => undefined)
-  )
+      }
+
+      return kefir.never()
+    } catch (error) {
+      return kefir.constantError(error)
+    }
+  })
+  return kefirUtil.takeAll(messageStream).toPromise()
 }
 
 function matchesCachePolicy(message: imap.ImapMessageAttributes): boolean {

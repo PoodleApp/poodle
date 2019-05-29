@@ -1,3 +1,4 @@
+import imap from "imap"
 import { ipcMain, IpcRenderer } from "electron"
 import { PubSub } from "graphql-subscriptions"
 
@@ -13,6 +14,10 @@ function topic<T>(
     }
   ]
 }
+
+export const [publishNewMessage, newMessages] = topic<
+  imap.ImapMessageAttributes
+>("new_message")
 
 export const [publishMessageUpdates, messageUpdates] = topic<null>(
   "message_updates"
