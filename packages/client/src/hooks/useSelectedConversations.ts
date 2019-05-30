@@ -31,7 +31,7 @@ function reducer(selected: string[], action: Action): string[] {
     case "unselect":
       return selected.filter(id => id !== action.conversationId)
     case "reset":
-      return action.conversationIds
+      return selected.filter(id => action.conversationIds.includes(id))
   }
 }
 
@@ -40,12 +40,10 @@ export function useSelectedConversations(
 ): [string[], (action: Action) => void] {
   const [selected, dispatch] = React.useReducer(reducer, [])
   React.useEffect(() => {
-    const conversationIds = selected.filter(id =>
-      conversations
-        ? conversations.some(conversation => id === conversation.id)
-        : false
-    )
-    dispatch({ type: "reset", conversationIds })
-  }, [conversations, selected])
+    dispatch({
+      type: "reset",
+      conversationIds: conversations ? conversations.map(c => c.id) : []
+    })
+  }, [conversations])
   return [selected, dispatch]
 }
