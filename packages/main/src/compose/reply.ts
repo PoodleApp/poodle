@@ -1,9 +1,8 @@
-import { parseOneAddress } from "email-addresses"
 import { Seq } from "immutable"
-import uuid from "node-uuid"
 import * as cache from "../cache"
 import * as C from "../models/conversation"
 import { nonNull } from "../util/array"
+import { mkMessageId } from "./helpers"
 import { ComposedMessage } from "./types"
 
 export function composeReply({
@@ -54,10 +53,4 @@ export function composeReply({
     ],
     bodies: { "1": Buffer.from(content.content, "utf8") }
   }
-}
-
-function mkMessageId(senderEmail: string): string {
-  const parsed = parseOneAddress(senderEmail)
-  const address = "addresses" in parsed ? parsed.addresses[0] : parsed
-  return `<${uuid.v4()}@${address.domain}>`
 }

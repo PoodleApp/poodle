@@ -27,6 +27,7 @@ type ConversationMutations {
   archive(id: ID!): Conversation!
   reply(accountId: ID!, id: ID!, content: ContentInput!): Conversation!
   setIsRead(id: ID!, isRead: Boolean!): Conversation!
+  sendMessage(accountId: ID!, message: MessageInput!): Conversation!
 }
 
 type Message {
@@ -37,7 +38,19 @@ type Message {
   from: [Address!]!
 }
 
+input MessageInput {
+  subject: String
+  to: [AddressInput!]!
+  content: ContentInput!
+}
+
 type Address {
+  host: String!
+  mailbox: String!
+  name: String
+}
+
+input AddressInput {
   host: String!
   mailbox: String!
   name: String

@@ -400,6 +400,59 @@ it("accepts a reply to a conversation", async () => {
   })
 })
 
+it("starts a new conversation", async () => {
+  const result = await request(
+    `
+      mutation sendMessage($accountId: ID!, $message: MessageInput!) {
+        conversations {
+          sendMessage(accountId: $accountId, message: $message) {
+            from {
+              name
+              mailbox
+              host
+            }
+            presentableElements {
+              contents {
+                type
+                subtype
+                content
+              }
+            }
+            isRead
+            subject
+          }
+        }
+      }
+    `,
+    {
+      accountId,
+      message: {
+        subject: "Sent from Poodle",
+        to: [{ name: "Jesse Hallett", mailbox: "hallettj", host: "gmail.com" }],
+        content: { type: "text", subtype: "plain", content: "hello there" }
+      }
+    }
+  )
+  expect(result).toMatchObject({
+    data: {
+      conversations: {
+        sendMessage: {
+          from: { name: null, mailbox: "jesse", host: "sitr.us" },
+          presentableElements: [
+            {
+              contents: [
+                { type: "text", subtype: "plain", content: "hello there" }
+              ]
+            }
+          ],
+          isRead: true,
+          subject: "Sent from Poodle"
+        }
+      }
+    }
+  })
+})
+
 function request(query: string, variables?: Record<string, any>) {
   return graphql(schema, query, null, null, variables)
 }

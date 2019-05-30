@@ -298,7 +298,11 @@ describe("saving a single message", () => {
         { accountId, boxId },
         testThread[1].attributes
       )
-      cache.persistHeadersAndReferences(newId, testThread[1].headers)
+      cache.persistHeadersAndReferences(
+        newId,
+        testThread[1].headers,
+        testThread[1].attributes
+      )
       expect(
         db
           .prepare(
@@ -309,6 +313,10 @@ describe("saving a single message", () => {
         {
           referenced_id:
             "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>"
+        },
+        {
+          referenced_id:
+            "<CAGM-pNvwffuB_LRE4zP7vaO2noOQ0p0qJ8UmSONP3k8ycyo3HA@mail.gmail.com>"
         }
       ])
     })
@@ -321,15 +329,19 @@ describe("saving a single message", () => {
           uid: testMessage.attributes.uid + 1
         }
       )
-      cache.persistHeadersAndReferences(newId, [
+      cache.persistHeadersAndReferences(
+        newId,
         [
-          "references",
           [
-            "<CAFN-=ivdbdu0PQjwZuC4SRAxhsAm3C7xiVox17HN5h-t278x=Q@mail.gmail.com>",
-            "<CAGM-pNvDQ-e-016-x+LeU_AY=AwkRgEvpDBmJNOi3r3KcqwF=A@mail.gmail.com>"
+            "references",
+            [
+              "<CAFN-=ivdbdu0PQjwZuC4SRAxhsAm3C7xiVox17HN5h-t278x=Q@mail.gmail.com>",
+              "<CAGM-pNvDQ-e-016-x+LeU_AY=AwkRgEvpDBmJNOi3r3KcqwF=A@mail.gmail.com>"
+            ]
           ]
-        ]
-      ])
+        ],
+        testThread[1].attributes
+      )
       expect(
         db
           .prepare("select * from message_references where message_id = ?")
@@ -342,6 +354,10 @@ describe("saving a single message", () => {
         {
           referenced_id:
             "<CAGM-pNvDQ-e-016-x+LeU_AY=AwkRgEvpDBmJNOi3r3KcqwF=A@mail.gmail.com>"
+        },
+        {
+          referenced_id:
+            "<CAGM-pNvwffuB_LRE4zP7vaO2noOQ0p0qJ8UmSONP3k8ycyo3HA@mail.gmail.com>"
         }
       ])
     })
@@ -349,7 +365,11 @@ describe("saving a single message", () => {
 
   describe("message headers", () => {
     it("stores message headers in the database", () => {
-      cache.persistHeadersAndReferences(id, testMessage.headers)
+      cache.persistHeadersAndReferences(
+        id,
+        testMessage.headers,
+        testMessage.attributes
+      )
       const headers = db
         .prepare("select * from message_headers where message_id = ?")
         .all(id)

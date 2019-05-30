@@ -21,7 +21,7 @@ beforeEach(() => {
   boxId = persistBoxState(accountId, inbox)
   for (const message of testThread) {
     const id = persistAttributes({ accountId, boxId }, message.attributes)
-    persistHeadersAndReferences(id, message.headers)
+    persistHeadersAndReferences(id, message.headers, message.attributes)
   }
 })
 

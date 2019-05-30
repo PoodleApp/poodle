@@ -188,7 +188,8 @@ function persistStruct(
 
 export function persistHeadersAndReferences(
   messageId: ID,
-  headers: SerializedHeaders
+  headers: SerializedHeaders,
+  attributes: MessageAttributes
 ) {
   return db.transaction(() => {
     const { c: existingHeaders } = db
@@ -200,7 +201,7 @@ export function persistHeadersAndReferences(
       )
       .get(messageId)
     if (!existingReferences) {
-      persistReferences(messageId, headers)
+      persistReferences(messageId, headers, attributes)
     }
     if (!existingHeaders) {
       persistHeaders(messageId, headers)
@@ -208,7 +209,11 @@ export function persistHeadersAndReferences(
   })()
 }
 
-function persistReferences(messageId: ID, headers: SerializedHeaders) {
+function persistReferences(
+  messageId: ID,
+  headers: SerializedHeaders,
+  attributes: MessageAttributes
+) {
   const referencesHeader = headers.find(([key, _]) => key === "references")
   if (referencesHeader) {
     const value: string | string[] = referencesHeader[1]
@@ -219,6 +224,12 @@ function persistReferences(messageId: ID, headers: SerializedHeaders) {
         referenced_id: reference
       })
     }
+  }
+  if (attributes.envelope.messageId) {
+    insertInto("message_references", {
+      message_id: messageId,
+      referenced_id: attributes.envelope.messageId
+    })
   }
 }
 

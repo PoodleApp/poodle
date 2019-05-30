@@ -3,7 +3,7 @@ import * as htmlToText from "html-to-text"
 import { List, Seq } from "immutable"
 import replyParser from "node-email-reply-parser"
 import * as cache from "../cache"
-import { composeReply } from "../compose"
+import { composeNewConversation, composeReply } from "../compose"
 import {
   ConversationResolvers,
   ConversationMutationsResolvers,
@@ -84,11 +84,8 @@ export const ConversationMutations: ConversationMutationsResolvers = {
   },
 
   async reply(_parent, { accountId, id, content }) {
-    const account = cache.getAccount(accountId)
+    const account = mustGetAccount(accountId)
     const conversation = mustGetConversation(id)
-    if (!account) {
-      throw new Error(`Could not find account with ID, ${accountId}`)
-    }
     schedule(
       actions.sendMessage({
         accountId,
@@ -101,6 +98,23 @@ export const ConversationMutations: ConversationMutationsResolvers = {
   async setIsRead(_parent, { id, isRead }) {
     const thread = mustGetConversation(id)
     setIsRead(thread.messages, isRead)
+    return thread
+  },
+
+  sendMessage(_parent, { accountId, message }) {
+    const account = mustGetAccount(accountId)
+    const composed = composeNewConversation({ account, message })
+    const messageId = composed.attributes.envelope.messageId
+    schedule(
+      actions.sendMessage({
+        accountId,
+        message: composed
+      })
+    )
+    const thread = cache.getThread(messageId)
+    if (!thread) {
+      throw new Error("Error saving new message")
+    }
     return thread
   }
 }
@@ -162,6 +176,14 @@ export const mutations: Partial<MutationResolvers> = {
   conversations(_parent, params) {
     return params
   }
+}
+
+export function mustGetAccount(id: string): cache.Account {
+  const account = cache.getAccount(id)
+  if (!account) {
+    throw new Error(`Could not find account with ID, ${id}`)
+  }
+  return account
 }
 
 export function getConversation(id: string): C.Conversation | null {

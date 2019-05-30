@@ -14,7 +14,7 @@ beforeEach(() => {
   const boxId = cache.persistBoxState(accountId, inbox)
   for (const message of testThread) {
     const id = cache.persistAttributes({ accountId, boxId }, message.attributes)
-    cache.persistHeadersAndReferences(id, message.headers)
+    cache.persistHeadersAndReferences(id, message.headers, message.attributes)
   }
 })
 

@@ -32,7 +32,9 @@ const client = new ApolloClient({
 // TODO: signal message updates to frontend via GraphQL subscription instead of
 // using Electron IPC directly.
 ipcRenderer.on("message_updates", () => {
-  client.queryManager!.reFetchObservableQueries()
+  if (client.queryManager) {
+    client.queryManager.reFetchObservableQueries()
+  }
 })
 ipcRenderer.send("subscribe_to_message_updates")
 

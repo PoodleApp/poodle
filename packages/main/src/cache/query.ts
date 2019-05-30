@@ -58,7 +58,7 @@ export function getThreads(accountId: ID): Thread[] {
 }
 
 export function getThread(threadId: string): Thread | null {
-  const messages = db
+  const messagesByThrid = db
     .prepare(
       `
         select * from messages
@@ -68,7 +68,28 @@ export function getThread(threadId: string): Thread | null {
       `
     )
     .all(threadId)
-  return { id: threadId, messages }
+  if (messagesByThrid.length > 0) {
+    return { id: threadId, messages: messagesByThrid }
+  }
+
+  const messagesByMessageId = db
+    .prepare(
+      `
+        select * from messages
+        where id in (
+          select message_id from message_references
+          where referenced_id = ?
+        )
+        group by envelope_messageId
+        order by date
+      `
+    )
+    .all(threadId)
+  if (messagesByMessageId.length > 0) {
+    return { id: threadId, messages: messagesByMessageId }
+  }
+
+  return null
 }
 
 export function getThreadByMessage(message: Message): Thread {

@@ -46,6 +46,12 @@ export type Address = {
   name?: Maybe<Scalars["String"]>
 }
 
+export type AddressInput = {
+  host: Scalars["String"]
+  mailbox: Scalars["String"]
+  name?: Maybe<Scalars["String"]>
+}
+
 export type Content = {
   type: Scalars["String"]
   subtype: Scalars["String"]
@@ -73,6 +79,7 @@ export type ConversationMutations = {
   archive: Conversation
   reply: Conversation
   setIsRead: Conversation
+  sendMessage: Conversation
 }
 
 export type ConversationMutationsArchiveArgs = {
@@ -90,12 +97,23 @@ export type ConversationMutationsSetIsReadArgs = {
   isRead: Scalars["Boolean"]
 }
 
+export type ConversationMutationsSendMessageArgs = {
+  accountId: Scalars["ID"]
+  message: MessageInput
+}
+
 export type Message = {
   id: Scalars["ID"]
   date: Scalars["String"]
   messageId: Scalars["ID"]
   subject?: Maybe<Scalars["String"]>
   from: Array<Address>
+}
+
+export type MessageInput = {
+  subject?: Maybe<Scalars["String"]>
+  to: Array<AddressInput>
+  content: ContentInput
 }
 
 export type Mutation = {
@@ -271,6 +289,12 @@ export type ConversationMutationsResolvers<
     ParentType,
     Context,
     ConversationMutationsSetIsReadArgs
+  >
+  sendMessage?: Resolver<
+    Conversation,
+    ParentType,
+    Context,
+    ConversationMutationsSendMessageArgs
   >
 }
 

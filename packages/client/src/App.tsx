@@ -3,6 +3,7 @@ import * as React from "react"
 import "./App.css"
 import * as graphql from "./generated/graphql"
 import Accounts from "./Accounts"
+import Compose from "./Compose"
 import Conversation from "./Conversation"
 import Dashboard from "./Dashboard"
 
@@ -11,6 +12,7 @@ export default function App() {
     <Router>
       <Init path="/" />
       <Accounts path="accounts" />
+      <Compose path="accounts/:accountId/compose" />
       <Conversation path="accounts/:accountId/conversations/:conversationId" />
       <Dashboard path="accounts/:accountId/dashboard/" />
     </Router>

@@ -30,6 +30,7 @@ import * as Sel from "./hooks/useSelectedConversations"
 import useSync from "./hooks/useSync"
 import AccountSwitcher from "./AccountSwitcher"
 import Avatar from "./Avatar"
+import ComposeButton from "./ComposeButton"
 
 type Props = RouteComponentProps & { accountId?: string }
 
@@ -98,10 +99,6 @@ const useStyles = makeStyles(theme => ({
     flexGrow: 1,
     height: "100vh",
     overflow: "auto"
-  },
-  container: {
-    paddingTop: theme.spacing(4),
-    paddingBottom: theme.spacing(4)
   }
 }))
 
@@ -157,6 +154,7 @@ export default function Dashboard({ accountId }: Props) {
           dispatch={dispatch}
         />
       </main>
+      <ComposeButton accountId={accountId} />
     </div>
   )
 }

@@ -161,7 +161,7 @@ const handlers = {
           { accountId, updatedAt },
           attributes
         )
-        cache.persistHeadersAndReferences(messageId, headers)
+        cache.persistHeadersAndReferences(messageId, headers, attributes)
         for (const [partId, content] of Object.entries(bodies)) {
           const part = M.getPartByPartId(partId, attributes)
           if (!part) {

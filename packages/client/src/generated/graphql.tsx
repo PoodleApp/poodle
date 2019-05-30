@@ -46,6 +46,12 @@ export type Address = {
   name?: Maybe<Scalars["String"]>
 }
 
+export type AddressInput = {
+  host: Scalars["String"]
+  mailbox: Scalars["String"]
+  name?: Maybe<Scalars["String"]>
+}
+
 export type Content = {
   type: Scalars["String"]
   subtype: Scalars["String"]
@@ -73,6 +79,7 @@ export type ConversationMutations = {
   archive: Conversation
   reply: Conversation
   setIsRead: Conversation
+  sendMessage: Conversation
 }
 
 export type ConversationMutationsArchiveArgs = {
@@ -90,12 +97,23 @@ export type ConversationMutationsSetIsReadArgs = {
   isRead: Scalars["Boolean"]
 }
 
+export type ConversationMutationsSendMessageArgs = {
+  accountId: Scalars["ID"]
+  message: MessageInput
+}
+
 export type Message = {
   id: Scalars["ID"]
   date: Scalars["String"]
   messageId: Scalars["ID"]
   subject?: Maybe<Scalars["String"]>
   from: Array<Address>
+}
+
+export type MessageInput = {
+  subject?: Maybe<Scalars["String"]>
+  to: Array<AddressInput>
+  content: ContentInput
 }
 
 export type Mutation = {
@@ -264,6 +282,35 @@ export type ArchiveMutation = { __typename?: "Mutation" } & {
         from: { __typename?: "Address" } & Pick<
           Address,
           "host" | "mailbox" | "name"
+        >
+      }
+  }
+}
+
+export type SendMessageMutationVariables = {
+  accountId: Scalars["ID"]
+  message: MessageInput
+}
+
+export type SendMessageMutation = { __typename?: "Mutation" } & {
+  conversations: { __typename?: "ConversationMutations" } & {
+    sendMessage: { __typename?: "Conversation" } & Pick<
+      Conversation,
+      "id" | "isRead" | "labels" | "snippet" | "subject"
+    > & {
+        presentableElements: Array<
+          { __typename?: "Presentable" } & Pick<Presentable, "id" | "date"> & {
+              contents: Array<
+                { __typename?: "Content" } & Pick<
+                  Content,
+                  "type" | "subtype" | "content"
+                >
+              >
+              from: { __typename?: "Address" } & Pick<
+                Address,
+                "name" | "mailbox" | "host"
+              >
+            }
         >
       }
   }
@@ -1349,6 +1396,217 @@ export function useArchiveMutation(
     ArchiveMutation,
     ArchiveMutationVariables
   >(ArchiveDocument, baseOptions)
+}
+export const SendMessageDocument: DocumentNode = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "sendMessage" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "accountId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } }
+          },
+          directives: []
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "message" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "MessageInput" }
+            }
+          },
+          directives: []
+        }
+      ],
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "conversations" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "sendMessage" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "accountId" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "accountId" }
+                      }
+                    },
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "message" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "message" }
+                      }
+                    }
+                  ],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "id" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "presentableElements" },
+                        arguments: [],
+                        directives: [],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "contents" },
+                              arguments: [],
+                              directives: [],
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "type" },
+                                    arguments: [],
+                                    directives: []
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "subtype" },
+                                    arguments: [],
+                                    directives: []
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "content" },
+                                    arguments: [],
+                                    directives: []
+                                  }
+                                ]
+                              }
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "date" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "from" },
+                              arguments: [],
+                              directives: [],
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "name" },
+                                    arguments: [],
+                                    directives: []
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "mailbox" },
+                                    arguments: [],
+                                    directives: []
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "host" },
+                                    arguments: [],
+                                    directives: []
+                                  }
+                                ]
+                              }
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "isRead" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "labels" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "snippet" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "subject" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+export type SendMessageMutationFn = ReactApollo.MutationFn<
+  SendMessageMutation,
+  SendMessageMutationVariables
+>
+
+export function useSendMessageMutation(
+  baseOptions?: ReactApolloHooks.MutationHookOptions<
+    SendMessageMutation,
+    SendMessageMutationVariables
+  >
+) {
+  return ReactApolloHooks.useMutation<
+    SendMessageMutation,
+    SendMessageMutationVariables
+  >(SendMessageDocument, baseOptions)
 }
 export const ReplyDocument: DocumentNode = {
   kind: "Document",

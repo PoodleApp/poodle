@@ -260,7 +260,11 @@ function captureResponses(
 
           if (request.isHeaders(event)) {
             const id = cache.persistAttributes(context, event.messageAttributes)
-            cache.persistHeadersAndReferences(id, event.headers)
+            cache.persistHeadersAndReferences(
+              id,
+              event.headers,
+              event.messageAttributes
+            )
           }
 
           if (request.isBody(event)) {

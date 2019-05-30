@@ -21,6 +21,7 @@
     "apollo-client": "^2.5.1",
     "clsx": "^1.0.4",
     "electron": "^4.1.0",
+    "email-addresses": "^3.0.3",
     "graphql": "^14.2.0",
     "graphql-tag": "^2.10.1",
     "graphql-transport-electron": "^1.0.1",

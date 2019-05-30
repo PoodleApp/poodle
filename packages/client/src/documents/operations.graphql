@@ -132,6 +132,32 @@ mutation archive($conversationId: ID!) {
   }
 }
 
+mutation sendMessage($accountId: ID!, $message: MessageInput!) {
+  conversations {
+    sendMessage(accountId: $accountId, message: $message) {
+      id
+      presentableElements {
+        id
+        contents {
+          type
+          subtype
+          content
+        }
+        date
+        from {
+          name
+          mailbox
+          host
+        }
+      }
+      isRead
+      labels
+      snippet
+      subject
+    }
+  }
+}
+
 mutation reply($accountId: ID!, $conversationId: ID!, $content: ContentInput!) {
   conversations {
     reply(accountId: $accountId, id: $conversationId, content: $content) {
