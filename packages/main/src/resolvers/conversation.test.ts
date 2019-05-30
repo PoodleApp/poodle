@@ -174,6 +174,84 @@ it("gets a list of presentable elements for a conversation", async () => {
   })
 })
 
+it("ignores duplicate copies of messages", async () => {
+  mock(Connection.prototype.fetch).mockImplementation(
+    mockFetchImplementation({
+      thread: [
+        testThread[0],
+        testThread[1],
+        {
+          attributes: { ...testThread[1].attributes, uid: 9999 },
+          headers: testThread[1].headers
+        }
+      ]
+    })
+  )
+  await sync(accountId, connectionManager)
+
+  const result = await request(
+    `
+      query getConversation($conversationId: ID!) {
+        conversation(id: $conversationId) {
+          id
+          presentableElements {
+            id
+            date
+            from {
+              name
+              mailbox
+              host
+            }
+            contents {
+              type
+              subtype
+              content
+            }
+          }
+        }
+      }
+    `,
+    { conversationId: testThread[0].attributes["x-gm-thrid"] }
+  )
+  expect(result).toEqual({
+    data: {
+      conversation: {
+        id: "1624221157079778491",
+        presentableElements: [
+          {
+            id: expect.any(String),
+            date: "2019-01-31T23:40:04.000Z",
+            from: {
+              name: "Jesse Hallett",
+              mailbox: "hallettj",
+              host: "gmail.com"
+            },
+            contents: [
+              {
+                type: "text",
+                subtype: "html",
+                content: "<p>This is a test.</p>"
+              }
+            ]
+          },
+          {
+            id: expect.any(String),
+            date: "2019-05-01T22:29:31.000Z",
+            from: { name: "Jesse Hallett", mailbox: "jesse", host: "sitr.us" },
+            contents: [
+              {
+                type: "text",
+                subtype: "plain",
+                content: "A reply appears."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  })
+})
+
 it("marks a conversation as read", async () => {
   mock(Connection.prototype.fetch).mockImplementation(
     mockFetchImplementation({

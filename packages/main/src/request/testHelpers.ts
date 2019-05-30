@@ -148,7 +148,9 @@ export function mockFetchImplementation({
           })
         }
 
-        const contentMap = content.get(String(message.attributes.uid))!
+        const contentMap = content.get(
+          String(message.attributes.envelope.messageId)
+        )!
         for (const [key, content] of contentMap) {
           if (getBodies(options).includes(key)) {
             const readable =

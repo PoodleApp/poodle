@@ -159,7 +159,7 @@ it("gets a part body from the cache", () => {
   const messageId = persistAttributes({ accountId, boxId }, message.attributes)
   const part = getPartByPartId("4", message.attributes)!
   const content = testContent
-    .get(String(message.attributes.uid))!
+    .get(String(message.attributes.envelope.messageId))!
     .get(part.partID!)!
   persistBody(messageId, part, Buffer.from(content, "utf8"))
   expect(cache.getBody(messageId, part)).toEqual(

@@ -232,17 +232,20 @@ export const testThread: Array<{
   }
 ]
 
-type UID = string
+type MessageId = string
 type PartID = string
 
-export const testContent: Map<UID, Map<PartID, string>> = Map([
+export const testContent: Map<MessageId, Map<PartID, string>> = Map([
   [
-    String(testThread[0].attributes.uid),
+    String(testThread[0].attributes.envelope.messageId),
     Map([
       ["3", "This is a test."],
       ["4", "<p>This is a test.</p>"],
       ["5", ""] // Test case of empty body
     ])
   ],
-  [String(testThread[1].attributes.uid), Map([["1", "A reply appears."]])]
+  [
+    String(testThread[1].attributes.envelope.messageId),
+    Map([["1", "A reply appears."]])
+  ]
 ])

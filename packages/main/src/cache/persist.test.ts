@@ -405,7 +405,7 @@ describe("saving a single message", () => {
       const htmlPart: imap.ImapMessagePart = (alternative as any)[2][0]
       for (const part of [plainPart, htmlPart]) {
         const content = testContent
-          .get(String(testMessage.attributes.uid))!
+          .get(String(testMessage.attributes.envelope.messageId))!
           .get(part.partID!)!
         cache.persistBody(id, part, Buffer.from(content, "utf8"))
       }

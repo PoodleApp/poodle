@@ -63,6 +63,7 @@ export function getThread(threadId: string): Thread | null {
       `
         select * from messages
         where x_gm_thrid = ?
+        group by envelope_messageId
         order by date
       `
     )
