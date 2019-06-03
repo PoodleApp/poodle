@@ -53,6 +53,8 @@ export type AddressInput = {
 }
 
 export type Content = {
+  resource: PartSpec
+  revision: PartSpec
   type: Scalars["String"]
   subtype: Scalars["String"]
   content: Scalars["String"]
@@ -77,6 +79,7 @@ export type Conversation = {
 
 export type ConversationMutations = {
   archive: Conversation
+  edit: Conversation
   reply: Conversation
   setIsRead: Conversation
   sendMessage: Conversation
@@ -84,6 +87,14 @@ export type ConversationMutations = {
 
 export type ConversationMutationsArchiveArgs = {
   id: Scalars["ID"]
+}
+
+export type ConversationMutationsEditArgs = {
+  accountId: Scalars["ID"]
+  conversationId: Scalars["ID"]
+  resource: PartSpecInput
+  revision: PartSpecInput
+  content: ContentInput
 }
 
 export type ConversationMutationsReplyArgs = {
@@ -121,11 +132,23 @@ export type Mutation = {
   conversations: ConversationMutations
 }
 
+export type PartSpec = {
+  messageId: Scalars["String"]
+  contentId?: Maybe<Scalars["String"]>
+}
+
+export type PartSpecInput = {
+  messageId: Scalars["String"]
+  contentId?: Maybe<Scalars["String"]>
+}
+
 export type Presentable = {
   id: Scalars["ID"]
   contents: Array<Content>
   date: Scalars["String"]
   from: Address
+  editedAt?: Maybe<Scalars["String"]>
+  editedBy?: Maybe<Address>
 }
 
 export type Query = {
@@ -252,6 +275,8 @@ export type AddressResolvers<Context = any, ParentType = Address> = {
 }
 
 export type ContentResolvers<Context = any, ParentType = Content> = {
+  resource?: Resolver<PartSpec, ParentType, Context>
+  revision?: Resolver<PartSpec, ParentType, Context>
   type?: Resolver<Scalars["String"], ParentType, Context>
   subtype?: Resolver<Scalars["String"], ParentType, Context>
   content?: Resolver<Scalars["String"], ParentType, Context>
@@ -277,6 +302,12 @@ export type ConversationMutationsResolvers<
     ParentType,
     Context,
     ConversationMutationsArchiveArgs
+  >
+  edit?: Resolver<
+    Conversation,
+    ParentType,
+    Context,
+    ConversationMutationsEditArgs
   >
   reply?: Resolver<
     Conversation,
@@ -311,11 +342,18 @@ export type MutationResolvers<Context = any, ParentType = Mutation> = {
   conversations?: Resolver<ConversationMutations, ParentType, Context>
 }
 
+export type PartSpecResolvers<Context = any, ParentType = PartSpec> = {
+  messageId?: Resolver<Scalars["String"], ParentType, Context>
+  contentId?: Resolver<Maybe<Scalars["String"]>, ParentType, Context>
+}
+
 export type PresentableResolvers<Context = any, ParentType = Presentable> = {
   id?: Resolver<Scalars["ID"], ParentType, Context>
   contents?: Resolver<Array<Content>, ParentType, Context>
   date?: Resolver<Scalars["String"], ParentType, Context>
   from?: Resolver<Address, ParentType, Context>
+  editedAt?: Resolver<Maybe<Scalars["String"]>, ParentType, Context>
+  editedBy?: Resolver<Maybe<Address>, ParentType, Context>
 }
 
 export type QueryResolvers<Context = any, ParentType = Query> = {
@@ -338,6 +376,7 @@ export type Resolvers<Context = any> = {
   ConversationMutations?: ConversationMutationsResolvers<Context>
   Message?: MessageResolvers<Context>
   Mutation?: MutationResolvers<Context>
+  PartSpec?: PartSpecResolvers<Context>
   Presentable?: PresentableResolvers<Context>
   Query?: QueryResolvers<Context>
 }

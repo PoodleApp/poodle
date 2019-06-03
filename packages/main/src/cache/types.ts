@@ -29,3 +29,20 @@ export interface Message {
   x_gm_msgid?: string
   x_gm_thrid?: string
 }
+
+export interface MessagePart {
+  id: ID
+  message_id: ID
+  content_id?: string
+  description?: string
+  disposition_filename?: string
+  disposition_name?: string
+  disposition_type?: string
+  encoding?: string
+  md5?: string
+  params_charset?: string
+  part_id?: string
+  size?: number
+  subtype: string
+  type: string
+}

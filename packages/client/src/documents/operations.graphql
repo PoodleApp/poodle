@@ -55,12 +55,26 @@ query getConversation($id: ID!) {
     presentableElements {
       id
       contents {
+        revision {
+          messageId
+          contentId
+        }
+        resource {
+          messageId
+          contentId
+        }
         type
         subtype
         content
       }
       date
       from {
+        name
+        mailbox
+        host
+      }
+      editedAt
+      editedBy {
         name
         mailbox
         host
@@ -139,12 +153,78 @@ mutation sendMessage($accountId: ID!, $message: MessageInput!) {
       presentableElements {
         id
         contents {
+          revision {
+            messageId
+            contentId
+          }
+          resource {
+            messageId
+            contentId
+          }
           type
           subtype
           content
         }
         date
         from {
+          name
+          mailbox
+          host
+        }
+        editedAt
+        editedBy {
+          name
+          mailbox
+          host
+        }
+      }
+      isRead
+      labels
+      snippet
+      subject
+    }
+  }
+}
+
+mutation edit(
+  $accountId: ID!
+  $conversationId: ID!
+  $resource: PartSpecInput!
+  $revision: PartSpecInput!
+  $content: ContentInput!
+) {
+  conversations {
+    edit(
+      accountId: $accountId
+      conversationId: $conversationId
+      resource: $resource
+      revision: $revision
+      content: $content
+    ) {
+      id
+      presentableElements {
+        id
+        contents {
+          revision {
+            messageId
+            contentId
+          }
+          resource {
+            messageId
+            contentId
+          }
+          type
+          subtype
+          content
+        }
+        date
+        from {
+          name
+          mailbox
+          host
+        }
+        editedAt
+        editedBy {
           name
           mailbox
           host
@@ -165,12 +245,26 @@ mutation reply($accountId: ID!, $conversationId: ID!, $content: ContentInput!) {
       presentableElements {
         id
         contents {
+          revision {
+            messageId
+            contentId
+          }
+          resource {
+            messageId
+            contentId
+          }
           type
           subtype
           content
         }
         date
         from {
+          name
+          mailbox
+          host
+        }
+        editedAt
+        editedBy {
           name
           mailbox
           host

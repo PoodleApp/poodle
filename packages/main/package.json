@@ -70,11 +70,11 @@
     "@graphql-codegen/typescript-resolvers": "1.0.6",
     "@jest-runner/electron": "^1.1.1",
     "@types/jest": "^24.0.11",
+    "buffer-to-stream": "^1.0.0",
     "cross-env": "^5.2.0",
     "electron-builder": "^20.39.0",
     "eol": "^0.9.1",
     "jest": "24.5.0",
-    "string-to-stream": "^1.1.1",
     "ts-jest": "^24.0.1",
     "typescript": "^3.4.5",
     "watch": "^1.0.2"

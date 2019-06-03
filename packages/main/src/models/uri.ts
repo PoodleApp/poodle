@@ -14,10 +14,12 @@ export function mailtoUri(email: Email): URI {
   return `mailto:${email}`
 }
 
-export function midUri(messageId: string, contentId?: string): URI {
-  return contentId
-    ? `mid:${encodeURIComponent(messageId)}/${encodeURIComponent(contentId)}`
-    : `mid:${encodeURIComponent(messageId)}`
+export function midUri(messageId: string, contentId?: string | null): URI {
+  const mId = idFromHeaderValue(messageId)
+  const cId = contentId && idFromHeaderValue(contentId)
+  return cId
+    ? `mid:${encodeURIComponent(mId)}/${encodeURIComponent(cId)}`
+    : `mid:${encodeURIComponent(mId)}`
 }
 
 const midExp = /(mid:|cid:)([^/]+)(?:\/(.+))?$/
@@ -46,4 +48,11 @@ export function sameUri(x: URI | undefined, y: URI | undefined): boolean {
 export function sameEmail(x: Email | undefined, y: Email | undefined): boolean {
   // TODO: normalization
   return !!x && !!y && x === y
+}
+
+// Use a regular expression to trim angle brackets off
+const messageIdPattern = /<(.*)>/
+
+export function idFromHeaderValue(id: string): string {
+  return id.replace(messageIdPattern, (_, id) => id)
 }

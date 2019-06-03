@@ -1,8 +1,8 @@
-import imap from "imap"
 import * as cache from "../cache"
 import { inbox, testThread } from "../cache/testFixtures"
 import db from "../db"
 import * as C from "../models/conversation"
+import { MessageAttributes } from "../types"
 import { composeReply } from "./reply"
 
 let account: cache.Account
@@ -90,7 +90,7 @@ afterEach(() => {
 })
 
 function conversationFrom(
-  messages: Array<{ attributes: imap.ImapMessageAttributes }>
+  messages: Array<{ attributes: MessageAttributes }>
 ): C.Conversation {
   for (const msg of messages) {
     cache.persistAttributes({ accountId, boxId }, msg.attributes)

@@ -1,17 +1,16 @@
-import { convert } from "encoding"
 import * as htmlToText from "html-to-text"
 import { List, Seq } from "immutable"
 import replyParser from "node-email-reply-parser"
 import * as cache from "../cache"
-import { composeNewConversation, composeReply } from "../compose"
+import { composeEdit, composeNewConversation, composeReply } from "../compose"
 import {
   ConversationResolvers,
   ConversationMutationsResolvers,
   MutationResolvers,
   QueryResolvers
 } from "../generated/graphql"
+import { mustGetAccount } from "../models/account"
 import * as C from "../models/conversation"
-import { contentParts } from "../models/Message"
 import { actions, schedule } from "../queue"
 import { nonNull } from "../util/array"
 import * as types from "./types"
@@ -34,13 +33,8 @@ export const Conversation: ConversationResolvers = {
       .sort()
   },
 
-  presentableElements({ messages }: C.Conversation) {
-    return messages.map(message => ({
-      id: String(message.id),
-      contents: getContentParts(message).toArray(),
-      date: message.date,
-      from: cache.getParticipants(message.id, "from")[0]
-    }))
+  presentableElements(conversation: C.Conversation) {
+    return C.getPresentableElements(conversation).toArray()
   },
 
   isRead({ messages }: C.Conversation) {
@@ -49,9 +43,10 @@ export const Conversation: ConversationResolvers = {
     )
   },
 
-  snippet({ messages }: C.Conversation) {
-    const latest = messages[messages.length - 1]
-    const content = getContentParts(latest).first(null)
+  snippet(conversation: C.Conversation) {
+    const presentables = C.getPresentableElements(conversation)
+    const latest = presentables.last(null)
+    const content = latest && Seq(latest.contents).first(null)
     const visible = content && replyParser(content.content, true)
     const plainText =
       visible && content && content.subtype === "html"
@@ -70,7 +65,7 @@ export const Conversation: ConversationResolvers = {
 
 export const ConversationMutations: ConversationMutationsResolvers = {
   async archive(_parent, { id }) {
-    const thread = mustGetConversation(id)
+    const thread = C.mustGetConversation(id)
     updateAction(thread.messages, (accountId, box, uids) => {
       schedule(
         actions.archive({
@@ -83,20 +78,47 @@ export const ConversationMutations: ConversationMutationsResolvers = {
     return thread
   },
 
+  async edit(
+    _parent,
+    { accountId, conversationId, resource, revision, content }
+  ) {
+    const account = mustGetAccount(accountId)
+    const conversation = C.mustGetConversation(conversationId)
+    const editedPart = cache.getPartByContentId(revision)
+    const editedMessage = editedPart && cache.getMessage(editedPart.message_id)
+    if (!editedPart || !editedMessage) {
+      throw new Error("error locating message to edit")
+    }
+    schedule(
+      actions.sendMessage({
+        accountId,
+        message: composeEdit({
+          account,
+          content,
+          conversation,
+          editedMessage,
+          editedPart,
+          resource
+        })
+      })
+    )
+    return C.mustGetConversation(conversationId)
+  },
+
   async reply(_parent, { accountId, id, content }) {
     const account = mustGetAccount(accountId)
-    const conversation = mustGetConversation(id)
+    const conversation = C.mustGetConversation(id)
     schedule(
       actions.sendMessage({
         accountId,
         message: composeReply({ account, content, conversation })
       })
     )
-    return mustGetConversation(id)
+    return C.mustGetConversation(id)
   },
 
   async setIsRead(_parent, { id, isRead }) {
-    const thread = mustGetConversation(id)
+    const thread = C.mustGetConversation(id)
     setIsRead(thread.messages, isRead)
     return thread
   },
@@ -145,6 +167,10 @@ function setIsRead(messages: cache.Message[], isRead: boolean) {
   })
 }
 
+/**
+ * Groups messages by account and box as a convenience for dispatching IMAP
+ * requests.
+ */
 function updateAction(
   messages: cache.Message[],
   fn: (accountId: cache.ID, box: cache.Box, uids: number[]) => void
@@ -168,7 +194,7 @@ function updateAction(
 
 export const queries: Partial<QueryResolvers> = {
   conversation(_parent, { id }): C.Conversation | null {
-    return getConversation(id)
+    return C.getConversation(id)
   }
 }
 
@@ -176,26 +202,6 @@ export const mutations: Partial<MutationResolvers> = {
   conversations(_parent, params) {
     return params
   }
-}
-
-export function mustGetAccount(id: string): cache.Account {
-  const account = cache.getAccount(id)
-  if (!account) {
-    throw new Error(`Could not find account with ID, ${id}`)
-  }
-  return account
-}
-
-export function getConversation(id: string): C.Conversation | null {
-  return cache.getThread(id)
-}
-
-function mustGetConversation(id: string): C.Conversation {
-  const conversation = getConversation(id)
-  if (!conversation) {
-    throw new Error(`Cannot find conversation with ID, ${id}`)
-  }
-  return conversation
 }
 
 export function getConversations(
@@ -217,30 +223,4 @@ export function getConversations(
 function lastUpdated({ messages }: C.Conversation): string {
   const latest = messages[messages.length - 1]
   return latest.date
-}
-
-function getContentParts(
-  message: cache.Message
-): List<{ type: string; subtype: string; content: string }> {
-  return contentParts(cache.getStruct(message.id)).map(part => {
-    const content = cache.getBody(message.id, part)
-    const charset = part.params.charset
-    const decoded =
-      content && (charset ? convert(content, "utf8", charset) : content)
-    return decoded
-      ? {
-          type: part.type || "text",
-          subtype: part.subtype || "plain",
-          content: decoded.toString("utf8")
-        }
-      : fallbackContent()
-  })
-}
-
-function fallbackContent() {
-  return {
-    type: "text",
-    subtype: "plain",
-    content: "[content missing]"
-  }
 }

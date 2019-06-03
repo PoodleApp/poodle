@@ -1,6 +1,5 @@
 import imap from "imap"
-import { Map } from "immutable"
-import { HeaderValue } from "../models/Message"
+import { ComposedMessage } from "../compose"
 
 export const inbox: imap.Box = {
   name: "INBOX",
@@ -30,10 +29,7 @@ export const allMail: imap.Box = {
   }
 }
 
-export const testThread: Array<{
-  attributes: imap.ImapMessageAttributes
-  headers: Array<[string, HeaderValue]>
-}> = [
+export const testThread: ComposedMessage[] = [
   {
     attributes: {
       struct: [
@@ -151,7 +147,13 @@ export const testThread: Array<{
         }
       ],
       ["content-type", { value: "text/plain", params: { charset: "UTF-8" } }]
-    ]
+    ],
+    bodies: {
+      "3": Buffer.from("This is a test.", "utf8"),
+      "4": Buffer.from("<p>This is a test.</p>", "utf8"),
+      "5": Buffer.alloc(0) // Test case of empty body
+    },
+    partHeaders: {}
   },
   {
     attributes: {
@@ -161,7 +163,7 @@ export const testThread: Array<{
           type: "text",
           subtype: "plain",
           params: { charset: "us-ascii" },
-          id: null,
+          id: "0337ae7e-c468-437d-b7e1-95dc7d9debb8@gmail.com",
           description: null,
           encoding: "7BIT",
           size: 102,
@@ -228,24 +230,10 @@ export const testThread: Array<{
         }
       ],
       ["content-type", { value: "text/plain", params: { charset: "us-ascii" } }]
-    ]
+    ],
+    bodies: {
+      "1": Buffer.from("A reply appears.", "utf8")
+    },
+    partHeaders: {}
   }
 ]
-
-type MessageId = string
-type PartID = string
-
-export const testContent: Map<MessageId, Map<PartID, string>> = Map([
-  [
-    String(testThread[0].attributes.envelope.messageId),
-    Map([
-      ["3", "This is a test."],
-      ["4", "<p>This is a test.</p>"],
-      ["5", ""] // Test case of empty body
-    ])
-  ],
-  [
-    String(testThread[1].attributes.envelope.messageId),
-    Map([["1", "A reply appears."]])
-  ]
-])

@@ -22,8 +22,9 @@ export * from "./types"
 const MESSAGE = "Message"
 const BODY = "Body"
 const HEADERS = "Headers"
+const PART_HEADERS = "PartHeaders"
 
-export type FetchResponse = Message | Body | Headers
+export type FetchResponse = Message | Body | Headers | PartHeaders
 
 interface Message {
   type: typeof MESSAGE
@@ -41,6 +42,13 @@ interface Body {
 interface Headers {
   type: typeof HEADERS
   messageAttributes: imap.ImapMessageAttributes
+  headers: SerializedHeaders
+}
+
+interface PartHeaders {
+  type: typeof PART_HEADERS
+  messageAttributes: imap.ImapMessageAttributes
+  partID: string
   headers: SerializedHeaders
 }
 
@@ -117,9 +125,11 @@ export const { actions, perform } = combineHandlers({
           const attrStream = getAttributes(emitter)
           const bodiesStream = getBodies(emitter, attrStream)
           const headersStream = getHeaders(bodiesStream)
+          const partHeadersStream = getPartHeaders(bodiesStream)
           return attrStream
             .map(attributes => ({ type: MESSAGE, attributes } as const))
             .merge(headersStream)
+            .merge(partHeadersStream)
             .merge(bodiesStream)
         })
     )
@@ -243,6 +253,28 @@ function getHeaders(stream: R<Body>): R<Headers> {
     })
 }
 
+const partHeadersSelection = /^(.+)\.MIME/
+
+function getPartHeaders(stream: R<Body>): R<PartHeaders> {
+  return stream.flatMap(({ messageAttributes, data, which }) => {
+    const matches = which.match(partHeadersSelection)
+    const partID = matches && matches[1]
+    if (!partID) {
+      return kefir.never()
+    }
+    const headers = simpleParser(data).then(mail => mail.headers)
+    return kefir.fromPromise<MessageHeaders, Error>(headers).map(
+      headers =>
+        ({
+          type: PART_HEADERS,
+          messageAttributes,
+          partID,
+          headers: Array.from(headers.entries())
+        } as const)
+    )
+  })
+}
+
 export function isBody(x: FetchResponse): x is Body {
   return x.type === BODY
 }
@@ -253,6 +285,10 @@ export function isHeaders(x: FetchResponse): x is Headers {
 
 export function isMessage(x: FetchResponse): x is Message {
   return x.type === MESSAGE
+}
+
+export function isPartHeaders(x: FetchResponse): x is PartHeaders {
+  return x.type === PART_HEADERS
 }
 
 export function messageAttributes(

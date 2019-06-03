@@ -9,10 +9,12 @@ import { MessageAttributes } from "../types"
 export function serialize({
   attributes,
   headers,
+  partHeaders,
   bodies
 }: {
   attributes: MessageAttributes
   headers: SerializedHeaders
+  partHeaders: Record<string, SerializedHeaders>
   bodies: Record<string, Buffer> | ((partId: string) => DataSource | undefined)
 }): MimeNode {
   const getBody =
@@ -20,6 +22,7 @@ export function serialize({
   const [rootPart, ...children] = attributes.struct!
   const message = serializeNode(
     rootPart as imap.ImapMessagePart,
+    partHeaders,
     children,
     getBody
   )
@@ -49,6 +52,7 @@ export function serialize({
 
 function serializeNode(
   part: imap.ImapMessagePart,
+  partHeaders: Record<string, SerializedHeaders>,
   children: imap.ImapMessageStruct,
   getBody: (partId: string) => DataSource | undefined
 ): MimeNode {
@@ -65,9 +69,6 @@ function serializeNode(
     "content-id": part.id,
     "content-md5": part.md5,
     "content-language": part.language,
-    "content-length": Buffer.isBuffer(content)
-      ? String(content.byteLength)
-      : undefined,
     "content-location": part.location,
     "content-transfer-encoding": part.encoding
   }
@@ -76,19 +77,31 @@ function serializeNode(
       node.setHeader(key, value)
     }
   }
+  const givenHeaders = part.partID && partHeaders[part.partID]
+  for (const [key, value] of givenHeaders || []) {
+    const processed = processHeaderValue(value)
+    if (processed) {
+      node.addHeader(key, processed)
+    }
+  }
   if (content) {
     node.setContent(content)
   }
   for (const child of children) {
     const [childPart, ...grandChildren] = child as imap.ImapMessageStruct
     node.appendChild(
-      serializeNode(childPart as imap.ImapMessagePart, grandChildren, getBody)
+      serializeNode(
+        childPart as imap.ImapMessagePart,
+        partHeaders,
+        grandChildren,
+        getBody
+      )
     )
   }
   return node
 }
 
-function processHeaderValue(value: HeaderValue): string | undefined {
+export function processHeaderValue(value: HeaderValue): string | undefined {
   const v = value && value.value ? value.value : value
   if (Array.isArray(v)) {
     return v.join(" ")

@@ -25,12 +25,12 @@ beforeEach(async () => {
   const connectionManager = mockConnection({
     thread: [
       {
-        attributes: { ...testThread[0].attributes, flags: ["\\Answered"] },
-        headers: testThread[0].headers
+        ...testThread[0],
+        attributes: { ...testThread[0].attributes, flags: ["\\Answered"] }
       },
       {
-        attributes: { ...testThread[1].attributes, flags: [] },
-        headers: testThread[1].headers
+        ...testThread[1],
+        attributes: { ...testThread[1].attributes, flags: [] }
       }
     ]
   })
@@ -167,7 +167,7 @@ it("sends a message", async () => {
     eol.crlf(
       `
 Content-Type: text/plain; charset=UTF-8
-Content-Length: 5
+Content-ID: ${(message.attributes.struct![0] as Connection.ImapMessagePart).id}
 Message-ID: ${message.attributes.envelope.messageId}
 From: jesse@sitr.us
 To: Jesse Hallett <hallettj@gmail.com>

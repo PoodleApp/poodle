@@ -1,8 +1,19 @@
-import { Link, Redirect, RouteComponentProps, navigate } from "@reach/router"
+import {
+  AppBar,
+  CssBaseline,
+  IconButton,
+  Toolbar,
+  Typography,
+  makeStyles
+} from "@material-ui/core"
+import ArchiveIcon from "@material-ui/icons/Archive"
+import CloseIcon from "@material-ui/icons/Close"
+import { navigate, Redirect, RouteComponentProps } from "@reach/router"
+import moment from "moment"
 import * as React from "react"
+import DisplayContent from "./DisplayContent"
 import * as graphql from "./generated/graphql"
 import useArchive from "./hooks/useArchive"
-import DisplayContent from "./DisplayContent"
 import Participant from "./Participant"
 
 type Props = RouteComponentProps & {
@@ -10,7 +21,45 @@ type Props = RouteComponentProps & {
   conversationId?: string
 }
 
+const useStyles = makeStyles(theme => ({
+  root: {
+    display: "flex"
+  },
+  toolbar: {
+    paddingRight: 24 // keep right padding when drawer closed
+  },
+  toolbarIcon: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    padding: "0 8px",
+    ...(theme.mixins.toolbar as any) // TODO
+  },
+  closeButton: {
+    marginRight: 36
+  },
+  title: {
+    flexGrow: 1
+  },
+  appBar: {
+    zIndex: theme.zIndex.drawer + 1
+  },
+  appBarSpacer: theme.mixins.toolbar as any, // TODO
+  content: {
+    display: "flex",
+    flexFlow: "column",
+    flexGrow: 1,
+    height: "100vh",
+    overflow: "auto",
+    padding: theme.spacing(2)
+  },
+  edited: {
+    fontStyle: "italic"
+  }
+}))
+
 export default function Conversation({ accountId, conversationId }: Props) {
+  const classes = useStyles()
   const { data, error, loading } = graphql.useGetConversationQuery({
     variables: { id: conversationId! }
   })
@@ -51,9 +100,35 @@ export default function Conversation({ accountId, conversationId }: Props) {
   }
 
   return (
-    <section>
-      <header>
-        <h1>{subject}</h1>
+    <div className={classes.root}>
+      <AppBar position="absolute" className={classes.appBar}>
+        <Toolbar className={classes.toolbar}>
+          <IconButton
+            className={classes.closeButton}
+            edge="start"
+            color="inherit"
+            aria-label="close view"
+            onClick={() => navigate(`/accounts/${accountId}/dashboard`)}
+          >
+            <CloseIcon />
+          </IconButton>
+          <Typography
+            component="h1"
+            variant="h6"
+            color="inherit"
+            noWrap
+            className={classes.title}
+          >
+            {subject}
+          </Typography>
+          <IconButton color="inherit" aria-label="archive" onClick={onArchive}>
+            <ArchiveIcon />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+      <CssBaseline />
+      <main className={classes.content}>
+        <div className={classes.appBarSpacer} />
         {labels
           ? labels.map(label => (
               <span className="label" key={label}>
@@ -61,32 +136,148 @@ export default function Conversation({ accountId, conversationId }: Props) {
               </span>
             ))
           : null}
-      </header>
-      <nav>
-        <Link to={`/accounts/${accountId}/dashboard`}>
-          &lt;&lt; back to dashboard
-        </Link>{" "}
-        <button onClick={onArchive}>Archive</button>
-      </nav>
-      {presentableElements.map(presentable => (
-        <Presentable key={presentable.id} {...presentable} />
-      ))}
-      <ReplyForm accountId={accountId} conversationId={conversationId} />
-    </section>
+        {presentableElements.map(presentable => (
+          <Presentable
+            key={presentable.id}
+            accountId={accountId}
+            conversationId={conversationId}
+            presentable={presentable}
+          />
+        ))}
+        <ReplyForm accountId={accountId} conversationId={conversationId} />
+      </main>
+    </div>
   )
 }
 
-function Presentable(presentable: graphql.Presentable) {
+function Presentable({
+  accountId,
+  conversationId,
+  presentable
+}: {
+  accountId: string
+  conversationId: string
+  presentable: graphql.Presentable
+}) {
+  const [editing, setEditing] = React.useState(false)
   return (
     <div>
       <strong>
         <Participant {...presentable.from} />
       </strong>{" "}
-      {presentable.date}
-      {presentable.contents.map((content, i) => (
-        <DisplayContent key={i} {...content} />
-      ))}
+      {moment(presentable.date).calendar()}{" "}
+      <PresentableEdited presentable={presentable} />
+      {presentable.contents.map((content, i) => {
+        if (editing) {
+          return (
+            <EditForm
+              accountId={accountId}
+              conversationId={conversationId}
+              contentToEdit={content}
+              onComplete={() => {
+                setEditing(false)
+              }}
+            />
+          )
+        } else {
+          return (
+            <>
+              <button
+                onClick={() => {
+                  setEditing(true)
+                }}
+              >
+                Edit
+              </button>
+              <DisplayContent key={i} {...content} />
+            </>
+          )
+        }
+      })}
     </div>
+  )
+}
+
+function PresentableEdited({
+  presentable
+}: {
+  presentable: graphql.Presentable
+}) {
+  const classes = useStyles()
+  if (!presentable.editedAt || !presentable.editedBy) {
+    return null
+  }
+  const editorIsntAuthor =
+    presentable.editedBy.host !== presentable.from.host ||
+    presentable.editedBy.mailbox !== presentable.from.mailbox
+  return (
+    <span className={classes.edited}>
+      Edited {moment(presentable.editedAt).calendar()}
+      {editorIsntAuthor ? (
+        <>
+          {" "}
+          by <Participant {...presentable.editedBy} />
+        </>
+      ) : null}
+    </span>
+  )
+}
+
+function EditForm({
+  accountId,
+  conversationId,
+  contentToEdit,
+  onComplete
+}: {
+  accountId: string
+  conversationId: string
+  contentToEdit: graphql.Content
+  onComplete: () => void
+}) {
+  const [content, setContent] = React.useState(contentToEdit.content)
+  const [loading, setLoading] = React.useState(false)
+  const [error, setError] = React.useState<Error | null>(null)
+  const sendEdit = graphql.useEditMutation()
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setLoading(true)
+    try {
+      await sendEdit({
+        variables: {
+          accountId,
+          conversationId,
+          resource: {
+            messageId: contentToEdit.resource.messageId,
+            contentId: contentToEdit.resource.contentId
+          },
+          revision: {
+            messageId: contentToEdit.revision.messageId,
+            contentId: contentToEdit.revision.contentId
+          },
+          content: {
+            type: contentToEdit.type,
+            subtype: contentToEdit.subtype,
+            content
+          }
+        }
+      })
+      onComplete()
+    } catch (error) {
+      setError(error)
+    }
+    setLoading(false)
+  }
+  return (
+    <form onSubmit={onSubmit}>
+      {error ? <pre>{error.message}</pre> : null}
+      <textarea onChange={e => setContent(e.target.value)} value={content} />
+      <button disabled={loading} onClick={onComplete}>
+        Cancel
+      </button>
+      <button type="submit" disabled={loading}>
+        Send Edits
+      </button>
+    </form>
   )
 }
 

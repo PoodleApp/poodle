@@ -38,6 +38,7 @@ export function composeReply({
       "x-gm-thrid": conversation.messages[0].x_gm_thrid,
       struct: [
         {
+          id: mkMessageId(account.email),
           partID: "1",
           type: content.type,
           subtype: content.subtype,
@@ -51,6 +52,7 @@ export function composeReply({
         conversation.messages.map(m => m.envelope_messageId).filter(nonNull)
       ]
     ],
+    partHeaders: {},
     bodies: { "1": Buffer.from(content.content, "utf8") }
   }
 }

@@ -7,7 +7,7 @@ import {
   persistBody
 } from "./persist"
 import * as cache from "./query"
-import { inbox, testContent, testThread } from "./testFixtures"
+import { inbox, testThread } from "./testFixtures"
 import { ID } from "./types"
 
 let accountId: ID
@@ -158,10 +158,8 @@ it("gets a part body from the cache", () => {
   const message = testThread[0]
   const messageId = persistAttributes({ accountId, boxId }, message.attributes)
   const part = getPartByPartId("4", message.attributes)!
-  const content = testContent
-    .get(String(message.attributes.envelope.messageId))!
-    .get(part.partID!)!
-  persistBody(messageId, part, Buffer.from(content, "utf8"))
+  const content = message.bodies[part.partID!]
+  persistBody(messageId, part, content)
   expect(cache.getBody(messageId, part)).toEqual(
     Buffer.from("<p>This is a test.</p>", "utf8")
   )

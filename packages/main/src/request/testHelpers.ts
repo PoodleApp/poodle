@@ -1,27 +1,22 @@
+import toStream from "buffer-to-stream"
 import { EventEmitter } from "events"
 import { default as Connection, default as imap } from "imap"
 import { Range, Seq, Set } from "immutable"
 import { Transporter } from "nodemailer"
 import Mailer from "nodemailer/lib/mailer"
 import { Readable } from "stream"
-import stringToStream from "string-to-stream"
-import { testContent, testThread } from "../cache/testFixtures"
+import { SerializedHeaders } from "../cache"
+import { testThread } from "../cache/testFixtures"
+import { ComposedMessage } from "../compose"
+import { processHeaderValue } from "../compose/serialize"
 import ConnectionManager from "../managers/ConnectionManager"
-import { HeaderValue } from "../models/Message"
 import { mock } from "../testHelpers"
-
-type Message = {
-  attributes: imap.ImapMessageAttributes
-  headers: SerializedHeaders
-}
-type SerializedHeaders = Array<[string, HeaderValue]>
+import { nonNull } from "../util/array"
 
 export function mockConnection({
-  content = testContent,
   thread = testThread
 }: {
-  content?: typeof testContent
-  thread?: Message[]
+  thread?: ComposedMessage[]
 } = {}): ConnectionManager {
   const boxes = {
     INBOX: { attribs: ["\\Inbox"] },
@@ -47,10 +42,7 @@ export function mockConnection({
     cb(null, boxes)
   })
   mock(Connection.prototype.fetch).mockImplementation(
-    mockFetchImplementation({
-      content,
-      thread
-    })
+    mockFetchImplementation({ thread })
   )
 
   mock(Connection.prototype.search).mockImplementation((criteria, cb) => {
@@ -84,7 +76,7 @@ export function mockConnection({
       name,
       readOnly,
       uidvalidity: 123,
-      uidnext: testThread[1].attributes.uid + 1,
+      uidnext: testThread[1].attributes.uid! + 1,
       flags: [],
       permFlags: [],
       newKeywords: false,
@@ -116,11 +108,9 @@ export function mockConnection({
 }
 
 export function mockFetchImplementation({
-  content = testContent,
   thread = testThread
 }: {
-  content?: typeof testContent
-  thread?: Message[]
+  thread?: ComposedMessage[]
 } = {}): (
   source: imap.MessageSource,
   options: imap.FetchOptions
@@ -148,19 +138,23 @@ export function mockFetchImplementation({
           })
         }
 
-        const contentMap = content.get(
-          String(message.attributes.envelope.messageId)
-        )!
-        for (const [key, content] of contentMap) {
+        for (const [key, content] of Object.entries(message.bodies)) {
           if (getBodies(options).includes(key)) {
             const readable =
-              content.length > 0
-                ? stringToStream(content)
+              content.toString("utf8").length > 0
+                ? toStream(content)
                 : neverEndingReadable()
             emitter.emit("body", readable, {
               which: key,
-              size: content.length
+              size: content.toString("utf8").length
             })
+          }
+        }
+
+        for (const [key, headers] of Object.entries(message.partHeaders)) {
+          const which = `${key}.MIME`
+          if (getBodies(options).includes(which)) {
+            emitter.emit("body", headersStream(headers), { which })
           }
         }
 
@@ -187,9 +181,9 @@ export function mockSmtpTransporters(): Transporter {
 }
 
 function messagesMatchingSource(
-  thread: Message[],
+  thread: ComposedMessage[],
   source: imap.MessageSource
-): Message[] {
+): ComposedMessage[] {
   let uids: Seq.Indexed<number>
   if (source instanceof Array) {
     uids = Seq(
@@ -202,10 +196,7 @@ function messagesMatchingSource(
   } else {
     throw new Error(`Cannot parse fetch source: ${source}`)
   }
-  return thread.filter(message => {
-    const uid = message.attributes.uid
-    return uids.includes(uid)
-  })
+  return thread.filter(message => uids.includes(message.attributes.uid!))
 }
 
 function parseRange(source: string): Seq.Indexed<number> {
@@ -226,8 +217,14 @@ function getBodies(options: imap.FetchOptions): string[] {
 }
 
 function headersStream(headers: SerializedHeaders): Readable {
-  return stringToStream(
-    headers.map(([key, value]) => `${key}: ${value}`).join("\n")
+  return toStream(
+    headers
+      .map(([key, value]) => {
+        const processed = processHeaderValue(value)
+        return processed ? `${key}: ${processed}` : null
+      })
+      .filter(nonNull)
+      .join("\n")
   )
 }
 

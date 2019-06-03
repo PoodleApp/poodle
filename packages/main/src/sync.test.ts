@@ -1,18 +1,20 @@
-import Connection from "imap"
+import { default as Connection, default as imap } from "imap"
 import { Range } from "immutable"
 import moment from "moment"
 import * as cache from "./cache"
 import { testThread } from "./cache/testFixtures"
+import { composeEdit } from "./compose"
 import db from "./db"
 import ConnectionManager from "./managers/ConnectionManager"
 import { publishMessageUpdates } from "./pubsub"
 import { mockConnection, mockFetchImplementation } from "./request/testHelpers"
-import { sync, fetchQuery } from "./sync"
+import { fetchQuery, sync } from "./sync"
 import { mock } from "./testHelpers"
 
 jest.mock("imap")
 jest.mock("./pubsub")
 
+let account: cache.Account
 let accountId: cache.ID
 let connectionManager: ConnectionManager
 
@@ -21,6 +23,7 @@ beforeEach(() => {
     .prepare("insert into accounts (email) values (?)")
     .run("jesse@sitr.us")
   accountId = lastInsertRowid
+  account = { id: accountId, email: "jesse@sitr.us" }
 
   connectionManager = mockConnection()
 })
@@ -61,13 +64,13 @@ it("downloads complete conversations even if some messages do not match cache po
     mockFetchImplementation({
       thread: [
         {
+          ...testThread[0],
           attributes: {
             ...testThread[0].attributes,
             date: moment()
               .subtract(2, "years")
               .toDate()
-          },
-          headers: testThread[0].headers
+          }
         },
         testThread[1]
       ]
@@ -82,18 +85,18 @@ it("gets updated flags for messages that are already downloaded", async () => {
     mockFetchImplementation({
       thread: [
         {
+          ...testThread[0],
           attributes: {
             ...testThread[0].attributes,
             flags: ["\\Answered"]
-          },
-          headers: testThread[0].headers
+          }
         },
         {
+          ...testThread[1],
           attributes: {
             ...testThread[1].attributes,
             flags: ["\\Answered", "\\Seen"]
-          },
-          headers: testThread[1].headers
+          }
         }
       ]
     })
@@ -125,18 +128,18 @@ it("gets updated labels for messages that are already downloaded", async () => {
     mockFetchImplementation({
       thread: [
         {
+          ...testThread[0],
           attributes: {
             ...testThread[0].attributes,
             "x-gm-labels": ["\\Inbox", "\\Sent"]
-          },
-          headers: testThread[0].headers
+          }
         },
         {
+          ...testThread[1],
           attributes: {
             ...testThread[1].attributes,
             "x-gm-labels": ["\\Inbox", "\\Sent", "Followup"]
-          },
-          headers: testThread[1].headers
+          }
         }
       ]
     })
@@ -237,6 +240,53 @@ it("downloads bodies for messages", async () => {
   ])
 })
 
+it("downloads message part headers", async () => {
+  await sync(accountId, connectionManager)
+  const orig = cache.getThreads(accountId)[0]
+  const message = testThread[1].attributes
+  const part = message.struct![0] as imap.ImapMessagePart
+  const revisedContent = "What I meant to say was, hi."
+  const editMessage = composeEdit({
+    account,
+    content: {
+      type: "text",
+      subtype: "plain",
+      content: revisedContent
+    },
+    conversation: orig,
+    editedMessage: { envelope_messageId: message.envelope.messageId },
+    editedPart: {
+      content_id: part.id
+    },
+    resource: {
+      messageId: message.envelope.messageId,
+      contentId: part.id
+    }
+  })
+  editMessage.attributes.uid = 9000
+  const threadWithEdit = [...testThread, editMessage]
+  mock(Connection.prototype.fetch).mockImplementation(
+    mockFetchImplementation({ thread: threadWithEdit })
+  )
+  await sync(accountId, connectionManager)
+  expect(
+    db
+      .prepare(
+        `
+          select key, value from message_part_headers
+          join message_structs on message_struct_id = message_structs.id
+          join messages on message_id = messages.id
+          where uid = @uid
+        `
+      )
+      .all({ uid: editMessage.attributes.uid })
+  ).toContainEqual({
+    key: "replaces",
+    value:
+      '"<mid:CAGM-pNvwffuB_LRE4zP7vaO2noOQ0p0qJ8UmSONP3k8ycyo3HA%40mail.gmail.com/0337ae7e-c468-437d-b7e1-95dc7d9debb8%40gmail.com>"'
+  })
+})
+
 it("uses UID ranges for smaller fetch requests", () => {
   expect(fetchQuery(Range(30020, 30000, -1))).toBe("30001:30020")
   expect(fetchQuery(Range(12, 20))).toBe("12:19")
@@ -246,7 +296,7 @@ it("uses UID ranges for smaller fetch requests", () => {
 
 it("sends notifications that messages have been updated", async () => {
   await sync(accountId, connectionManager)
-  expect(publishMessageUpdates).toHaveBeenCalledTimes(2)
+  expect(publishMessageUpdates).toHaveBeenCalled()
 })
 
 afterEach(() => {

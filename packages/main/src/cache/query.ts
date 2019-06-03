@@ -1,7 +1,14 @@
 import imap from "imap"
 import { Collection } from "immutable"
 import db from "../db"
-import { Account, Box, ID, Message } from "./types"
+import {
+  Account,
+  Box,
+  ID,
+  Message,
+  MessagePart,
+  SerializedHeaders
+} from "./types"
 
 export function lastSeenUid({ boxId }: { boxId: ID }): number {
   const result = db
@@ -29,7 +36,7 @@ export function getCachedUids({
     .map(row => row.uid)
 }
 
-export function getAccount(accountId: ID): Account | null {
+export function getAccount(accountId: ID | string): Account | null {
   return db.prepare("select * from accounts where id = ?").get(accountId)
 }
 
@@ -196,11 +203,42 @@ export function getStruct(messageId: ID): imap.ImapMessageStruct {
   return go(parts).tree
 }
 
+export function getMessagePart(id: ID): MessagePart | null {
+  return db
+    .prepare(
+      `
+        select * from message_structs where id = ?
+      `
+    )
+    .get(id)
+}
+
+export function getEditsFromMessage(
+  messageId: ID
+): Array<MessagePart & { replaces: string }> {
+  return db
+    .prepare(
+      `
+      select *, headers.value as replaces from message_structs
+      join message_part_headers as headers
+        on message_struct_id = message_structs.id
+      where message_id = ? and headers.key = 'replaces'
+    `
+    )
+    .all(messageId)
+}
+
 export function getBody(
   messageId: ID,
-  { partID }: { partID?: string }
+  part: { partID?: string } | { part_id?: string }
 ): Buffer | null {
-  if (!partID) {
+  const partId =
+    "partID" in part
+      ? part.partID
+      : "part_id" in part
+      ? part.part_id
+      : undefined
+  if (!partId) {
     throw new Error("cannot retrieve a part body without a part ID")
   }
   const result = db
@@ -210,11 +248,50 @@ export function getBody(
       join message_structs as structs on message_struct_id = structs.id
       where
         message_id = @messageId and
-        part_id = @partID
+        part_id = @partId
     `
     )
-    .get({ messageId, partID })
+    .get({ messageId, partId })
   return result && result.content
+}
+
+export function getPartByPartId(params: {
+  messageId: ID
+  partId: string
+}): MessagePart | null {
+  return db
+    .prepare(
+      `
+        select * from message_structs
+        where message_id = @messageId and part_id = @partId
+      `
+    )
+    .get(params)
+}
+
+/**
+ * Look up a message part by RFC message ID and content ID
+ *
+ * @param params
+ * @param params.messageId Value from `Message-ID` header of message
+ * @param params.contentId Value from `Content-ID` header of part
+ */
+export function getPartByContentId(params: {
+  messageId: string
+  contentId?: string | null
+}): MessagePart | null {
+  if (!params.contentId) {
+    return null
+  }
+  return db
+    .prepare(
+      `
+        select * from message_structs
+        join messages on message_id = messages.id
+        where envelope_messageId = @messageId and content_id = @contentId
+      `
+    )
+    .get(params)
 }
 
 export function partsMissingBodies({
@@ -234,11 +311,13 @@ export function partsMissingBodies({
         join messages
           on message_id = messages.id
         left outer join message_bodies as bodies
-          on message_struct_id = structs.id
+          on bodies.message_struct_id = structs.id
+        left outer join message_part_headers as headers
+          on headers.message_struct_id = structs.id
         where
           box_id = @boxId
           and messages.account_id = @accountId
-          and bodies.content is null
+          and (bodies.content is null or headers.key is null)
           and structs.rgt = structs.lft + 1
           ${uids ? `and messages.uid in (${uids.join(", ")})` : ""}
       `

@@ -25,6 +25,13 @@ type Conversation {
 
 type ConversationMutations {
   archive(id: ID!): Conversation!
+  edit(
+    accountId: ID!
+    conversationId: ID!
+    resource: PartSpecInput!
+    revision: PartSpecInput!
+    content: ContentInput!
+  ): Conversation!
   reply(accountId: ID!, id: ID!, content: ContentInput!): Conversation!
   setIsRead(id: ID!, isRead: Boolean!): Conversation!
   sendMessage(accountId: ID!, message: MessageInput!): Conversation!
@@ -61,9 +68,13 @@ type Presentable {
   contents: [Content!]!
   date: String!
   from: Address!
+  editedAt: String
+  editedBy: Address
 }
 
 type Content {
+  resource: PartSpec!
+  revision: PartSpec!
   type: String!
   subtype: String!
   content: String!
@@ -73,6 +84,16 @@ input ContentInput {
   type: String!
   subtype: String!
   content: String!
+}
+
+type PartSpec {
+  messageId: String!
+  contentId: String
+}
+
+input PartSpecInput {
+  messageId: String!
+  contentId: String
 }
 
 type Mutation {

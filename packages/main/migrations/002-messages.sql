@@ -79,6 +79,13 @@ create table message_headers (
   value text not null
 );
 
+create table message_part_headers (
+  id integer primary key,
+  message_struct_id integer not null references message_structs(id) on delete cascade,
+  key text not null,
+  value text not null
+);
+
 create table message_bodies (
   message_struct_id integer primary key references message_structs(id) on delete cascade,
   content blob not null

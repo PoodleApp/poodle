@@ -39,7 +39,7 @@ import { Transporter } from "nodemailer"
 import * as path from "path"
 import xdgBasedir from "xdg-basedir"
 import * as cache from "../cache"
-import { serialize } from "../compose"
+import { ComposedMessage, serialize } from "../compose"
 import db from "../db"
 import AccountManager from "../managers/AccountManager"
 import ConnectionManager from "../managers/ConnectionManager"
@@ -147,13 +147,9 @@ const handlers = {
       message
     }: {
       accountId: ID
-      message: {
-        attributes: MessageAttributes
-        headers: cache.SerializedHeaders
-        bodies: Record<string, Buffer>
-      }
+      message: ComposedMessage
     }) {
-      const { attributes, headers, bodies } = message
+      const { attributes, headers, partHeaders, bodies } = message
       let messageId: cache.ID | null = null
       db.transaction(() => {
         const updatedAt = new Date().toISOString()
@@ -169,11 +165,16 @@ const handlers = {
           }
           cache.persistBody(messageId, part, content)
         }
+        cache.persistPartHeaders(messageId, partHeaders)
       })()
       if (!messageId) {
         throw new Error("error saving message")
       }
-      return { accountId, message: { attributes, headers }, messageId }
+      return {
+        accountId,
+        message: { attributes, headers, partHeaders },
+        messageId
+      }
     },
 
     process({
@@ -185,15 +186,21 @@ const handlers = {
       message: {
         attributes: MessageAttributes
         headers: cache.SerializedHeaders
+        partHeaders: Record<string, cache.SerializedHeaders>
       }
       messageId: cache.ID
     }): Promise<void> {
       return withSmtpTransporter(accountId, transporter => {
         return (async () => {
-          const { attributes, headers } = message
+          const { attributes, headers, partHeaders } = message
           const bodies = (partID: string) =>
             cache.getBody(messageId, { partID }) || undefined
-          const mimeNode = serialize({ attributes, headers, bodies })
+          const mimeNode = serialize({
+            attributes,
+            headers,
+            partHeaders,
+            bodies
+          })
           const raw = await promises.lift1<Buffer>(cb => mimeNode.build(cb))
           return transporter.sendMail({
             envelope: mimeNode.getEnvelope(),

@@ -1,6 +1,7 @@
 import imap from "imap"
 import db from "../db"
 import { MessageAttributes } from "../types"
+import { getPartByPartId } from "./query"
 import { ID, SerializedHeaders } from "./types"
 
 export function persistBoxState(accountId: ID, box: imap.Box): ID {
@@ -241,6 +242,27 @@ function persistHeaders(messageId: ID, headers: SerializedHeaders) {
       value: JSON.stringify(value)
     })
   }
+}
+
+export function persistPartHeaders(
+  messageId: ID,
+  partHeaders: Record<string, SerializedHeaders>
+) {
+  return db.transaction(() => {
+    for (const [partId, headers] of Object.entries(partHeaders)) {
+      const part = getPartByPartId({ messageId, partId })
+      if (!part) {
+        throw new Error("error storing part headers, cannot find part record")
+      }
+      for (const [key, value] of headers) {
+        insertInto("message_part_headers", {
+          message_struct_id: part.id,
+          key,
+          value: JSON.stringify(value)
+        })
+      }
+    }
+  })()
 }
 
 export function removeMessage(messageId: ID) {

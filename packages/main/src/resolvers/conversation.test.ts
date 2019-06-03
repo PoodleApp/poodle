@@ -1,8 +1,10 @@
+import imap from "imap"
 import { graphql } from "graphql"
 import Connection from "imap"
 import * as cache from "../cache"
 import { testThread } from "../cache/testFixtures"
 import db from "../db"
+import { Conversation } from "../generated/graphql"
 import ConnectionManager from "../managers/ConnectionManager"
 import { queue } from "../queue"
 import { mockConnection, mockFetchImplementation } from "../request/testHelpers"
@@ -10,11 +12,14 @@ import schema from "../schema"
 import { sync } from "../sync"
 import { mock } from "../testHelpers"
 import * as promises from "../util/promises"
+import { composeEdit } from "../compose"
 
 jest.mock("imap")
 
+let account: cache.Account
 let accountId: cache.ID
 let connectionManager: ConnectionManager
+let conversation: Conversation
 let conversationId: string
 
 beforeEach(async () => {
@@ -22,22 +27,32 @@ beforeEach(async () => {
     .prepare("insert into accounts (email) values (?)")
     .run("jesse@sitr.us")
   accountId = lastInsertRowid
+  account = { id: accountId, email: "jesse@sitr.us" }
 
   connectionManager = mockConnection()
   await sync(accountId, connectionManager)
 
-  conversationId = (await request(
+  const result = await request(
     `
       query getConversations($accountId: ID!) {
         account(id: $accountId) {
           conversations {
             id
+            presentableElements {
+              contents {
+                resource { messageId, contentId }
+                revision { messageId, contentId }
+              }
+            }
           }
         }
       }
     `,
     { accountId }
-  )).data!.account.conversations[0].id
+  )
+  expect(result).toMatchObject({ data: expect.anything() })
+  conversation = result.data!.account.conversations[0]
+  conversationId = conversation.id
 })
 
 it("gets metadata for a conversation from cache", async () => {
@@ -181,8 +196,8 @@ it("ignores duplicate copies of messages", async () => {
         testThread[0],
         testThread[1],
         {
-          attributes: { ...testThread[1].attributes, uid: 9999 },
-          headers: testThread[1].headers
+          ...testThread[1],
+          attributes: { ...testThread[1].attributes, uid: 9999 }
         }
       ]
     })
@@ -257,12 +272,13 @@ it("marks a conversation as read", async () => {
     mockFetchImplementation({
       thread: [
         {
+          ...testThread[0],
           attributes: { ...testThread[0].attributes, flags: ["\\Answered"] },
           headers: testThread[0].headers
         },
         {
-          attributes: { ...testThread[1].attributes, flags: [] },
-          headers: testThread[1].headers
+          ...testThread[1],
+          attributes: { ...testThread[1].attributes, flags: [] }
         }
       ]
     })
@@ -452,6 +468,193 @@ it("starts a new conversation", async () => {
     }
   })
 })
+
+it("sends an edit", async () => {
+  const revisedContent = "What I meant to say was, hi."
+  const result = await sendEdit({
+    type: "text",
+    subtype: "plain",
+    content: revisedContent
+  })
+  expect(result).toMatchObject({
+    data: {
+      conversations: {
+        edit: {
+          from: { name: null, mailbox: "jesse", host: "sitr.us" },
+          presentableElements: [
+            {
+              contents: [
+                {
+                  type: "text",
+                  subtype: "html",
+                  content: "<p>This is a test.</p>"
+                }
+              ]
+            },
+            {
+              contents: [
+                { type: "text", subtype: "plain", content: revisedContent }
+              ]
+            }
+          ],
+          isRead: true,
+          subject: "Test thread 2019-02"
+        }
+      }
+    }
+  })
+})
+
+it("applies edits to get updated content", async () => {
+  const orig = cache.getThreads(accountId)[0]
+  const message = testThread[1].attributes
+  const part = message.struct![0] as imap.ImapMessagePart
+  const revisedContent = "What I meant to say was, hi."
+  const editMessage = composeEdit({
+    account,
+    content: {
+      type: "text",
+      subtype: "plain",
+      content: revisedContent
+    },
+    conversation: orig,
+    editedMessage: { envelope_messageId: message.envelope.messageId },
+    editedPart: {
+      content_id: part.id
+    },
+    resource: {
+      messageId: message.envelope.messageId,
+      contentId: part.id
+    }
+  })
+  editMessage.attributes.uid = 9000
+  const threadWithEdit = [...testThread, editMessage]
+  mock(Connection.prototype.fetch).mockImplementation(
+    mockFetchImplementation({ thread: threadWithEdit })
+  )
+  await sync(accountId, connectionManager)
+
+  const result = await request(
+    `
+      query getConversation($conversationId: ID!) {
+        conversation(id: $conversationId) {
+          presentableElements {
+            date
+            from {
+              name
+              mailbox
+              host
+            }
+            editedAt
+            editedBy {
+              name
+              mailbox
+              host
+            }
+            contents {
+              type
+              subtype
+              content
+            }
+          }
+        }
+      }
+    `,
+    { conversationId: testThread[0].attributes["x-gm-thrid"] }
+  )
+  expect(result).toMatchObject({
+    data: {
+      conversation: {
+        presentableElements: [
+          {
+            date: "2019-01-31T23:40:04.000Z",
+            from: {
+              name: "Jesse Hallett",
+              mailbox: "hallettj",
+              host: "gmail.com"
+            },
+            contents: [
+              {
+                type: "text",
+                subtype: "html",
+                content: "<p>This is a test.</p>"
+              }
+            ]
+          },
+          {
+            date: "2019-05-01T22:29:31.000Z",
+            from: { name: "Jesse Hallett", mailbox: "jesse", host: "sitr.us" },
+            editedAt: editMessage.attributes.date.toISOString(),
+            editedBy: {
+              mailbox: "jesse",
+              host: "sitr.us"
+            },
+            contents: [
+              {
+                type: "text",
+                subtype: "plain",
+                content: revisedContent
+              }
+            ]
+          }
+        ]
+      }
+    }
+  })
+})
+
+async function sendEdit(content: {
+  type: string
+  subtype: string
+  content: string
+}) {
+  const { resource, revision } = conversation.presentableElements[1].contents[0]
+  const result = await request(
+    `
+      mutation editMessage(
+        $accountId: ID!,
+        $conversationId: ID!,
+        $resource: PartSpecInput!,
+        $revision: PartSpecInput!,
+        $content: ContentInput!
+      ) {
+        conversations {
+          edit(
+            accountId: $accountId,
+            conversationId: $conversationId,
+            resource: $resource,
+            revision: $revision,
+            content: $content
+          ) {
+            from {
+              name
+              mailbox
+              host
+            }
+            presentableElements {
+              contents {
+                type
+                subtype
+                content
+              }
+            }
+            isRead
+            subject
+          }
+        }
+      }
+    `,
+    {
+      accountId,
+      conversationId,
+      resource,
+      revision,
+      content
+    }
+  )
+  expect(result).toMatchObject({ data: expect.anything() })
+  return result
+}
 
 function request(query: string, variables?: Record<string, any>) {
   return graphql(schema, query, null, null, variables)

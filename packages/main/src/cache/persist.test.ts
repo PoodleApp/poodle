@@ -1,7 +1,7 @@
 import imap from "imap"
 import db from "../db"
 import * as cache from "./persist"
-import { inbox, testContent, testThread } from "./testFixtures"
+import { inbox, testThread } from "./testFixtures"
 import { ID } from "./types"
 
 const testMessage = testThread[0]
@@ -141,7 +141,7 @@ describe("saving a single message", () => {
 
     it("stores `null` for undefined attributes", () => {
       const sparse = Object.assign({}, testMessage.attributes)
-      sparse.uid = testMessage.attributes.uid + 1
+      sparse.uid = testMessage.attributes.uid! + 1
       delete sparse.modseq
       delete sparse["x-gm-msgid"]
       delete sparse["x-gm-thrid"]
@@ -326,7 +326,7 @@ describe("saving a single message", () => {
         { accountId, boxId },
         {
           ...testMessage.attributes,
-          uid: testMessage.attributes.uid + 1
+          uid: testMessage.attributes.uid! + 1
         }
       )
       cache.persistHeadersAndReferences(
@@ -424,10 +424,8 @@ describe("saving a single message", () => {
       const plainPart: imap.ImapMessagePart = (alternative as any)[1][0]
       const htmlPart: imap.ImapMessagePart = (alternative as any)[2][0]
       for (const part of [plainPart, htmlPart]) {
-        const content = testContent
-          .get(String(testMessage.attributes.envelope.messageId))!
-          .get(part.partID!)!
-        cache.persistBody(id, part, Buffer.from(content, "utf8"))
+        const content = testMessage.bodies[part.partID!]
+        cache.persistBody(id, part, content)
       }
       expect(
         db

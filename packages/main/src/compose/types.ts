@@ -5,4 +5,5 @@ export type ComposedMessage = {
   attributes: MessageAttributes
   headers: SerializedHeaders
   bodies: Record<string, Buffer>
+  partHeaders: Record<string, SerializedHeaders>
 }

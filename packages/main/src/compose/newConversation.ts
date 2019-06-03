@@ -33,6 +33,7 @@ export function composeNewConversation({
       },
       struct: [
         {
+          id: mkMessageId(account.email),
           partID: "1",
           type: message.content.type,
           subtype: message.content.subtype,
@@ -41,6 +42,7 @@ export function composeNewConversation({
       ]
     },
     headers: [],
+    partHeaders: {},
     bodies: { "1": Buffer.from(message.content.content, "utf8") }
   }
 }
