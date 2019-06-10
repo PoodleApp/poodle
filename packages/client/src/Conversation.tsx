@@ -4,17 +4,24 @@ import {
   IconButton,
   Toolbar,
   Typography,
-  makeStyles
+  makeStyles,
+  Card,
+  CardHeader,
+  CardContent,
+  Menu,
+  MenuItem
 } from "@material-ui/core"
 import ArchiveIcon from "@material-ui/icons/Archive"
 import CloseIcon from "@material-ui/icons/Close"
+import MoreVertIcon from "@material-ui/icons/MoreVert"
 import { navigate, Redirect, RouteComponentProps } from "@reach/router"
 import moment from "moment"
 import * as React from "react"
 import DisplayContent from "./DisplayContent"
 import * as graphql from "./generated/graphql"
 import useArchive from "./hooks/useArchive"
-import Participant from "./Participant"
+import Participant, { displayParticipant } from "./Participant"
+import Avatar from "./Avatar"
 
 type Props = RouteComponentProps & {
   accountId?: string
@@ -55,6 +62,10 @@ const useStyles = makeStyles(theme => ({
   },
   edited: {
     fontStyle: "italic"
+  },
+  presentable: {
+    marginTop: theme.spacing(2),
+    overflow: "visible"
   }
 }))
 
@@ -159,42 +170,78 @@ function Presentable({
   conversationId: string
   presentable: graphql.Presentable
 }) {
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const [editing, setEditing] = React.useState(false)
+  const classes = useStyles()
+
+  function handleClick(event: React.MouseEvent<HTMLButtonElement>) {
+    setAnchorEl(event.currentTarget)
+  }
+
+  function handleClose() {
+    setAnchorEl(null)
+  }
+
+  //TODO: set aria-control's id
   return (
-    <div>
-      <strong>
-        <Participant {...presentable.from} />
-      </strong>{" "}
-      {moment(presentable.date).calendar()}{" "}
-      <PresentableEdited presentable={presentable} />
-      {presentable.contents.map((content, i) => {
-        if (editing) {
-          return (
-            <EditForm
-              accountId={accountId}
-              conversationId={conversationId}
-              contentToEdit={content}
-              onComplete={() => {
-                setEditing(false)
-              }}
-            />
-          )
-        } else {
-          return (
-            <>
-              <button
+    <Card className={classes.presentable}>
+      <CardHeader
+        title={displayParticipant(presentable.from)}
+        avatar={<Avatar address={presentable.from} />}
+        subheader={moment(presentable.date).calendar()}
+        action={
+          <div>
+            <IconButton
+              aria-label="Action"
+              aria-controls="todo"
+              aria-haspopup="true"
+              onClick={handleClick}
+            >
+              <MoreVertIcon />
+            </IconButton>
+            <Menu
+              id="todo"
+              anchorEl={anchorEl}
+              keepMounted
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+            >
+              <MenuItem
                 onClick={() => {
                   setEditing(true)
+                  handleClose()
                 }}
               >
                 Edit
-              </button>
-              <DisplayContent key={i} {...content} />
-            </>
-          )
+              </MenuItem>
+            </Menu>
+          </div>
         }
-      })}
-    </div>
+        // <strong>
+        //   <Participant {...presentable.from} />
+        // </strong>{" "}
+
+        /* <PresentableEdited presentable={presentable} /> */
+      />
+      <CardContent>
+        {presentable.contents.map((content, i) => {
+          if (editing) {
+            return (
+              <EditForm
+                accountId={accountId}
+                conversationId={conversationId}
+                contentToEdit={content}
+                onComplete={() => {
+                  setEditing(false)
+                }}
+              />
+            )
+          } else {
+            return <DisplayContent key={i} {...content} />
+          }
+        })}
+      </CardContent>
+    </Card>
   )
 }
 
