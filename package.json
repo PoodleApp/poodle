@@ -5,6 +5,7 @@
     "packages/*"
   ],
   "scripts": {
+    "diagram": "unflatten -l 3 assets/architecture.dot | dot -Tsvg -o assets/architecture.svg",
     "start": "./scripts/dev"
   },
   "prettier": {
