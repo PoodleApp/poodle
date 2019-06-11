@@ -188,7 +188,11 @@ function Presentable({
       <CardHeader
         title={displayParticipant(presentable.from)}
         avatar={<Avatar address={presentable.from} />}
-        subheader={moment(presentable.date).calendar()}
+        subheader={
+          moment(presentable.date).calendar() +
+          " " +
+          displayPresentableEdited(presentable)
+        }
         action={
           <div>
             <IconButton
@@ -220,8 +224,6 @@ function Presentable({
         // <strong>
         //   <Participant {...presentable.from} />
         // </strong>{" "}
-
-        /* <PresentableEdited presentable={presentable} /> */
       />
       <CardContent>
         {presentable.contents.map((content, i) => {
@@ -259,15 +261,25 @@ function PresentableEdited({
     presentable.editedBy.mailbox !== presentable.from.mailbox
   return (
     <span className={classes.edited}>
-      Edited {moment(presentable.editedAt).calendar()}
-      {editorIsntAuthor ? (
-        <>
-          {" "}
-          by <Participant {...presentable.editedBy} />
-        </>
-      ) : null}
+      {displayPresentableEdited(presentable)}
     </span>
   )
+}
+
+function displayPresentableEdited({
+  editedAt,
+  editedBy,
+  from
+}: graphql.Presentable) {
+  //const classes = useStyles()
+  if (!editedAt || !editedBy) {
+    return null
+  }
+  const editorIsntAuthor =
+    editedBy.host !== from.host || editedBy.mailbox !== from.mailbox
+  return `Edited ${moment(editedAt).calendar()} ${
+    editorIsntAuthor ? ` by ${<Participant {...editedBy} />}` : ""
+  }`
 }
 
 function EditForm({
