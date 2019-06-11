@@ -1,0 +1,52 @@
+digraph {
+  newrank="true"
+
+  account [label=<account/<br /><font point-size="10">handles IMAP and SMTP<br />connection details</font>>]
+  cache [label=<cache/<br /><font point-size="10">defines database queries and updates for<br />~/.cache/poodle/db.sqlite</font>>]
+  compose [label=<compose/<br /><font point-size="10">functions to compose email messages<br />in a format for storage in cache</font>>]
+  db [label=<db.ts<br /><font point-size="10">provides shared reference to<br />~/.cache/poodle/db.sqlite<br />(or an in-memory database<br />in tests)</font>>]
+  generated [label=<generated/graphql.ts<br /><font point-size="10">provides TypeScript interfaces<br />based on schema.graphql</font>>]
+  managers [label=<managers/<br /><font point-size="10">provide one-to-one mappings from accounts<br />to IMAP and SMTP sessions</font>>]
+  models [label=<models/<br /><font point-size="10">general purpose logic<br />for manipulating messages, conversations,<br />addresses, etc.</font>>]
+  oauth [label=<oauth/<br /><font point-size="10">handles IMAP and SMTP<br />authentication details</font>>]
+  pubsub [label=<pubsub.ts<br /><font point-size="10">notifies client to refresh<br />when cache has been updated</font>>]
+  queue [label=<queue/<br /><font point-size="10">stores pending IMAP and SMTP operations<br />in a sqlite-backed job queue<br />updates cache to reflect pending changes</font>>]
+  resolvers [label=<resolvers/<br /><font point-size="10">respond to GraphQL requests</font>>]
+  request [label=<request/<br /><font point-size="10">abstracts IMAP operations</font>>]
+  client [style=invis]
+  schema [label=<schema.graphql<br/><font point-size="10">defines GraphQL API</font>>]
+  serialize [label=<compose/serialize.ts<br /><font point-size="10">prepares messages<br />to be sent via SMTP</font>>]
+  sync [label=<sync.ts<br /><font point-size="10">synchronizes IMAP server state<br />to local cache<br />(scheduled via queue/)</font>>]
+
+  { rank=same; resolvers, schema }
+
+  cache -> db
+  client -> resolvers [label="GraphQL requests", style=dashed]
+  compose -> models
+  managers -> account
+  managers -> oauth
+  models -> generated
+  generated -> models
+  queue -> cache
+  queue -> managers
+  queue -> models
+  queue -> request
+  queue -> serialize
+  queue -> sync
+  resolvers -> cache
+  resolvers -> compose
+  resolvers -> generated
+  resolvers -> managers
+  resolvers -> models
+  resolvers -> queue
+  schema -> generated
+  sync -> cache
+  sync -> models
+  sync -> pubsub
+  sync -> request
+
+  // Invisible edges help to stagger nodes so that the graph is not too wide
+  edge[style=invis]
+  request -> models
+  request -> pubsub
+}
