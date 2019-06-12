@@ -37,7 +37,10 @@ const useStyles = makeStyles(theme => ({
     alignContent: "spaceAround"
   },
   card: {
-    marginRight: theme.spacing(1)
+    marginTop: theme.spacing(2),
+    marginLeft: theme.spacing(1),
+    marginRight: theme.spacing(1),
+    height: "100%"
   },
   link: {
     margin: theme.spacing(1),
