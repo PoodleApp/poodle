@@ -1,20 +1,27 @@
 import {
   AppBar,
+  Card,
+  CardContent,
+  CardHeader,
   CssBaseline,
   IconButton,
+  makeStyles,
+  Menu,
+  MenuItem,
   Toolbar,
-  Typography,
-  makeStyles
+  Typography
 } from "@material-ui/core"
 import ArchiveIcon from "@material-ui/icons/Archive"
 import CloseIcon from "@material-ui/icons/Close"
+import MoreVertIcon from "@material-ui/icons/MoreVert"
 import { navigate, Redirect, RouteComponentProps } from "@reach/router"
 import moment from "moment"
 import * as React from "react"
+import Avatar from "./Avatar"
 import DisplayContent from "./DisplayContent"
 import * as graphql from "./generated/graphql"
 import useArchive from "./hooks/useArchive"
-import Participant from "./Participant"
+import { displayParticipant } from "./Participant"
 
 type Props = RouteComponentProps & {
   accountId?: string
@@ -55,6 +62,10 @@ const useStyles = makeStyles(theme => ({
   },
   edited: {
     fontStyle: "italic"
+  },
+  presentable: {
+    marginTop: theme.spacing(2),
+    overflow: "visible"
   }
 }))
 
@@ -159,68 +170,92 @@ function Presentable({
   conversationId: string
   presentable: graphql.Presentable
 }) {
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const [editing, setEditing] = React.useState(false)
+  const classes = useStyles()
+
+  function handleClick(event: React.MouseEvent<HTMLButtonElement>) {
+    setAnchorEl(event.currentTarget)
+  }
+
+  function handleClose() {
+    setAnchorEl(null)
+  }
+
   return (
-    <div>
-      <strong>
-        <Participant {...presentable.from} />
-      </strong>{" "}
-      {moment(presentable.date).calendar()}{" "}
-      <PresentableEdited presentable={presentable} />
-      {presentable.contents.map((content, i) => {
-        if (editing) {
-          return (
-            <EditForm
-              accountId={accountId}
-              conversationId={conversationId}
-              contentToEdit={content}
-              onComplete={() => {
-                setEditing(false)
-              }}
-            />
-          )
-        } else {
-          return (
-            <>
-              <button
+    <Card className={classes.presentable}>
+      <CardHeader
+        title={displayParticipant(presentable.from)}
+        avatar={<Avatar address={presentable.from} />}
+        subheader={
+          moment(presentable.date).calendar() +
+          " " +
+          displayPresentableEdited(presentable)
+        }
+        action={
+          <div>
+            <IconButton
+              aria-label="Action"
+              aria-controls={`${presentable.id}-menu`}
+              aria-haspopup="true"
+              onClick={handleClick}
+            >
+              <MoreVertIcon />
+            </IconButton>
+            <Menu
+              id={`${presentable.id}-menu`}
+              anchorEl={anchorEl}
+              keepMounted
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+            >
+              <MenuItem
                 onClick={() => {
                   setEditing(true)
+                  handleClose()
                 }}
               >
                 Edit
-              </button>
-              <DisplayContent key={i} {...content} />
-            </>
-          )
+              </MenuItem>
+            </Menu>
+          </div>
         }
-      })}
-    </div>
+      />
+      <CardContent>
+        {presentable.contents.map((content, i) => {
+          if (editing) {
+            return (
+              <EditForm
+                accountId={accountId}
+                conversationId={conversationId}
+                contentToEdit={content}
+                onComplete={() => {
+                  setEditing(false)
+                }}
+              />
+            )
+          } else {
+            return <DisplayContent key={i} {...content} />
+          }
+        })}
+      </CardContent>
+    </Card>
   )
 }
 
-function PresentableEdited({
-  presentable
-}: {
-  presentable: graphql.Presentable
-}) {
-  const classes = useStyles()
-  if (!presentable.editedAt || !presentable.editedBy) {
-    return null
+function displayPresentableEdited({
+  editedAt,
+  editedBy,
+  from
+}: graphql.Presentable) {
+  if (!editedAt || !editedBy) {
+    return ""
   }
   const editorIsntAuthor =
-    presentable.editedBy.host !== presentable.from.host ||
-    presentable.editedBy.mailbox !== presentable.from.mailbox
-  return (
-    <span className={classes.edited}>
-      Edited {moment(presentable.editedAt).calendar()}
-      {editorIsntAuthor ? (
-        <>
-          {" "}
-          by <Participant {...presentable.editedBy} />
-        </>
-      ) : null}
-    </span>
-  )
+    editedBy.host !== from.host || editedBy.mailbox !== from.mailbox
+  return `Edited ${moment(editedAt).calendar()} ${
+    editorIsntAuthor ? ` by ${displayParticipant(editedBy)} ` : ""
+  }`
 }
 
 function EditForm({
