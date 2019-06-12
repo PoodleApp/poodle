@@ -53,8 +53,12 @@
     "@graphql-codegen/typescript": "^1.2.1",
     "@graphql-codegen/typescript-operations": "^1.2.1",
     "@graphql-codegen/typescript-react-apollo": "^1.2.1",
+    "@types/enzyme": "^3.9.3",
+    "@types/enzyme-adapter-react-16": "^1.0.5",
     "@types/jest": "^24.0.14",
     "cross-env": "^5.2.0",
+    "enzyme": "^3.10.0",
+    "enzyme-adapter-react-16": "^1.14.0",
     "typescript": "^3.5.2",
     "watch": "^1.0.2"
   }
