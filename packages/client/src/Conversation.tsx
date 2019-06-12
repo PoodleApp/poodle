@@ -197,14 +197,14 @@ function Presentable({
           <div>
             <IconButton
               aria-label="Action"
-              aria-controls="todo"
+              aria-controls={`${presentable.id}-menu`}
               aria-haspopup="true"
               onClick={handleClick}
             >
               <MoreVertIcon />
             </IconButton>
             <Menu
-              id="todo"
+              id={`${presentable.id}-menu`}
               anchorEl={anchorEl}
               keepMounted
               open={Boolean(anchorEl)}
@@ -255,7 +255,7 @@ function displayPresentableEdited({
   const editorIsntAuthor =
     editedBy.host !== from.host || editedBy.mailbox !== from.mailbox
   return `Edited ${moment(editedAt).calendar()} ${
-    editorIsntAuthor ? ` by ${<Participant {...editedBy} />}` : ""
+    editorIsntAuthor ? ` by ${displayParticipant(editedBy)} ` : ""
   }`
 }
 
