@@ -61,6 +61,11 @@ export const AccountMutations: AccountMutationsResolvers = {
     }
     await schedule(actions.sync({ accountId: id }))
     return account
+  },
+  delete(_parent, { id }) {
+    const stmt = db.prepare("delete from accounts where id = ?")
+    const { changes } = stmt.run(id)
+    return changes === 1
   }
 }
 

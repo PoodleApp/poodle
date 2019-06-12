@@ -319,6 +319,59 @@ describe("sync", () => {
       expect.any(ConnectionManager)
     )
   })
+  it("deletes an account", async () => {
+    const deleteResult = await graphql(
+      schema,
+      `
+        mutation delete($id: ID!) {
+          accounts {
+            delete(id: $id)
+          }
+        }
+      `,
+      null,
+      null,
+      { id: accountId }
+    )
+    expect(deleteResult).toMatchObject({
+      data: { accounts: { delete: true } }
+    })
+    const result = await graphql(
+      schema,
+      `
+        query getAccount($id: ID!) {
+          account(id: $id) {
+            id
+            email
+          }
+        }
+      `,
+      null,
+      null,
+      { id: accountId }
+    )
+    expect(result).toMatchObject({
+      data: { account: null }
+    })
+  })
+  it("gets false when deleting an account that does not exist", async () => {
+    const result = await graphql(
+      schema,
+      `
+        mutation delete($id: ID!) {
+          accounts {
+            delete(id: $id)
+          }
+        }
+      `,
+      null,
+      null,
+      { id: 9999 }
+    )
+    expect(result).toMatchObject({
+      data: { accounts: { delete: false } }
+    })
+  })
 })
 
 afterEach(() => {
