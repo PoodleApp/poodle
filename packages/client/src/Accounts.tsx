@@ -18,6 +18,7 @@ import {
 } from "@material-ui/core"
 import NavigationIcon from "@material-ui/icons/Navigation"
 import AddIcon from "@material-ui/icons/Add"
+import CloseIcon from "@material-ui/icons/Close"
 import { ThemeProvider } from "@material-ui/styles"
 
 const useStyles = makeStyles(theme => ({
@@ -55,6 +56,9 @@ const useStyles = makeStyles(theme => ({
     boxShadow: theme.shadows[5],
     padding: theme.spacing(4),
     outline: "none"
+  },
+  addAcountButton: {
+    top: theme.spacing(2)
   }
 }))
 
@@ -65,14 +69,14 @@ export default function Accounts(_props: RouteComponentProps) {
     refetchQueries: [{ query: graphql.GetAllAccountsDocument }]
   })
   const authenticate = graphql.useAuthenticateMutation()
-
+  const deleteAccount = graphql.useDeleteAccountMutation()
   const { data, error, loading } = graphql.useGetAllAccountsQuery()
   const [emailValue, setEmailValue] = React.useState("")
   const [mutationError, setError] = React.useState<Error | null>(null)
   const [open, setOpen] = React.useState(false)
 
-  const handleOpen = () => {
-    setOpen(true)
+  const handleClick = () => {
+    open ? setOpen(false) : setOpen(true)
   }
 
   const handleClose = () => {
@@ -122,15 +126,24 @@ export default function Accounts(_props: RouteComponentProps) {
                 <CardHeader title={account.email} />
                 <CardActions>
                   {account.loggedIn ? (
-                    <Link
-                      to={`/accounts/${account.id}/dashboard`}
-                      className={classes.link}
-                    >
-                      <Button>View Conversations</Button>
-                      <IconButton aria-label="Delete">
+                    <>
+                      <Link
+                        to={`/accounts/${account.id}/dashboard`}
+                        className={classes.link}
+                      >
+                        <Button>View Conversations</Button>
+                      </Link>
+                      <IconButton
+                        aria-label="Delete"
+                        onClick={() =>
+                          deleteAccount({
+                            variables: { id: account.id }
+                          }).catch(setError)
+                        }
+                      >
                         <DeleteIcon />
                       </IconButton>
-                    </Link>
+                    </>
                   ) : (
                     <Button
                       onClick={() =>
@@ -152,29 +165,31 @@ export default function Accounts(_props: RouteComponentProps) {
         color="secondary"
         aria-label="Add Acount"
         className={classes.fab}
-        onClick={handleOpen}
+        onClick={handleClick}
       >
-        <AddIcon />
-        <Modal
-          aria-labelledby="add account modal"
-          aria-describedby="add email account"
-          open={open}
-          onClose={handleClose}
-        >
-          <div className={classes.modal}>
-            <form onSubmit={onSubmit}>
-              <TextField
-                label="Email"
-                type="text"
-                name="email"
-                onChange={e => setEmailValue(e.target.value)}
-                value={emailValue}
-              />
-              <Button type="submit">Add Account</Button>
-            </form>
-          </div>
-        </Modal>
+        {open ? <CloseIcon /> : <AddIcon />}
       </Fab>
+      <Modal
+        aria-labelledby="add account modal"
+        aria-describedby="add email account"
+        open={open}
+        onClose={handleClose}
+      >
+        <div className={classes.modal}>
+          <form onSubmit={onSubmit}>
+            <TextField
+              label="Email"
+              type="text"
+              name="email"
+              onChange={e => setEmailValue(e.target.value)}
+              value={emailValue}
+            />
+            <Button type="submit" className={classes.addAcountButton}>
+              Add Account
+            </Button>
+          </form>
+        </div>
+      </Modal>
     </div>
   )
 }
