@@ -221,9 +221,6 @@ function Presentable({
             </Menu>
           </div>
         }
-        // <strong>
-        //   <Participant {...presentable.from} />
-        // </strong>{" "}
       />
       <CardContent>
         {presentable.contents.map((content, i) => {
@@ -247,33 +244,13 @@ function Presentable({
   )
 }
 
-function PresentableEdited({
-  presentable
-}: {
-  presentable: graphql.Presentable
-}) {
-  const classes = useStyles()
-  if (!presentable.editedAt || !presentable.editedBy) {
-    return null
-  }
-  const editorIsntAuthor =
-    presentable.editedBy.host !== presentable.from.host ||
-    presentable.editedBy.mailbox !== presentable.from.mailbox
-  return (
-    <span className={classes.edited}>
-      {displayPresentableEdited(presentable)}
-    </span>
-  )
-}
-
 function displayPresentableEdited({
   editedAt,
   editedBy,
   from
 }: graphql.Presentable) {
-  //const classes = useStyles()
   if (!editedAt || !editedBy) {
-    return null
+    return ""
   }
   const editorIsntAuthor =
     editedBy.host !== from.host || editedBy.mailbox !== from.mailbox
