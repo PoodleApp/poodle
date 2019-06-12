@@ -1,15 +1,15 @@
 import {
   AppBar,
+  Card,
+  CardContent,
+  CardHeader,
   CssBaseline,
   IconButton,
-  Toolbar,
-  Typography,
   makeStyles,
-  Card,
-  CardHeader,
-  CardContent,
   Menu,
-  MenuItem
+  MenuItem,
+  Toolbar,
+  Typography
 } from "@material-ui/core"
 import ArchiveIcon from "@material-ui/icons/Archive"
 import CloseIcon from "@material-ui/icons/Close"
@@ -17,11 +17,11 @@ import MoreVertIcon from "@material-ui/icons/MoreVert"
 import { navigate, Redirect, RouteComponentProps } from "@reach/router"
 import moment from "moment"
 import * as React from "react"
+import Avatar from "./Avatar"
 import DisplayContent from "./DisplayContent"
 import * as graphql from "./generated/graphql"
 import useArchive from "./hooks/useArchive"
-import Participant, { displayParticipant } from "./Participant"
-import Avatar from "./Avatar"
+import { displayParticipant } from "./Participant"
 
 type Props = RouteComponentProps & {
   accountId?: string
@@ -182,7 +182,6 @@ function Presentable({
     setAnchorEl(null)
   }
 
-  //TODO: set aria-control's id
   return (
     <Card className={classes.presentable}>
       <CardHeader
