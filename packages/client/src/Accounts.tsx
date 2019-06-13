@@ -1,7 +1,7 @@
 import { Link, RouteComponentProps } from "@reach/router"
 import * as React from "react"
 import * as graphql from "./generated/graphql"
-import { createStyles, makeStyles, Theme } from "@material-ui/core/styles"
+import { makeStyles } from "@material-ui/core/styles"
 import DeleteIcon from "@material-ui/icons/Delete"
 import {
   AppBar,
@@ -29,24 +29,26 @@ const useStyles = makeStyles(theme => ({
     bottom: theme.spacing(2),
     zIndex: theme.zIndex.snackbar
   },
+
   appBarSpacer: theme.mixins.toolbar as any,
+
   root: {
     display: "flex",
     flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "spaceAround",
-    alignContent: "spaceAround"
+    flexWrap: "wrap"
+    //justifyContent: "space-between",
+    //alignContent: "space-around"
   },
+
   card: {
     marginTop: theme.spacing(2),
     marginLeft: theme.spacing(1),
     marginRight: theme.spacing(1),
-    height: "100%"
+    alignItems: "stretch",
+    height: "20vh",
+    width: "55.5vh"
   },
-  link: {
-    margin: theme.spacing(1),
-    textDecoration: "none"
-  },
+
   modal: {
     right: theme.spacing(1),
     bottom: theme.spacing(1),
@@ -57,12 +59,12 @@ const useStyles = makeStyles(theme => ({
     padding: theme.spacing(4),
     outline: "none"
   },
+
   addAcountButton: {
     top: theme.spacing(2)
   }
 }))
 
-//TODO: add functionality to delete button
 export default function Accounts(_props: RouteComponentProps) {
   const classes = useStyles()
   const addAccount = graphql.useAddAccountMutation({
@@ -121,43 +123,41 @@ export default function Accounts(_props: RouteComponentProps) {
       <div className={classes.root}>
         {accounts.map(account => (
           <section key={account.id}>
-            <header>
-              <Card className={classes.card}>
-                <CardHeader title={account.email} />
-                <CardActions>
-                  {account.loggedIn ? (
-                    <>
-                      <Link
-                        to={`/accounts/${account.id}/dashboard`}
-                        className={classes.link}
-                      >
-                        <Button>View Conversations</Button>
-                      </Link>
-                      <IconButton
-                        aria-label="Delete"
-                        onClick={() =>
-                          deleteAccount({
-                            variables: { id: account.id }
-                          }).catch(setError)
-                        }
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </>
-                  ) : (
+            <Card className={classes.card}>
+              <CardHeader title={account.email} />
+              <CardActions>
+                {account.loggedIn ? (
+                  <>
                     <Button
+                      component={Link}
+                      to={`/accounts/${account.id}/dashboard`}
+                    >
+                      View Conversations
+                    </Button>
+                    <IconButton
+                      aria-label="Delete"
                       onClick={() =>
-                        authenticate({ variables: { id: account.id } }).catch(
-                          setError
-                        )
+                        deleteAccount({
+                          variables: { id: account.id }
+                        }).catch(setError)
                       }
                     >
-                      Log In
-                    </Button>
-                  )}
-                </CardActions>
-              </Card>
-            </header>
+                      <DeleteIcon />
+                    </IconButton>
+                  </>
+                ) : (
+                  <Button
+                    onClick={() =>
+                      authenticate({ variables: { id: account.id } }).catch(
+                        setError
+                      )
+                    }
+                  >
+                    Log In
+                  </Button>
+                )}
+              </CardActions>
+            </Card>
           </section>
         ))}
       </div>

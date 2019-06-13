@@ -319,6 +319,7 @@ describe("sync", () => {
       expect.any(ConnectionManager)
     )
   })
+
   it("deletes an account", async () => {
     const deleteResult = await graphql(
       schema,
@@ -354,6 +355,7 @@ describe("sync", () => {
       data: { account: null }
     })
   })
+
   it("gets false when deleting an account that does not exist", async () => {
     const result = await graphql(
       schema,
