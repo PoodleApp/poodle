@@ -166,11 +166,16 @@ export type Query = {
   __typename?: "Query"
   account?: Maybe<Account>
   accounts: Array<Account>
+  addresses: Array<Address>
   conversation?: Maybe<Conversation>
 }
 
 export type QueryAccountArgs = {
   id: Scalars["ID"]
+}
+
+export type QueryAddressesArgs = {
+  inputValue: Scalars["String"]
 }
 
 export type QueryConversationArgs = {

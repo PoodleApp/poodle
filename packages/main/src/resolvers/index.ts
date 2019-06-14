@@ -1,12 +1,20 @@
-import { Resolvers } from "../generated/graphql"
+import { Resolvers, Address } from "../generated/graphql"
 import * as account from "./account"
 import * as conversation from "./conversation"
 import * as message from "./message"
+import db from "../db"
 
 export const resolvers: Resolvers = {
   Query: {
     ...account.queries,
-    ...conversation.queries
+    ...conversation.queries,
+    addresses(_parent, variables): Address[] {
+      return db
+        .prepare(
+          "select name,mailbox,host,type from message_participants where printf('%s %s@%s',name,mailbox,host) like '%' || @inputValue  || '%' "
+        )
+        .all({ inputValue: variables.inputValue })
+    }
   },
   Mutation: {
     ...account.mutations,

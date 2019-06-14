@@ -104,6 +104,7 @@ type Mutation {
 type Query {
   account(id: ID!): Account
   accounts: [Account!]!
+  addresses(inputValue: String!): [Address!]!
   conversation(id: ID!): Conversation
 }
 
