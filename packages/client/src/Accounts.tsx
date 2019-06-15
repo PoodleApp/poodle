@@ -3,10 +3,10 @@ import * as React from "react"
 import * as graphql from "./generated/graphql"
 
 export default function Accounts(_props: RouteComponentProps) {
-  const addAccount = graphql.useAddAccountMutation({
+  const [addAccount] = graphql.useAddAccountMutation({
     refetchQueries: [{ query: graphql.GetAllAccountsDocument }]
   })
-  const authenticate = graphql.useAuthenticateMutation()
+  const [authenticate] = graphql.useAuthenticateMutation()
   const { data, error, loading } = graphql.useGetAllAccountsQuery()
   const [emailValue, setEmailValue] = React.useState("")
   const [mutationError, setError] = React.useState<Error | null>(null)

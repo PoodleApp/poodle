@@ -169,7 +169,7 @@ function MainBar({
   setOpen: (isOpen: boolean) => void
 }) {
   const classes = useStyles()
-  const { loading: syncLoading, sync } = useSync({
+  const [sync, syncResult] = useSync({
     accountId: accountId!
   })
   const [mutationError, setError] = React.useState<Error | null>(null)
@@ -209,7 +209,7 @@ function MainBar({
         <IconButton
           color="inherit"
           onClick={() => sync().catch(setError)}
-          disabled={syncLoading}
+          disabled={syncResult.loading}
         >
           <RefreshIcon />
         </IconButton>
@@ -226,7 +226,7 @@ function SelectedActionsBar({
   selected: string[]
 }) {
   const classes = useStyles()
-  const archive = useArchive({ accountId })
+  const [archive] = useArchive({ accountId })
   function onArchive() {
     for (const conversationId of selected) {
       archive({ variables: { conversationId } })

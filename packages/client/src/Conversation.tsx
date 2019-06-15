@@ -74,11 +74,11 @@ export default function Conversation({ accountId, conversationId }: Props) {
   const { data, error, loading } = graphql.useGetConversationQuery({
     variables: { id: conversationId! }
   })
-  const archive = useArchive({
+  const [archive] = useArchive({
     accountId: accountId!,
     conversationId: conversationId!
   })
-  const setIsRead = graphql.useSetIsReadMutation({
+  const [setIsRead] = graphql.useSetIsReadMutation({
     variables: { conversationId: conversationId!, isRead: true }
   })
   React.useEffect(() => {
@@ -272,7 +272,7 @@ function EditForm({
   const [content, setContent] = React.useState(contentToEdit.content)
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<Error | null>(null)
-  const sendEdit = graphql.useEditMutation()
+  const [sendEdit] = graphql.useEditMutation()
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setLoading(true)
@@ -325,7 +325,7 @@ function ReplyForm({
 }) {
   const [content, setContent] = React.useState("")
   const [loading, setLoading] = React.useState(false)
-  const reply = graphql.useReplyMutation()
+  const [reply] = graphql.useReplyMutation()
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setLoading(true)

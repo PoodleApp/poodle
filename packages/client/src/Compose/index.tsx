@@ -78,7 +78,7 @@ export default function Compose({ accountId }: Props) {
   const [recipients, setRecipients] = React.useState<Address[]>([])
   const [content, setContent] = React.useState("")
   const [error, setError] = React.useState<Error | null>(null)
-  const sendMessage = graphql.useSendMessageMutation()
+  const [sendMessage] = graphql.useSendMessageMutation()
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -99,7 +99,7 @@ export default function Compose({ accountId }: Props) {
       const response = await sendMessage({
         variables: { accountId, message }
       })
-      if (response.data) {
+      if (response && response.data) {
         const conversationId = response.data.conversations.sendMessage.id
         navigate(`/accounts/${accountId}/conversations/${conversationId}`)
       }

@@ -9,6 +9,7 @@ generates:
       - typescript-operations
       - typescript-react-apollo
     config:
+      hooksImportFrom: "@apollo/react-hooks"
       noGraphQLTag: true
       withComponent: false
       withHOC: false
