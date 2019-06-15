@@ -19,6 +19,7 @@ import moment from "moment"
 import * as React from "react"
 import Avatar from "./Avatar"
 import DisplayContent from "./DisplayContent"
+import DisplayErrors from "./DisplayErrors"
 import * as graphql from "./generated/graphql"
 import useArchive from "./hooks/useArchive"
 import { displayParticipant } from "./Participant"
@@ -74,18 +75,18 @@ export default function Conversation({ accountId, conversationId }: Props) {
   const { data, error, loading } = graphql.useGetConversationQuery({
     variables: { id: conversationId! }
   })
-  const [archive] = useArchive({
+  const [archive, archiveResult] = useArchive({
     accountId: accountId!,
     conversationId: conversationId!
   })
-  const [setIsRead] = graphql.useSetIsReadMutation({
+  const [setIsRead, setIsReadResult] = graphql.useSetIsReadMutation({
     variables: { conversationId: conversationId!, isRead: true }
   })
   React.useEffect(() => {
-    if (data && !error && !loading) {
+    if (data && data.conversation && !data.conversation.isRead) {
       setIsRead()
     }
-  }, [data, error, loading, setIsRead])
+  }, [data, setIsRead])
 
   // TODO: is there a way to guarantee that `accountId` and `conversationId` are available?
   if (!accountId || !conversationId) {
@@ -140,6 +141,7 @@ export default function Conversation({ accountId, conversationId }: Props) {
       <CssBaseline />
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
+        <DisplayErrors results={[archiveResult, setIsReadResult]} />
         {labels
           ? labels.map(label => (
               <span className="label" key={label}>

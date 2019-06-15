@@ -1,45 +1,38 @@
 import { Link, RouteComponentProps } from "@reach/router"
 import * as React from "react"
+import DisplayErrors from "./DisplayErrors"
 import * as graphql from "./generated/graphql"
 
 export default function Accounts(_props: RouteComponentProps) {
-  const [addAccount] = graphql.useAddAccountMutation({
+  const [addAccount, addAccountResult] = graphql.useAddAccountMutation({
     refetchQueries: [{ query: graphql.GetAllAccountsDocument }]
   })
-  const [authenticate] = graphql.useAuthenticateMutation()
-  const { data, error, loading } = graphql.useGetAllAccountsQuery()
+  const [authenticate, authenticateResult] = graphql.useAuthenticateMutation()
+  const accountsResult = graphql.useGetAllAccountsQuery()
   const [emailValue, setEmailValue] = React.useState("")
-  const [mutationError, setError] = React.useState<Error | null>(null)
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     try {
       await addAccount({ variables: { email: emailValue } })
       setEmailValue("")
-    } catch (err) {
-      setError(err)
-    }
+    } catch (err) {}
   }
 
-  if (loading) {
+  if (accountsResult.loading) {
     return <div>Loading...</div>
   }
-  if (error) {
-    return <div>Error! {error.message}</div>
-  }
-  if (mutationError) {
-    return (
-      <div>
-        Error! <pre>{JSON.stringify(mutationError)}</pre>
-        <button onClick={() => setError(null)}>dismiss</button>
-      </div>
-    )
+  if (accountsResult.error) {
+    return <div>Error! {accountsResult.error.message}</div>
   }
 
-  const accounts = data!.accounts
+  const accounts = accountsResult.data!.accounts
 
   return (
     <div>
+      <DisplayErrors
+        results={[addAccountResult, authenticateResult, accountsResult]}
+      />
       {accounts.map(account => (
         <section key={account.id}>
           <header>
@@ -51,9 +44,7 @@ export default function Accounts(_props: RouteComponentProps) {
             ) : (
               <button
                 onClick={() =>
-                  authenticate({ variables: { id: account.id } }).catch(
-                    setError
-                  )
+                  authenticate({ variables: { id: account.id } }).catch(noop)
                 }
               >
                 Log In
@@ -74,3 +65,5 @@ export default function Accounts(_props: RouteComponentProps) {
     </div>
   )
 }
+
+function noop() {}
