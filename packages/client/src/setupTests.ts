@@ -3,13 +3,6 @@ import Adapter from "enzyme-adapter-react-16"
 
 configure({ adapter: new Adapter() })
 
-// Mock calls to `window.require`
+// This is necessary because we import Electron using
+// `window.require("electron")`
 window.require = require
-// window.require = mod => {
-//   if (mod !== "electron") {
-//     throw new Error("unexpected require")
-//   }
-//   return {
-//     shell: jest.fn()
-//   }
-// }

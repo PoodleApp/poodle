@@ -1,5 +1,4 @@
 import * as React from "react"
-import { MockedProvider } from "react-apollo/test-utils"
 import Conversation from "./Conversation"
 import * as graphql from "./generated/graphql"
 import { mount } from "./testHelpers"
@@ -23,9 +22,7 @@ const mocks = [
 ]
 
 it("displays a conversation", () => {
-  const app = mount(
-    <MockedProvider mocks={mocks} addTypename={false}>
-      <Conversation accountId="1" conversationId="1" />
-    </MockedProvider>
-  )
+  const app = mount(<Conversation accountId="1" conversationId="1" />, {
+    mocks
+  })
 })

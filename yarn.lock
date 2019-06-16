@@ -47,6 +47,14 @@
     ts-invariant "^0.4.2"
     tslib "^1.9.3"
 
+"@apollo/react-testing@^0.1.0-beta.3":
+  version "0.1.0-beta.3"
+  resolved "https://registry.yarnpkg.com/@apollo/react-testing/-/react-testing-0.1.0-beta.3.tgz#7e7e74ad819717caf5826b734641df951bae638f"
+  integrity sha512-kMGbxWWabF2w1EGpK5ZH+GoHwjHSv6CgM5QqbXd/58G6TS4v8TSyPD9ulGJHpDRQH08dpOvjsN4CYCyqKf3rPQ==
+  dependencies:
+    "@apollo/react-common" "^0.1.0-beta.6"
+    tslib "^1.9.3"
+
 "@babel/code-frame@7.0.0", "@babel/code-frame@^7.0.0":
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.0.0.tgz#06e2ab19bdb535385559aabb5ba59729482800f8"
