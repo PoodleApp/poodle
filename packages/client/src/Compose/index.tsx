@@ -11,7 +11,8 @@ import {
   makeStyles,
   TextField,
   Toolbar,
-  Typography
+  Typography,
+  Paper
 } from "@material-ui/core"
 import CloseIcon from "@material-ui/icons/Close"
 import { navigate } from "@reach/router"

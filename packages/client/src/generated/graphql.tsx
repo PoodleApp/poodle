@@ -278,6 +278,12 @@ export type GetConversationQuery = { __typename?: "Query" } & {
   >
 }
 
+export type GetAllAddressesQueryVariables = {}
+
+export type GetAllAddressesQuery = { __typename?: "Query" } & {
+  accounts: Array<{ __typename?: "Account" } & Pick<Account, "email">>
+}
+
 export type SyncMutationVariables = {
   accountId: Scalars["ID"]
 }
@@ -1135,6 +1141,49 @@ export function useGetConversationQuery(
     GetConversationQuery,
     GetConversationQueryVariables
   >(GetConversationDocument, baseOptions)
+}
+export const GetAllAddressesDocument: DocumentNode = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "getAllAddresses" },
+      variableDefinitions: [],
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "accounts" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "email" },
+                  arguments: [],
+                  directives: []
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+
+export function useGetAllAddressesQuery(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<GetAllAddressesQueryVariables>
+) {
+  return ReactApolloHooks.useQuery<
+    GetAllAddressesQuery,
+    GetAllAddressesQueryVariables
+  >(GetAllAddressesDocument, baseOptions)
 }
 export const SyncDocument: DocumentNode = {
   kind: "Document",

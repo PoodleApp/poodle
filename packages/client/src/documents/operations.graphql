@@ -87,6 +87,12 @@ query getConversation($id: ID!) {
   }
 }
 
+query getAllAddresses {
+  accounts {
+    email
+  }
+}
+
 mutation sync($accountId: ID!) {
   accounts {
     sync(id: $accountId) {
