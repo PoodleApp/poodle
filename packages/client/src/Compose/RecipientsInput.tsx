@@ -92,11 +92,14 @@ export default function RecipientsInput({ onRecipients, ...rest }: Props) {
   const [stateSuggestions, setSuggestions] = React.useState<Suggestion[]>([])
 
   const [focused, setFocused] = React.useState(false)
-  const { data } = graphql.useGetAllAddressesQuery()
-  const accounts = data && data.accounts
 
-  const suggestions: Suggestion[] = (accounts || []).map(account => {
-    return { label: account.email }
+  const { data } = graphql.useGetAllAddressesQuery({
+    variables: { inputValue }
+  })
+  let addresses = data && data.addresses
+
+  const suggestions: Suggestion[] = (addresses || []).map(address => {
+    return { label: address.name }
   })
 
   function renderSuggestion(
@@ -123,18 +126,23 @@ export default function RecipientsInput({ onRecipients, ...rest }: Props) {
   }
 
   function getSuggestions(value: string) {
-    const inputValue = value.toLocaleLowerCase()
-    const inputLength = inputValue.length
-    let count = 0
-    return inputLength === 0
-      ? []
-      : suggestions.filter(suggestion => {
-          const keep = suggestion.label.toLocaleLowerCase().includes(inputValue)
-          if (keep) {
-            count++
-          }
-          return keep
-        })
+    const { data } = graphql.useGetAllAddressesQuery({
+      variables: { inputValue: value }
+    })
+    addresses = data && data.addresses
+    return addresses
+    // const inputValue = value.toLocaleLowerCase()
+    // const inputLength = inputValue.length
+    // let count = 0
+    // return inputLength === 0
+    //   ? []
+    //   : suggestions.filter(suggestion => {
+    //       const keep = suggestion.label.toLocaleLowerCase().includes(inputValue)
+    //       if (keep) {
+    //         count++
+    //       }
+    //       return keep
+    //     })
   }
 
   function getSuggestionValue(suggestion: Suggestion) {

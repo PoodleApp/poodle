@@ -87,9 +87,11 @@ query getConversation($id: ID!) {
   }
 }
 
-query getAllAddresses {
-  accounts {
-    email
+query getAllAddresses($inputValue: String!) {
+  addresses(inputValue: $inputValue) {
+    host
+    mailbox
+    name
   }
 }
 

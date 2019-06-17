@@ -283,10 +283,14 @@ export type GetConversationQuery = { __typename?: "Query" } & {
   >
 }
 
-export type GetAllAddressesQueryVariables = {}
+export type GetAllAddressesQueryVariables = {
+  inputValue: Scalars["String"]
+}
 
 export type GetAllAddressesQuery = { __typename?: "Query" } & {
-  accounts: Array<{ __typename?: "Account" } & Pick<Account, "email">>
+  addresses: Array<
+    { __typename?: "Address" } & Pick<Address, "host" | "mailbox" | "name">
+  >
 }
 
 export type SyncMutationVariables = {
@@ -1154,22 +1158,56 @@ export const GetAllAddressesDocument: DocumentNode = {
       kind: "OperationDefinition",
       operation: "query",
       name: { kind: "Name", value: "getAllAddresses" },
-      variableDefinitions: [],
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "inputValue" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          },
+          directives: []
+        }
+      ],
       directives: [],
       selectionSet: {
         kind: "SelectionSet",
         selections: [
           {
             kind: "Field",
-            name: { kind: "Name", value: "accounts" },
-            arguments: [],
+            name: { kind: "Name", value: "addresses" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "inputValue" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "inputValue" }
+                }
+              }
+            ],
             directives: [],
             selectionSet: {
               kind: "SelectionSet",
               selections: [
                 {
                   kind: "Field",
-                  name: { kind: "Name", value: "email" },
+                  name: { kind: "Name", value: "host" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "mailbox" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "name" },
                   arguments: [],
                   directives: []
                 }
