@@ -17,6 +17,7 @@ import CloseIcon from "@material-ui/icons/Close"
 import { navigate } from "@reach/router"
 import clsx from "clsx"
 import * as React from "react"
+import DisplayErrors from "../DisplayErrors"
 import * as graphql from "../generated/graphql"
 import RecipientsInput, { Address } from "./RecipientsInput"
 
@@ -78,7 +79,7 @@ export default function Compose({ accountId }: Props) {
   const [recipients, setRecipients] = React.useState<Address[]>([])
   const [content, setContent] = React.useState("")
   const [error, setError] = React.useState<Error | null>(null)
-  const sendMessage = graphql.useSendMessageMutation()
+  const [sendMessage, sendMessageResult] = graphql.useSendMessageMutation()
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -99,13 +100,11 @@ export default function Compose({ accountId }: Props) {
       const response = await sendMessage({
         variables: { accountId, message }
       })
-      if (response.data) {
+      if (response && response.data) {
         const conversationId = response.data.conversations.sendMessage.id
         navigate(`/accounts/${accountId}/conversations/${conversationId}`)
       }
-    } catch (error) {
-      setError(error)
-    }
+    } catch (error) {}
   }
 
   return (
@@ -137,6 +136,7 @@ export default function Compose({ accountId }: Props) {
       <CssBaseline />
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
+        <DisplayErrors results={[sendMessageResult]} />
         <form className={classes.form} onSubmit={handleSubmit}>
           <TextField
             className={classes.formInput}

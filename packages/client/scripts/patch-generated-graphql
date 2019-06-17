@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+# The current version of graphql-code-generator emits code that does not
+# type-check when generating React hooks, but not HOCs or components. The
+# problem is due to some exported types that are not necessary when using hooks.
+
+set -e
+
+# Remove each MutationFn type declaration line and the two following lines.
+sed -rE -i '/export type [[:graph:]]+MutationFn = ReactApollo.MutationFn</,+3d' src/generated/graphql.tsx
+
+# Remove a redundant import
+sed -i '/^import \* as ReactApollo from "react-apollo"/d' src/generated/graphql.tsx

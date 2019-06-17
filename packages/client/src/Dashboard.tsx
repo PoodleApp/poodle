@@ -1,18 +1,18 @@
 import {
   AppBar,
   Avatar as MuiAvatar,
+  colors,
   CssBaseline,
-  IconButton,
-  Toolbar,
-  Typography,
-  Drawer,
   Divider,
-  Paper,
+  Drawer,
+  IconButton,
   List,
   ListItem,
   ListItemAvatar,
   ListItemText,
-  colors
+  Paper,
+  Toolbar,
+  Typography
 } from "@material-ui/core"
 import { makeStyles } from "@material-ui/core/styles"
 import ArchiveIcon from "@material-ui/icons/Archive"
@@ -24,13 +24,14 @@ import { navigate, Redirect, RouteComponentProps } from "@reach/router"
 import clsx from "clsx"
 import moment from "moment"
 import * as React from "react"
+import AccountSwitcher from "./AccountSwitcher"
+import Avatar from "./Avatar"
+import ComposeButton from "./ComposeButton"
+import DisplayErrors from "./DisplayErrors"
 import * as graphql from "./generated/graphql"
 import useArchive from "./hooks/useArchive"
 import * as Sel from "./hooks/useSelectedConversations"
 import useSync from "./hooks/useSync"
-import AccountSwitcher from "./AccountSwitcher"
-import Avatar from "./Avatar"
-import ComposeButton from "./ComposeButton"
 
 type Props = RouteComponentProps & { accountId?: string }
 
@@ -169,52 +170,49 @@ function MainBar({
   setOpen: (isOpen: boolean) => void
 }) {
   const classes = useStyles()
-  const { loading: syncLoading, sync } = useSync({
+  const [sync, syncResult] = useSync({
     accountId: accountId!
   })
-  const [mutationError, setError] = React.useState<Error | null>(null)
-  if (mutationError) {
-    return (
-      <div>
-        Error! <pre>{JSON.stringify(mutationError)}</pre>
-        <button onClick={() => setError(null)}>dismiss</button>
-      </div>
-    )
-  }
   return (
-    <AppBar
-      position="absolute"
-      className={clsx(classes.appBar, open && classes.appBarShift)}
-    >
-      <Toolbar className={classes.toolbar}>
-        <IconButton
-          edge="start"
-          color="inherit"
-          aria-label="open drawer"
-          onClick={() => setOpen(true)}
-          className={clsx(classes.menuButton, open && classes.menuButtonHidden)}
-        >
-          <MenuIcon />
-        </IconButton>
-        <Typography
-          component="h1"
-          variant="h6"
-          color="inherit"
-          noWrap
-          className={classes.title}
-        >
-          Inbox
-        </Typography>
-        <AccountSwitcher accountId={accountId} color="inherit" />
-        <IconButton
-          color="inherit"
-          onClick={() => sync().catch(setError)}
-          disabled={syncLoading}
-        >
-          <RefreshIcon />
-        </IconButton>
-      </Toolbar>
-    </AppBar>
+    <>
+      <AppBar
+        position="absolute"
+        className={clsx(classes.appBar, open && classes.appBarShift)}
+      >
+        <Toolbar className={classes.toolbar}>
+          <IconButton
+            edge="start"
+            color="inherit"
+            aria-label="open drawer"
+            onClick={() => setOpen(true)}
+            className={clsx(
+              classes.menuButton,
+              open && classes.menuButtonHidden
+            )}
+          >
+            <MenuIcon />
+          </IconButton>
+          <Typography
+            component="h1"
+            variant="h6"
+            color="inherit"
+            noWrap
+            className={classes.title}
+          >
+            Inbox
+          </Typography>
+          <AccountSwitcher accountId={accountId} color="inherit" />
+          <IconButton
+            color="inherit"
+            onClick={() => sync().catch(noop)}
+            disabled={syncResult.loading}
+          >
+            <RefreshIcon />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+      <DisplayErrors results={[syncResult]} />
+    </>
   )
 }
 
@@ -226,25 +224,28 @@ function SelectedActionsBar({
   selected: string[]
 }) {
   const classes = useStyles()
-  const archive = useArchive({ accountId })
+  const [archive, archiveResult] = useArchive({ accountId })
   function onArchive() {
     for (const conversationId of selected) {
       archive({ variables: { conversationId } })
     }
   }
   return (
-    <AppBar
-      position="absolute"
-      color="default"
-      className={clsx(classes.appBar)}
-    >
-      <Toolbar className={classes.toolbar}>
-        <span className={classes.title} />
-        <IconButton onClick={onArchive}>
-          <ArchiveIcon />
-        </IconButton>
-      </Toolbar>
-    </AppBar>
+    <>
+      <AppBar
+        position="absolute"
+        color="default"
+        className={clsx(classes.appBar)}
+      >
+        <Toolbar className={classes.toolbar}>
+          <span className={classes.title} />
+          <IconButton onClick={onArchive}>
+            <ArchiveIcon />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
+      <DisplayErrors results={[archiveResult]} />
+    </>
   )
 }
 
@@ -374,3 +375,5 @@ function Conversations({
     </Paper>
   )
 }
+
+function noop() {}

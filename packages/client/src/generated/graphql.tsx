@@ -1,5 +1,6 @@
 /* eslint-disable */
-
+import { DocumentNode } from "graphql"
+import * as ReactApolloHooks from "@apollo/react-hooks"
 export type Maybe<T> = T | null
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
@@ -11,6 +12,7 @@ export type Scalars = {
 }
 
 export type Account = {
+  __typename?: "Account"
   id: Scalars["ID"]
   email: Scalars["String"]
   loggedIn: Scalars["Boolean"]
@@ -23,6 +25,7 @@ export type AccountConversationsArgs = {
 }
 
 export type AccountMutations = {
+  __typename?: "AccountMutations"
   create: Account
   authenticate: Account
   sync: Account
@@ -46,6 +49,7 @@ export type AccountMutationsDeleteArgs = {
 }
 
 export type Address = {
+  __typename?: "Address"
   host: Scalars["String"]
   mailbox: Scalars["String"]
   name?: Maybe<Scalars["String"]>
@@ -58,6 +62,7 @@ export type AddressInput = {
 }
 
 export type Content = {
+  __typename?: "Content"
   resource: PartSpec
   revision: PartSpec
   type: Scalars["String"]
@@ -72,6 +77,7 @@ export type ContentInput = {
 }
 
 export type Conversation = {
+  __typename?: "Conversation"
   id: Scalars["ID"]
   date: Scalars["String"]
   from: Address
@@ -83,6 +89,7 @@ export type Conversation = {
 }
 
 export type ConversationMutations = {
+  __typename?: "ConversationMutations"
   archive: Conversation
   edit: Conversation
   reply: Conversation
@@ -119,6 +126,7 @@ export type ConversationMutationsSendMessageArgs = {
 }
 
 export type Message = {
+  __typename?: "Message"
   id: Scalars["ID"]
   date: Scalars["String"]
   messageId: Scalars["ID"]
@@ -133,11 +141,13 @@ export type MessageInput = {
 }
 
 export type Mutation = {
+  __typename?: "Mutation"
   accounts: AccountMutations
   conversations: ConversationMutations
 }
 
 export type PartSpec = {
+  __typename?: "PartSpec"
   messageId: Scalars["String"]
   contentId?: Maybe<Scalars["String"]>
 }
@@ -148,6 +158,7 @@ export type PartSpecInput = {
 }
 
 export type Presentable = {
+  __typename?: "Presentable"
   id: Scalars["ID"]
   contents: Array<Content>
   date: Scalars["String"]
@@ -157,6 +168,7 @@ export type Presentable = {
 }
 
 export type Query = {
+  __typename?: "Query"
   account?: Maybe<Account>
   accounts: Array<Account>
   conversation?: Maybe<Conversation>
@@ -488,10 +500,6 @@ export type ReplyMutation = { __typename?: "Mutation" } & {
       }
   }
 }
-import { DocumentNode } from "graphql"
-import * as ReactApollo from "react-apollo"
-import * as ReactApolloHooks from "react-apollo-hooks"
-export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
 
 export const GetAllAccountsDocument: DocumentNode = {
   kind: "Document",
@@ -541,7 +549,10 @@ export const GetAllAccountsDocument: DocumentNode = {
 }
 
 export function useGetAllAccountsQuery(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<GetAllAccountsQueryVariables>
+  baseOptions?: ReactApolloHooks.QueryHookOptions<
+    GetAllAccountsQuery,
+    GetAllAccountsQueryVariables
+  >
 ) {
   return ReactApolloHooks.useQuery<
     GetAllAccountsQuery,
@@ -704,7 +715,10 @@ export const GetAccountDocument: DocumentNode = {
 }
 
 export function useGetAccountQuery(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<GetAccountQueryVariables>
+  baseOptions?: ReactApolloHooks.QueryHookOptions<
+    GetAccountQuery,
+    GetAccountQueryVariables
+  >
 ) {
   return ReactApolloHooks.useQuery<GetAccountQuery, GetAccountQueryVariables>(
     GetAccountDocument,
@@ -859,10 +873,6 @@ export const AddAccountDocument: DocumentNode = {
     }
   ]
 }
-export type AddAccountMutationFn = ReactApollo.MutationFn<
-  AddAccountMutation,
-  AddAccountMutationVariables
->
 
 export function useAddAccountMutation(
   baseOptions?: ReactApolloHooks.MutationHookOptions<
@@ -951,10 +961,6 @@ export const AuthenticateDocument: DocumentNode = {
     }
   ]
 }
-export type AuthenticateMutationFn = ReactApollo.MutationFn<
-  AuthenticateMutation,
-  AuthenticateMutationVariables
->
 
 export function useAuthenticateMutation(
   baseOptions?: ReactApolloHooks.MutationHookOptions<
@@ -1205,7 +1211,10 @@ export const GetConversationDocument: DocumentNode = {
 }
 
 export function useGetConversationQuery(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<GetConversationQueryVariables>
+  baseOptions?: ReactApolloHooks.QueryHookOptions<
+    GetConversationQuery,
+    GetConversationQueryVariables
+  >
 ) {
   return ReactApolloHooks.useQuery<
     GetConversationQuery,
@@ -1367,10 +1376,6 @@ export const SyncDocument: DocumentNode = {
     }
   ]
 }
-export type SyncMutationFn = ReactApollo.MutationFn<
-  SyncMutation,
-  SyncMutationVariables
->
 
 export function useSyncMutation(
   baseOptions?: ReactApolloHooks.MutationHookOptions<
@@ -1532,10 +1537,6 @@ export const SetIsReadDocument: DocumentNode = {
     }
   ]
 }
-export type SetIsReadMutationFn = ReactApollo.MutationFn<
-  SetIsReadMutation,
-  SetIsReadMutationVariables
->
 
 export function useSetIsReadMutation(
   baseOptions?: ReactApolloHooks.MutationHookOptions<
@@ -1674,10 +1675,6 @@ export const ArchiveDocument: DocumentNode = {
     }
   ]
 }
-export type ArchiveMutationFn = ReactApollo.MutationFn<
-  ArchiveMutation,
-  ArchiveMutationVariables
->
 
 export function useArchiveMutation(
   baseOptions?: ReactApolloHooks.MutationHookOptions<
@@ -1978,10 +1975,6 @@ export const SendMessageDocument: DocumentNode = {
     }
   ]
 }
-export type SendMessageMutationFn = ReactApollo.MutationFn<
-  SendMessageMutation,
-  SendMessageMutationVariables
->
 
 export function useSendMessageMutation(
   baseOptions?: ReactApolloHooks.MutationHookOptions<
@@ -2348,10 +2341,6 @@ export const EditDocument: DocumentNode = {
     }
   ]
 }
-export type EditMutationFn = ReactApollo.MutationFn<
-  EditMutation,
-  EditMutationVariables
->
 
 export function useEditMutation(
   baseOptions?: ReactApolloHooks.MutationHookOptions<
@@ -2672,10 +2661,6 @@ export const ReplyDocument: DocumentNode = {
     }
   ]
 }
-export type ReplyMutationFn = ReactApollo.MutationFn<
-  ReplyMutation,
-  ReplyMutationVariables
->
 
 export function useReplyMutation(
   baseOptions?: ReactApolloHooks.MutationHookOptions<

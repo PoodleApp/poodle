@@ -1,5 +1,6 @@
 import { Link, RouteComponentProps } from "@reach/router"
 import * as React from "react"
+import DisplayErrors from "./DisplayErrors"
 import * as graphql from "./generated/graphql"
 import { makeStyles } from "@material-ui/core/styles"
 import DeleteIcon from "@material-ui/icons/Delete"
@@ -63,14 +64,13 @@ const useStyles = makeStyles(theme => ({
 
 export default function Accounts(_props: RouteComponentProps) {
   const classes = useStyles()
-  const addAccount = graphql.useAddAccountMutation({
+  const [addAccount, addAccountResult] = graphql.useAddAccountMutation({
     refetchQueries: [{ query: graphql.GetAllAccountsDocument }]
   })
-  const authenticate = graphql.useAuthenticateMutation()
+  const [authenticate, authenticateResult] = graphql.useAuthenticateMutation()
   const deleteAccount = graphql.useDeleteAccountMutation()
-  const { data, error, loading } = graphql.useGetAllAccountsQuery()
+  const accountsResult = graphql.useGetAllAccountsQuery()
   const [emailValue, setEmailValue] = React.useState("")
-  const [mutationError, setError] = React.useState<Error | null>(null)
   const [open, setOpen] = React.useState(false)
 
   const handleClick = () => {
@@ -86,30 +86,23 @@ export default function Accounts(_props: RouteComponentProps) {
     try {
       await addAccount({ variables: { email: emailValue } })
       setEmailValue("")
-    } catch (err) {
-      setError(err)
-    }
+    } catch (err) {}
   }
 
-  if (loading) {
+  if (accountsResult.loading) {
     return <div>Loading...</div>
   }
-  if (error) {
-    return <div>Error! {error.message}</div>
-  }
-  if (mutationError) {
-    return (
-      <div>
-        Error! <pre>{JSON.stringify(mutationError)}</pre>
-        <button onClick={() => setError(null)}>dismiss</button>
-      </div>
-    )
+  if (accountsResult.error) {
+    return <div>Error! {accountsResult.error.message}</div>
   }
 
-  const accounts = data!.accounts
+  const accounts = accountsResult.data!.accounts
 
   return (
     <div>
+      <DisplayErrors
+        results={[addAccountResult, authenticateResult, accountsResult]}
+      />
       <div className={classes.appBarSpacer} />
       <AppBar>
         <Toolbar>
@@ -135,7 +128,7 @@ export default function Accounts(_props: RouteComponentProps) {
                       onClick={() =>
                         deleteAccount({
                           variables: { id: account.id }
-                        }).catch(setError)
+                        })
                       }
                     >
                       <DeleteIcon />
@@ -144,9 +137,7 @@ export default function Accounts(_props: RouteComponentProps) {
                 ) : (
                   <Button
                     onClick={() =>
-                      authenticate({ variables: { id: account.id } }).catch(
-                        setError
-                      )
+                      authenticate({ variables: { id: account.id } })
                     }
                   >
                     Log In
@@ -188,3 +179,5 @@ export default function Accounts(_props: RouteComponentProps) {
     </div>
   )
 }
+
+function noop() {}

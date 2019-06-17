@@ -1,6 +1,14 @@
 /* eslint-disable */
-
-type Maybe<T> = T | null
+import { GraphQLResolveInfo } from "graphql"
+import {
+  Account,
+  AccountMutations,
+  ConversationMutations,
+  Message
+} from "../resolvers/types"
+import { Conversation } from "../models/conversation"
+export type Maybe<T> = T | null
+export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string
@@ -11,6 +19,7 @@ export type Scalars = {
 }
 
 export type Account = {
+  __typename?: "Account"
   id: Scalars["ID"]
   email: Scalars["String"]
   loggedIn: Scalars["Boolean"]
@@ -23,6 +32,7 @@ export type AccountConversationsArgs = {
 }
 
 export type AccountMutations = {
+  __typename?: "AccountMutations"
   create: Account
   authenticate: Account
   sync: Account
@@ -46,6 +56,7 @@ export type AccountMutationsDeleteArgs = {
 }
 
 export type Address = {
+  __typename?: "Address"
   host: Scalars["String"]
   mailbox: Scalars["String"]
   name?: Maybe<Scalars["String"]>
@@ -58,6 +69,7 @@ export type AddressInput = {
 }
 
 export type Content = {
+  __typename?: "Content"
   resource: PartSpec
   revision: PartSpec
   type: Scalars["String"]
@@ -72,6 +84,7 @@ export type ContentInput = {
 }
 
 export type Conversation = {
+  __typename?: "Conversation"
   id: Scalars["ID"]
   date: Scalars["String"]
   from: Address
@@ -83,6 +96,7 @@ export type Conversation = {
 }
 
 export type ConversationMutations = {
+  __typename?: "ConversationMutations"
   archive: Conversation
   edit: Conversation
   reply: Conversation
@@ -119,6 +133,7 @@ export type ConversationMutationsSendMessageArgs = {
 }
 
 export type Message = {
+  __typename?: "Message"
   id: Scalars["ID"]
   date: Scalars["String"]
   messageId: Scalars["ID"]
@@ -133,11 +148,13 @@ export type MessageInput = {
 }
 
 export type Mutation = {
+  __typename?: "Mutation"
   accounts: AccountMutations
   conversations: ConversationMutations
 }
 
 export type PartSpec = {
+  __typename?: "PartSpec"
   messageId: Scalars["String"]
   contentId?: Maybe<Scalars["String"]>
 }
@@ -148,6 +165,7 @@ export type PartSpecInput = {
 }
 
 export type Presentable = {
+  __typename?: "Presentable"
   id: Scalars["ID"]
   contents: Array<Content>
   date: Scalars["String"]
@@ -157,6 +175,7 @@ export type Presentable = {
 }
 
 export type Query = {
+  __typename?: "Query"
   account?: Maybe<Account>
   accounts: Array<Account>
   conversation?: Maybe<Conversation>
@@ -169,15 +188,6 @@ export type QueryAccountArgs = {
 export type QueryConversationArgs = {
   id: Scalars["ID"]
 }
-import {
-  Account,
-  AccountMutations,
-  ConversationMutations,
-  Message
-} from "../resolvers/types"
-import { Conversation } from "../models/conversation"
-
-import { GraphQLResolveInfo } from "graphql"
 
 export type ResolverFn<TResult, TParent, TContext, TArgs> = (
   parent: TParent,
@@ -246,154 +256,234 @@ export type DirectiveResolverFn<
   info: GraphQLResolveInfo
 ) => TResult | Promise<TResult>
 
-export type AccountResolvers<Context = any, ParentType = Account> = {
-  id?: Resolver<Scalars["ID"], ParentType, Context>
-  email?: Resolver<Scalars["String"], ParentType, Context>
-  loggedIn?: Resolver<Scalars["Boolean"], ParentType, Context>
+/** Mapping between all available schema types and the resolvers types */
+export type ResolversTypes = {
+  Query: {}
+  ID: Scalars["ID"]
+  Account: Account
+  String: Scalars["String"]
+  Boolean: Scalars["Boolean"]
+  Conversation: Conversation
+  Address: Address
+  Presentable: Presentable
+  Content: Content
+  PartSpec: PartSpec
+  Message: Message
+  Mutation: {}
+  AccountMutations: AccountMutations
+  ConversationMutations: ConversationMutations
+  PartSpecInput: PartSpecInput
+  ContentInput: ContentInput
+  MessageInput: MessageInput
+  AddressInput: AddressInput
+}
+
+export type AccountResolvers<
+  ContextType = any,
+  ParentType = ResolversTypes["Account"]
+> = {
+  id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
+  email?: Resolver<ResolversTypes["String"], ParentType, ContextType>
+  loggedIn?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>
   conversations?: Resolver<
-    Array<Conversation>,
+    Array<ResolversTypes["Conversation"]>,
     ParentType,
-    Context,
+    ContextType,
     AccountConversationsArgs
   >
-  messages?: Resolver<Array<Message>, ParentType, Context>
+  messages?: Resolver<Array<ResolversTypes["Message"]>, ParentType, ContextType>
 }
 
 export type AccountMutationsResolvers<
-  Context = any,
-  ParentType = AccountMutations
+  ContextType = any,
+  ParentType = ResolversTypes["AccountMutations"]
 > = {
-  create?: Resolver<Account, ParentType, Context, AccountMutationsCreateArgs>
-  authenticate?: Resolver<
-    Account,
+  create?: Resolver<
+    ResolversTypes["Account"],
     ParentType,
-    Context,
+    ContextType,
+    AccountMutationsCreateArgs
+  >
+  authenticate?: Resolver<
+    ResolversTypes["Account"],
+    ParentType,
+    ContextType,
     AccountMutationsAuthenticateArgs
   >
-  sync?: Resolver<Account, ParentType, Context, AccountMutationsSyncArgs>
+  sync?: Resolver<
+    ResolversTypes["Account"],
+    ParentType,
+    ContextType,
+    AccountMutationsSyncArgs
+  >
   delete?: Resolver<
     Scalars["Boolean"],
     ParentType,
-    Context,
+    ContextType,
     AccountMutationsDeleteArgs
   >
 }
 
-export type AddressResolvers<Context = any, ParentType = Address> = {
-  host?: Resolver<Scalars["String"], ParentType, Context>
-  mailbox?: Resolver<Scalars["String"], ParentType, Context>
-  name?: Resolver<Maybe<Scalars["String"]>, ParentType, Context>
+export type AddressResolvers<
+  ContextType = any,
+  ParentType = ResolversTypes["Address"]
+> = {
+  host?: Resolver<ResolversTypes["String"], ParentType, ContextType>
+  mailbox?: Resolver<ResolversTypes["String"], ParentType, ContextType>
+  name?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
 }
 
-export type ContentResolvers<Context = any, ParentType = Content> = {
-  resource?: Resolver<PartSpec, ParentType, Context>
-  revision?: Resolver<PartSpec, ParentType, Context>
-  type?: Resolver<Scalars["String"], ParentType, Context>
-  subtype?: Resolver<Scalars["String"], ParentType, Context>
-  content?: Resolver<Scalars["String"], ParentType, Context>
+export type ContentResolvers<
+  ContextType = any,
+  ParentType = ResolversTypes["Content"]
+> = {
+  resource?: Resolver<ResolversTypes["PartSpec"], ParentType, ContextType>
+  revision?: Resolver<ResolversTypes["PartSpec"], ParentType, ContextType>
+  type?: Resolver<ResolversTypes["String"], ParentType, ContextType>
+  subtype?: Resolver<ResolversTypes["String"], ParentType, ContextType>
+  content?: Resolver<ResolversTypes["String"], ParentType, ContextType>
 }
 
-export type ConversationResolvers<Context = any, ParentType = Conversation> = {
-  id?: Resolver<Scalars["ID"], ParentType, Context>
-  date?: Resolver<Scalars["String"], ParentType, Context>
-  from?: Resolver<Address, ParentType, Context>
-  labels?: Resolver<Maybe<Array<Scalars["String"]>>, ParentType, Context>
-  presentableElements?: Resolver<Array<Presentable>, ParentType, Context>
-  isRead?: Resolver<Scalars["Boolean"], ParentType, Context>
-  snippet?: Resolver<Maybe<Scalars["String"]>, ParentType, Context>
-  subject?: Resolver<Maybe<Scalars["String"]>, ParentType, Context>
+export type ConversationResolvers<
+  ContextType = any,
+  ParentType = ResolversTypes["Conversation"]
+> = {
+  id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
+  date?: Resolver<ResolversTypes["String"], ParentType, ContextType>
+  from?: Resolver<ResolversTypes["Address"], ParentType, ContextType>
+  labels?: Resolver<
+    Maybe<Array<ResolversTypes["String"]>>,
+    ParentType,
+    ContextType
+  >
+  presentableElements?: Resolver<
+    Array<ResolversTypes["Presentable"]>,
+    ParentType,
+    ContextType
+  >
+  isRead?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>
+  snippet?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
+  subject?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
 }
 
 export type ConversationMutationsResolvers<
-  Context = any,
-  ParentType = ConversationMutations
+  ContextType = any,
+  ParentType = ResolversTypes["ConversationMutations"]
 > = {
   archive?: Resolver<
-    Conversation,
+    ResolversTypes["Conversation"],
     ParentType,
-    Context,
+    ContextType,
     ConversationMutationsArchiveArgs
   >
   edit?: Resolver<
-    Conversation,
+    ResolversTypes["Conversation"],
     ParentType,
-    Context,
+    ContextType,
     ConversationMutationsEditArgs
   >
   reply?: Resolver<
-    Conversation,
+    ResolversTypes["Conversation"],
     ParentType,
-    Context,
+    ContextType,
     ConversationMutationsReplyArgs
   >
   setIsRead?: Resolver<
-    Conversation,
+    ResolversTypes["Conversation"],
     ParentType,
-    Context,
+    ContextType,
     ConversationMutationsSetIsReadArgs
   >
   sendMessage?: Resolver<
-    Conversation,
+    ResolversTypes["Conversation"],
     ParentType,
-    Context,
+    ContextType,
     ConversationMutationsSendMessageArgs
   >
 }
 
-export type MessageResolvers<Context = any, ParentType = Message> = {
-  id?: Resolver<Scalars["ID"], ParentType, Context>
-  date?: Resolver<Scalars["String"], ParentType, Context>
-  messageId?: Resolver<Scalars["ID"], ParentType, Context>
-  subject?: Resolver<Maybe<Scalars["String"]>, ParentType, Context>
-  from?: Resolver<Array<Address>, ParentType, Context>
+export type MessageResolvers<
+  ContextType = any,
+  ParentType = ResolversTypes["Message"]
+> = {
+  id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
+  date?: Resolver<ResolversTypes["String"], ParentType, ContextType>
+  messageId?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
+  subject?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
+  from?: Resolver<Array<ResolversTypes["Address"]>, ParentType, ContextType>
 }
 
-export type MutationResolvers<Context = any, ParentType = Mutation> = {
-  accounts?: Resolver<AccountMutations, ParentType, Context>
-  conversations?: Resolver<ConversationMutations, ParentType, Context>
-}
-
-export type PartSpecResolvers<Context = any, ParentType = PartSpec> = {
-  messageId?: Resolver<Scalars["String"], ParentType, Context>
-  contentId?: Resolver<Maybe<Scalars["String"]>, ParentType, Context>
-}
-
-export type PresentableResolvers<Context = any, ParentType = Presentable> = {
-  id?: Resolver<Scalars["ID"], ParentType, Context>
-  contents?: Resolver<Array<Content>, ParentType, Context>
-  date?: Resolver<Scalars["String"], ParentType, Context>
-  from?: Resolver<Address, ParentType, Context>
-  editedAt?: Resolver<Maybe<Scalars["String"]>, ParentType, Context>
-  editedBy?: Resolver<Maybe<Address>, ParentType, Context>
-}
-
-export type QueryResolvers<Context = any, ParentType = Query> = {
-  account?: Resolver<Maybe<Account>, ParentType, Context, QueryAccountArgs>
-  accounts?: Resolver<Array<Account>, ParentType, Context>
-  conversation?: Resolver<
-    Maybe<Conversation>,
+export type MutationResolvers<
+  ContextType = any,
+  ParentType = ResolversTypes["Mutation"]
+> = {
+  accounts?: Resolver<
+    ResolversTypes["AccountMutations"],
     ParentType,
-    Context,
+    ContextType
+  >
+  conversations?: Resolver<
+    ResolversTypes["ConversationMutations"],
+    ParentType,
+    ContextType
+  >
+}
+
+export type PartSpecResolvers<
+  ContextType = any,
+  ParentType = ResolversTypes["PartSpec"]
+> = {
+  messageId?: Resolver<ResolversTypes["String"], ParentType, ContextType>
+  contentId?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
+}
+
+export type PresentableResolvers<
+  ContextType = any,
+  ParentType = ResolversTypes["Presentable"]
+> = {
+  id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
+  contents?: Resolver<Array<ResolversTypes["Content"]>, ParentType, ContextType>
+  date?: Resolver<ResolversTypes["String"], ParentType, ContextType>
+  from?: Resolver<ResolversTypes["Address"], ParentType, ContextType>
+  editedAt?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
+  editedBy?: Resolver<Maybe<ResolversTypes["Address"]>, ParentType, ContextType>
+}
+
+export type QueryResolvers<
+  ContextType = any,
+  ParentType = ResolversTypes["Query"]
+> = {
+  account?: Resolver<
+    Maybe<ResolversTypes["Account"]>,
+    ParentType,
+    ContextType,
+    QueryAccountArgs
+  >
+  accounts?: Resolver<Array<ResolversTypes["Account"]>, ParentType, ContextType>
+  conversation?: Resolver<
+    Maybe<ResolversTypes["Conversation"]>,
+    ParentType,
+    ContextType,
     QueryConversationArgs
   >
 }
 
-export type Resolvers<Context = any> = {
-  Account?: AccountResolvers<Context>
-  AccountMutations?: AccountMutationsResolvers<Context>
-  Address?: AddressResolvers<Context>
-  Content?: ContentResolvers<Context>
-  Conversation?: ConversationResolvers<Context>
-  ConversationMutations?: ConversationMutationsResolvers<Context>
-  Message?: MessageResolvers<Context>
-  Mutation?: MutationResolvers<Context>
-  PartSpec?: PartSpecResolvers<Context>
-  Presentable?: PresentableResolvers<Context>
-  Query?: QueryResolvers<Context>
+export type Resolvers<ContextType = any> = {
+  Account?: AccountResolvers<ContextType>
+  AccountMutations?: AccountMutationsResolvers<ContextType>
+  Address?: AddressResolvers<ContextType>
+  Content?: ContentResolvers<ContextType>
+  Conversation?: ConversationResolvers<ContextType>
+  ConversationMutations?: ConversationMutationsResolvers<ContextType>
+  Message?: MessageResolvers<ContextType>
+  Mutation?: MutationResolvers<ContextType>
+  PartSpec?: PartSpecResolvers<ContextType>
+  Presentable?: PresentableResolvers<ContextType>
+  Query?: QueryResolvers<ContextType>
 }
 
 /**
  * @deprecated
  * Use "Resolvers" root object instead. If you wish to get "IResolvers", add "typesPrefix: I" to your config.
  */
-export type IResolvers<Context = any> = Resolvers<Context>
+export type IResolvers<ContextType = any> = Resolvers<ContextType>
