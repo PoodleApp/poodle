@@ -68,7 +68,10 @@ export default function Accounts(_props: RouteComponentProps) {
     refetchQueries: [{ query: graphql.GetAllAccountsDocument }]
   })
   const [authenticate, authenticateResult] = graphql.useAuthenticateMutation()
-  const deleteAccount = graphql.useDeleteAccountMutation()
+  const [
+    deleteAccount,
+    deleteAccountResult
+  ] = graphql.useDeleteAccountMutation()
   const accountsResult = graphql.useGetAllAccountsQuery()
   const [emailValue, setEmailValue] = React.useState("")
   const [open, setOpen] = React.useState(false)
@@ -101,7 +104,12 @@ export default function Accounts(_props: RouteComponentProps) {
   return (
     <div>
       <DisplayErrors
-        results={[addAccountResult, authenticateResult, accountsResult]}
+        results={[
+          addAccountResult,
+          authenticateResult,
+          accountsResult,
+          deleteAccountResult
+        ]}
       />
       <div className={classes.appBarSpacer} />
       <AppBar>
@@ -179,5 +187,3 @@ export default function Accounts(_props: RouteComponentProps) {
     </div>
   )
 }
-
-function noop() {}

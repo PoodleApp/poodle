@@ -778,10 +778,6 @@ export const DeleteAccountDocument: DocumentNode = {
     }
   ]
 }
-export type DeleteAccountMutationFn = ReactApollo.MutationFn<
-  DeleteAccountMutation,
-  DeleteAccountMutationVariables
->
 
 export function useDeleteAccountMutation(
   baseOptions?: ReactApolloHooks.MutationHookOptions<

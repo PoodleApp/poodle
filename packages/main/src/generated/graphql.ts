@@ -317,7 +317,7 @@ export type AccountMutationsResolvers<
     AccountMutationsSyncArgs
   >
   delete?: Resolver<
-    Scalars["Boolean"],
+    ResolversTypes["Boolean"],
     ParentType,
     ContextType,
     AccountMutationsDeleteArgs
