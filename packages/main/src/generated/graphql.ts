@@ -36,6 +36,7 @@ export type AccountMutations = {
   create: Account
   authenticate: Account
   sync: Account
+  delete: Scalars["Boolean"]
 }
 
 export type AccountMutationsCreateArgs = {
@@ -47,6 +48,10 @@ export type AccountMutationsAuthenticateArgs = {
 }
 
 export type AccountMutationsSyncArgs = {
+  id: Scalars["ID"]
+}
+
+export type AccountMutationsDeleteArgs = {
   id: Scalars["ID"]
 }
 
@@ -310,6 +315,12 @@ export type AccountMutationsResolvers<
     ParentType,
     ContextType,
     AccountMutationsSyncArgs
+  >
+  delete?: Resolver<
+    ResolversTypes["Boolean"],
+    ParentType,
+    ContextType,
+    AccountMutationsDeleteArgs
   >
 }
 
