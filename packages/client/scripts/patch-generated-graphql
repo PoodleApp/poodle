@@ -7,7 +7,8 @@
 set -e
 
 # Remove each MutationFn type declaration line and the two following lines.
-sed -rE -i '/export type [[:graph:]]+MutationFn = ReactApollo.MutationFn</,+3d' src/generated/graphql.tsx
+<src/generated/graphql.tsx awk '/^export type .+MutationFn = ReactApollo.MutationFn</{c=4} !(c&&c--)' >src/generated/graphql.tsx.temp
+mv src/generated/graphql.tsx.temp src/generated/graphql.tsx
 
 # Remove a redundant import
-sed -i '/^import \* as ReactApollo from "react-apollo"/d' src/generated/graphql.tsx
+sed -i'' -e '/^import \* as ReactApollo from "react-apollo"/d' src/generated/graphql.tsx
