@@ -16,10 +16,8 @@ import {
   Toolbar,
   Modal
 } from "@material-ui/core"
-import NavigationIcon from "@material-ui/icons/Navigation"
 import AddIcon from "@material-ui/icons/Add"
 import CloseIcon from "@material-ui/icons/Close"
-import { ThemeProvider } from "@material-ui/styles"
 
 const useStyles = makeStyles(theme => ({
   fab: {
@@ -36,8 +34,6 @@ const useStyles = makeStyles(theme => ({
     display: "flex",
     flexDirection: "row",
     flexWrap: "wrap"
-    //justifyContent: "space-between",
-    //alignContent: "space-around"
   },
 
   card: {
@@ -170,13 +166,12 @@ export default function Accounts(_props: RouteComponentProps) {
         {open ? <CloseIcon /> : <AddIcon />}
       </Fab>
       <Modal
-        aria-labelledby="add account modal"
-        aria-describedby="add email account"
+        aria-describedby="add-email-form"
         open={open}
         onClose={handleClose}
       >
         <div className={classes.modal}>
-          <form onSubmit={onSubmit}>
+          <form onSubmit={onSubmit} id="add-email-form">
             <TextField
               label="Email"
               type="text"
