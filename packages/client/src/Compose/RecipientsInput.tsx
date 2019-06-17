@@ -26,6 +26,24 @@ type Props = TextFieldProps & {
 const useStyles = makeStyles(theme => ({
   chip: {
     margin: theme.spacing(0.5, 0.25)
+  },
+  container: {
+    position: "relative"
+  },
+  suggestionsContainerOpen: {
+    position: "absolute",
+    zIndex: 1,
+    marginTop: theme.spacing(1),
+    left: 0,
+    right: 0
+  },
+  suggestion: {
+    display: "block"
+  },
+  suggestionsList: {
+    margin: 0,
+    padding: 0,
+    listStyleType: "none"
   }
 }))
 
@@ -99,7 +117,9 @@ export default function RecipientsInput({ onRecipients, ...rest }: Props) {
   let addresses = data && data.addresses
 
   const suggestions: Suggestion[] = (addresses || []).map(address => {
-    return { label: address.name }
+    return {
+      label: address.name ? address.name : `${address.mailbox}@${address.host}`
+    }
   })
 
   function renderSuggestion(
@@ -126,23 +146,18 @@ export default function RecipientsInput({ onRecipients, ...rest }: Props) {
   }
 
   function getSuggestions(value: string) {
-    const { data } = graphql.useGetAllAddressesQuery({
-      variables: { inputValue: value }
-    })
-    addresses = data && data.addresses
-    return addresses
-    // const inputValue = value.toLocaleLowerCase()
-    // const inputLength = inputValue.length
-    // let count = 0
-    // return inputLength === 0
-    //   ? []
-    //   : suggestions.filter(suggestion => {
-    //       const keep = suggestion.label.toLocaleLowerCase().includes(inputValue)
-    //       if (keep) {
-    //         count++
-    //       }
-    //       return keep
-    //     })
+    const inputValue = value.toLocaleLowerCase()
+    const inputLength = inputValue.length
+    let count = 0
+    return inputLength === 0
+      ? []
+      : suggestions.filter(suggestion => {
+          const keep = suggestion.label.toLocaleLowerCase().includes(inputValue)
+          if (keep) {
+            count++
+          }
+          return keep
+        })
   }
 
   function getSuggestionValue(suggestion: Suggestion) {
@@ -166,8 +181,9 @@ export default function RecipientsInput({ onRecipients, ...rest }: Props) {
   ) {
     return (
       <TextField
-        {...inputProps as any}
+        {...(inputProps as any)}
         {...rest}
+        fullWidth
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
@@ -232,12 +248,12 @@ export default function RecipientsInput({ onRecipients, ...rest }: Props) {
           dispatch({ type: "parseAddresses" })
         }
       }}
-      // theme={{
-      //   container: classes.container,
-      //   suggestionsContainerOpen: classes.suggestionsContainerOpen,
-      //   suggestionsList: classes.suggestionsList,
-      //   suggestion: classes.suggestion,
-      // }}
+      theme={{
+        container: classes.container,
+        suggestionsContainerOpen: classes.suggestionsContainerOpen,
+        suggestionsList: classes.suggestionsList,
+        suggestion: classes.suggestion
+      }}
       renderSuggestionsContainer={options => (
         <Paper {...options.containerProps} square>
           {options.children}

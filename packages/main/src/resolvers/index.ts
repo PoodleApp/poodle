@@ -11,7 +11,7 @@ export const resolvers: Resolvers = {
     addresses(_parent, variables): Address[] {
       return db
         .prepare(
-          "select name,mailbox,host,type from message_participants where printf('%s %s@%s',name,mailbox,host) like '%' || @inputValue  || '%' "
+          "select name,mailbox,host,type from message_participants where printf('%s %s@%s',name,mailbox,host) like '%' || @inputValue  || '%' group by mailbox,host order by name,mailbox,host "
         )
         .all({ inputValue: variables.inputValue })
     }
