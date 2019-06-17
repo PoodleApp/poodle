@@ -10,6 +10,7 @@ type AccountMutations {
   create(email: String!): Account!
   authenticate(id: ID!): Account!
   sync(id: ID!): Account!
+  delete(id: ID!): Boolean!
 }
 
 type Conversation {

@@ -29,6 +29,12 @@ query getAccount($accountId: ID!) {
   }
 }
 
+mutation deleteAccount($id: ID!) {
+  accounts {
+    delete(id: $id)
+  }
+}
+
 mutation addAccount($email: String!) {
   accounts {
     create(email: $email) {

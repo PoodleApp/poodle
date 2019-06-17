@@ -29,6 +29,7 @@ export type AccountMutations = {
   create: Account
   authenticate: Account
   sync: Account
+  delete: Scalars["Boolean"]
 }
 
 export type AccountMutationsCreateArgs = {
@@ -40,6 +41,10 @@ export type AccountMutationsAuthenticateArgs = {
 }
 
 export type AccountMutationsSyncArgs = {
+  id: Scalars["ID"]
+}
+
+export type AccountMutationsDeleteArgs = {
   id: Scalars["ID"]
 }
 
@@ -208,6 +213,17 @@ export type GetAccountQuery = { __typename?: "Query" } & {
             }
         >
       }
+  >
+}
+
+export type DeleteAccountMutationVariables = {
+  id: Scalars["ID"]
+}
+
+export type DeleteAccountMutation = { __typename?: "Mutation" } & {
+  accounts: { __typename?: "AccountMutations" } & Pick<
+    AccountMutations,
+    "delete"
   >
 }
 
@@ -723,6 +739,71 @@ export function useGetAccountQuery(
     GetAccountDocument,
     baseOptions
   )
+}
+export const DeleteAccountDocument: DocumentNode = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "deleteAccount" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "id" } },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } }
+          },
+          directives: []
+        }
+      ],
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "accounts" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "delete" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "id" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "id" }
+                      }
+                    }
+                  ],
+                  directives: []
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+
+export function useDeleteAccountMutation(
+  baseOptions?: ReactApolloHooks.MutationHookOptions<
+    DeleteAccountMutation,
+    DeleteAccountMutationVariables
+  >
+) {
+  return ReactApolloHooks.useMutation<
+    DeleteAccountMutation,
+    DeleteAccountMutationVariables
+  >(DeleteAccountDocument, baseOptions)
 }
 export const AddAccountDocument: DocumentNode = {
   kind: "Document",
