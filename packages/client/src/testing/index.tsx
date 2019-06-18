@@ -22,3 +22,7 @@ export function mount(
   mounts.push(wrapper)
   return wrapper
 }
+
+export function delay(ms: number = 0): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
