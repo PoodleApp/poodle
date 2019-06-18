@@ -377,8 +377,6 @@ describe("sync", () => {
   })
 
   it("closes a connection to an account upon deleting that account", async () => {
-    // const conn = AccountManager.getConnectionManager(accountId);
-
     await graphql(
       schema,
       `
