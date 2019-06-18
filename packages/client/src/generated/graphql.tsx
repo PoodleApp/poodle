@@ -1302,7 +1302,10 @@ export const GetAllAddressesDocument: DocumentNode = {
 }
 
 export function useGetAllAddressesQuery(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<GetAllAddressesQueryVariables>
+  baseOptions?: ReactApolloHooks.QueryHookOptions<
+    GetAllAddressesQuery,
+    GetAllAddressesQueryVariables
+  >
 ) {
   return ReactApolloHooks.useQuery<
     GetAllAddressesQuery,

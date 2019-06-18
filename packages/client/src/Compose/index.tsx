@@ -66,6 +66,7 @@ const useStyles = makeStyles(theme => ({
     justifyContent: "stretch"
   },
   formInput: {
+    width: "100%",
     marginBottom: theme.spacing(1)
   },
   contentInput: {
