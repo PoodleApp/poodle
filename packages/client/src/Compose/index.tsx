@@ -165,10 +165,18 @@ export default function Compose({ accountId }: Props) {
             value={content}
             variant="outlined"
           />
-          <Button color="primary" variant="contained" type="submit">
+          <Button
+            onKeyDown={e => {
+              e.preventDefault()
+            }}
+            color="primary"
+            variant="contained"
+            type="submit"
+          >
             Send
           </Button>
         </form>
+        <script></script>
       </main>
       <Dialog
         open={Boolean(error)}
