@@ -107,7 +107,9 @@ export default function RecipientsInput({ onRecipients, ...rest }: Props) {
     recipients: [],
     inputValue: ""
   })
-  const [stateSuggestions, setSuggestions] = React.useState<Suggestion[]>([])
+  const [stateSuggestions, setSuggestions] = React.useState<graphql.Address[]>(
+    []
+  )
 
   const [focused, setFocused] = React.useState(false)
 
@@ -116,18 +118,14 @@ export default function RecipientsInput({ onRecipients, ...rest }: Props) {
   })
   let addresses = data && data.addresses
 
-  const suggestions: Suggestion[] = (addresses || []).map(address => {
-    return {
-      label: address.name ? address.name : `${address.mailbox}@${address.host}`
-    }
-  })
+  const suggestions = addresses || []
 
   function renderSuggestion(
-    suggestion: Suggestion,
+    suggestion: graphql.Address,
     { query, isHighlighted }: Autosuggest.RenderSuggestionParams
   ) {
-    const matches = match(suggestion.label, query)
-    const results = parse(suggestion.label, matches)
+    const matches = match(getSuggestionValue(suggestion), query)
+    const results = parse(getSuggestionValue(suggestion), matches)
 
     return (
       <MenuItem selected={isHighlighted} component="div">
@@ -145,27 +143,18 @@ export default function RecipientsInput({ onRecipients, ...rest }: Props) {
     )
   }
 
-  function getSuggestions(value: string) {
-    const inputValue = value.toLocaleLowerCase()
-    const inputLength = inputValue.length
-    let count = 0
-    return inputLength === 0
-      ? []
-      : suggestions.filter(suggestion => {
-          const keep = suggestion.label.toLocaleLowerCase().includes(inputValue)
-          if (keep) {
-            count++
-          }
-          return keep
-        })
+  function getSuggestions() {
+    return suggestions
   }
 
-  function getSuggestionValue(suggestion: Suggestion) {
-    return suggestion.label
+  function getSuggestionValue(suggestion: graphql.Address) {
+    return suggestion.name
+      ? `${suggestion.name} <${suggestion.mailbox}@${suggestion.host}>`
+      : `${suggestion.mailbox}@${suggestion.host}`
   }
 
-  const handleSuggestionsFetchRequested = ({ value }: any) => {
-    setSuggestions(getSuggestions(value))
+  const handleSuggestionsFetchRequested = () => {
+    setSuggestions(getSuggestions())
   }
 
   const handleSuggestionsClearRequested = () => {
@@ -183,7 +172,6 @@ export default function RecipientsInput({ onRecipients, ...rest }: Props) {
       <TextField
         {...(inputProps as any)}
         {...rest}
-        fullWidth
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
