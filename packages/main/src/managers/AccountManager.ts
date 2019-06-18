@@ -69,7 +69,7 @@ export default class AccountManager {
 
   static deleteConnectionManager(accountId: ID) {
     const connection = this.getConnectionManager(accountId)
-    connection ? connection.closeConn() : null
+    connection && connection.closeConn()
 
     delete this.connectionManagers[accountId]
   }
