@@ -25,6 +25,7 @@ type Result = any
 export default class ConnectionManager {
   private conn: Promise<Connection> | null | undefined
   private queue: JobQueue<Action<any>, Result>
+  private isClose: Boolean = false
 
   constructor(
     private connectionFactory: ConnectionFactory,
@@ -53,7 +54,7 @@ export default class ConnectionManager {
           if (this.conn === connPromise) {
             this.conn = null
           }
-          if (this.options.keepalive) {
+          if (this.options.keepalive && !this.isClose) {
             this.getConn()
           }
         }
@@ -71,6 +72,15 @@ export default class ConnectionManager {
       this.conn = connPromise
     }
     return this.conn
+  }
+
+  public async closeConn() {
+    if (this.conn) {
+      this.getConn().then(conn => {
+        this.isClose = true
+        conn.end()
+      })
+    }
   }
 
   private process<T>(action: Action<T>): kefir.Observable<T, Error> {

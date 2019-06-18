@@ -67,6 +67,13 @@ export default class AccountManager {
     return this.connectionManagers[accountId]
   }
 
+  static deleteConnectionManager(accountId: ID) {
+    const connection = this.getConnectionManager(accountId)
+    connection ? connection.closeConn() : null
+
+    delete this.connectionManagers[accountId]
+  }
+
   static async addSmtpTransporter(
     account: Account,
     credentials: OAuthCredentials
