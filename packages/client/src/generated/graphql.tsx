@@ -299,11 +299,11 @@ export type GetConversationQuery = { __typename?: "Query" } & {
   >
 }
 
-export type GetAllAddressesQueryVariables = {
+export type GetMatchingAddressesQueryVariables = {
   inputValue: Scalars["String"]
 }
 
-export type GetAllAddressesQuery = { __typename?: "Query" } & {
+export type GetMatchingAddressesQuery = { __typename?: "Query" } & {
   addresses: Array<
     { __typename?: "Address" } & Pick<Address, "host" | "mailbox" | "name">
   >
@@ -1232,13 +1232,13 @@ export function useGetConversationQuery(
     GetConversationQueryVariables
   >(GetConversationDocument, baseOptions)
 }
-export const GetAllAddressesDocument: DocumentNode = {
+export const GetMatchingAddressesDocument: DocumentNode = {
   kind: "Document",
   definitions: [
     {
       kind: "OperationDefinition",
       operation: "query",
-      name: { kind: "Name", value: "getAllAddresses" },
+      name: { kind: "Name", value: "getMatchingAddresses" },
       variableDefinitions: [
         {
           kind: "VariableDefinition",
@@ -1301,16 +1301,16 @@ export const GetAllAddressesDocument: DocumentNode = {
   ]
 }
 
-export function useGetAllAddressesQuery(
+export function useGetMatchingAddressesQuery(
   baseOptions?: ReactApolloHooks.QueryHookOptions<
-    GetAllAddressesQuery,
-    GetAllAddressesQueryVariables
+    GetMatchingAddressesQuery,
+    GetMatchingAddressesQueryVariables
   >
 ) {
   return ReactApolloHooks.useQuery<
-    GetAllAddressesQuery,
-    GetAllAddressesQueryVariables
-  >(GetAllAddressesDocument, baseOptions)
+    GetMatchingAddressesQuery,
+    GetMatchingAddressesQueryVariables
+  >(GetMatchingAddressesDocument, baseOptions)
 }
 export const SyncDocument: DocumentNode = {
   kind: "Document",

@@ -93,7 +93,7 @@ query getConversation($id: ID!) {
   }
 }
 
-query getAllAddresses($inputValue: String!) {
+query getMatchingAddresses($inputValue: String!) {
   addresses(inputValue: $inputValue) {
     host
     mailbox

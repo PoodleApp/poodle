@@ -16,6 +16,7 @@ import parse from "autosuggest-highlight/parse"
 import MenuItem from "@material-ui/core/MenuItem"
 import Autosuggest from "react-autosuggest"
 import * as graphql from "../generated/graphql"
+import clsx from "clsx"
 
 export type Address = ParsedMailbox
 
@@ -44,6 +45,9 @@ const useStyles = makeStyles(theme => ({
     margin: 0,
     padding: 0,
     listStyleType: "none"
+  },
+  fullWidth: {
+    width: "100%"
   }
 }))
 
@@ -55,10 +59,6 @@ type Action =
   | { type: "parseAddresses" }
 
 type State = { recipients: Address[]; inputValue: string }
-
-interface Suggestion {
-  label: string
-}
 
 const delimiterPattern = /(?:\s+|\s*,\s*)$/
 
@@ -101,24 +101,27 @@ function reducer(state: State, action: Action): State {
   }
 }
 
-export default function RecipientsInput({ onRecipients, ...rest }: Props) {
+export default function RecipientsInput({
+  onRecipients,
+  fullWidth,
+  className,
+  ...rest
+}: Props) {
   const classes = useStyles()
   const [{ recipients, inputValue }, dispatch] = React.useReducer(reducer, {
     recipients: [],
     inputValue: ""
   })
-  const [stateSuggestions, setSuggestions] = React.useState<graphql.Address[]>(
-    []
-  )
 
   const [focused, setFocused] = React.useState(false)
 
-  const { data } = graphql.useGetAllAddressesQuery({
+  const { data } = graphql.useGetMatchingAddressesQuery({
     variables: { inputValue }
   })
-  let addresses = data && data.addresses
 
-  const suggestions = addresses || []
+  let suggestions = data ? data.addresses : []
+
+  const skip = inputValue.trim().length < 3
 
   function renderSuggestion(
     suggestion: graphql.Address,
@@ -143,10 +146,6 @@ export default function RecipientsInput({ onRecipients, ...rest }: Props) {
     )
   }
 
-  function getSuggestions() {
-    return suggestions
-  }
-
   function getSuggestionValue(suggestion: graphql.Address) {
     return suggestion.name
       ? `${suggestion.name} <${suggestion.mailbox}@${suggestion.host}>`
@@ -154,11 +153,11 @@ export default function RecipientsInput({ onRecipients, ...rest }: Props) {
   }
 
   const handleSuggestionsFetchRequested = () => {
-    setSuggestions(getSuggestions())
+    return suggestions
   }
 
   const handleSuggestionsClearRequested = () => {
-    setSuggestions([])
+    suggestions = []
   }
 
   const onSuggestionSelected = () => {
@@ -172,6 +171,7 @@ export default function RecipientsInput({ onRecipients, ...rest }: Props) {
       <TextField
         {...(inputProps as any)}
         {...rest}
+        fullWidth
         InputProps={{
           startAdornment: (
             <InputAdornment position="start">
@@ -205,7 +205,7 @@ export default function RecipientsInput({ onRecipients, ...rest }: Props) {
 
   const autosuggestProps = {
     renderInputComponent,
-    suggestions: stateSuggestions,
+    suggestions: skip ? [] : suggestions,
     onSuggestionsFetchRequested: handleSuggestionsFetchRequested,
     onSuggestionsClearRequested: handleSuggestionsClearRequested,
     onSuggestionSelected,
@@ -237,7 +237,11 @@ export default function RecipientsInput({ onRecipients, ...rest }: Props) {
         }
       }}
       theme={{
-        container: classes.container,
+        container: clsx(
+          className,
+          { [classes.fullWidth]: fullWidth },
+          classes.container
+        ),
         suggestionsContainerOpen: classes.suggestionsContainerOpen,
         suggestionsList: classes.suggestionsList,
         suggestion: classes.suggestion
