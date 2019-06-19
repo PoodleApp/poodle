@@ -3,8 +3,14 @@ import Conversation from "./Conversation"
 import * as graphql from "./generated/graphql"
 import { delay, mount } from "./testing"
 
-const conversation: graphql.GetConversationQuery["conversation"] = {
+const conversation: graphql.Conversation = {
   id: "1",
+  date: "2019-06-17T17:20:20.806Z",
+  from: {
+    name: null,
+    mailbox: "jesse",
+    host: "sitr.us"
+  },
   labels: [],
   presentableElements: [
     {
@@ -41,35 +47,73 @@ const conversation: graphql.GetConversationQuery["conversation"] = {
   subject: "Test Thread"
 }
 
-const mocks = [
-  {
-    request: {
-      query: graphql.GetConversationDocument,
-      variables: { id: conversation.id }
-    },
-    result: {
-      data: {
-        conversation
-      }
-    }
+const getConversationMock = {
+  request: {
+    query: graphql.GetConversationDocument,
+    variables: { id: conversation.id }
   },
-  {
-    request: {
-      query: graphql.SetIsReadDocument,
-      variables: { conversationId: conversation.id, isRead: true }
-    },
-    result: {
-      data: {
-        conversation: { ...conversation, isRead: true }
-      }
+  result: {
+    data: {
+      conversation
     }
   }
-]
+}
+
+const setIsReadMock = {
+  request: {
+    query: graphql.SetIsReadDocument,
+    variables: { conversationId: conversation.id, isRead: true }
+  },
+  result: {
+    data: {
+      conversations: { setIsRead: { ...conversation, isRead: true } }
+    }
+  }
+}
 
 it("displays a conversation", async () => {
-  const app = mount(<Conversation accountId="1" conversationId="1" />, {
-    mocks
-  })
+  const mocks = [getConversationMock, setIsReadMock]
+  const app = mount(
+    <Conversation accountId="1" conversationId={conversation.id} />,
+    {
+      mocks
+    }
+  )
   await delay()
   expect(app.text()).toMatch("Hello from test")
 })
+
+it("displays a loading indicator while the conversation is leading", () => {
+  const mocks = [getConversationMock, setIsReadMock]
+  const app = mount(
+    <Conversation accountId="1" conversationId={conversation.id} />,
+    {
+      mocks
+    }
+  )
+  expect(app.text()).toMatch("Loading...")
+})
+
+// it("marks conversation as read", async () => {
+//   const mocks = [getConversationMock]
+//   const app = mount(
+//     <Conversation accountId="1" conversationId={conversation.id} />,
+//     {
+//       mocks,
+//       resolvers: {
+//         Mutation: {
+//           conversations: {
+//             setIsRead(
+//               _parent: any,
+//               { id, isRead }: { id: string; isRead: boolean }
+//             ) {
+//               console.log("called setIsRead", id, isRead)
+//               return { ...conversation, isRead: true }
+//             }
+//           }
+//         }
+//       } as any
+//     }
+//   )
+//   await delay()
+// })
