@@ -20,7 +20,7 @@ import CheckIcon from "@material-ui/icons/Check"
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft"
 import MenuIcon from "@material-ui/icons/Menu"
 import RefreshIcon from "@material-ui/icons/Refresh"
-import { navigate, Redirect, RouteComponentProps } from "@reach/router"
+import { Redirect, RouteComponentProps } from "@reach/router"
 import clsx from "clsx"
 import moment from "moment"
 import * as React from "react"
@@ -103,7 +103,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function Dashboard({ accountId }: Props) {
+export default function Dashboard({ accountId, navigate }: Props) {
   const classes = useStyles()
   const [open, setOpen] = React.useState(false)
   const { data, error, loading } = graphql.useGetAccountQuery({
@@ -153,6 +153,7 @@ export default function Dashboard({ accountId }: Props) {
           conversations={conversations!}
           selected={selected}
           dispatch={dispatch}
+          navigate={navigate}
         />
       </main>
       <ComposeButton accountId={accountId} />
@@ -239,7 +240,7 @@ function SelectedActionsBar({
       >
         <Toolbar className={classes.toolbar}>
           <span className={classes.title} />
-          <IconButton onClick={onArchive}>
+          <IconButton aria-label="archive" onClick={onArchive}>
             <ArchiveIcon />
           </IconButton>
         </Toolbar>
@@ -283,12 +284,14 @@ function Conversations({
   accountId,
   conversations,
   selected,
-  dispatch
+  dispatch,
+  navigate
 }: {
   accountId: string
   conversations: Conversation[]
   selected: string[]
   dispatch: (action: Sel.Action) => void
+  navigate: RouteComponentProps["navigate"]
 }) {
   const classes = useConversationRowStyles()
   return (
@@ -305,7 +308,7 @@ function Conversations({
                   className={clsx(isRead && classes.read, classes.message)}
                   alignItems="flex-start"
                   onClick={() =>
-                    navigate(`/accounts/${accountId}/conversations/${id}`)
+                    navigate!(`/accounts/${accountId}/conversations/${id}`)
                   }
                   selected={isSelected}
                 >
