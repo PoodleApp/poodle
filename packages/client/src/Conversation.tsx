@@ -22,6 +22,7 @@ import DisplayContent from "./DisplayContent"
 import DisplayErrors from "./DisplayErrors"
 import * as graphql from "./generated/graphql"
 import useArchive from "./hooks/useArchive"
+import useSetIsRead from "./hooks/useSetIsRead"
 import { displayParticipant } from "./Participant"
 
 type Props = RouteComponentProps & {
@@ -79,14 +80,7 @@ export default function Conversation({ accountId, conversationId }: Props) {
     accountId: accountId!,
     conversationId: conversationId!
   })
-  const [setIsRead, setIsReadResult] = graphql.useSetIsReadMutation({
-    variables: { conversationId: conversationId!, isRead: true }
-  })
-  React.useEffect(() => {
-    if (data && data.conversation && !data.conversation.isRead) {
-      setIsRead()
-    }
-  }, [data, setIsRead])
+  const setIsReadResult = useSetIsRead(data && data.conversation)
 
   // TODO: is there a way to guarantee that `accountId` and `conversationId` are available?
   if (!accountId || !conversationId) {

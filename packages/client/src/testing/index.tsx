@@ -17,7 +17,9 @@ export function mount(
   props: MockedProviderProps = {}
 ): enzyme.ReactWrapper {
   const wrapper = enzyme.mount(
-    <MockedProvider {...props}>{element}</MockedProvider>
+    <MockedProvider addTypename={false} {...props}>
+      {element}
+    </MockedProvider>
   )
   mounts.push(wrapper)
   return wrapper

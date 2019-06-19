@@ -27,7 +27,11 @@ const conversation: graphql.GetConversationQuery["conversation"] = {
         }
       ],
       date: "2019-06-17T17:20:20.806Z",
-      from: { mailbox: "jesse", host: "sitr.us" },
+      from: {
+        name: null,
+        mailbox: "jesse",
+        host: "sitr.us"
+      },
       editedAt: null,
       editedBy: null
     }
@@ -41,11 +45,22 @@ const mocks = [
   {
     request: {
       query: graphql.GetConversationDocument,
-      variables: { converationId: conversation.id }
+      variables: { id: conversation.id }
     },
     result: {
       data: {
         conversation
+      }
+    }
+  },
+  {
+    request: {
+      query: graphql.SetIsReadDocument,
+      variables: { conversationId: conversation.id, isRead: true }
+    },
+    result: {
+      data: {
+        conversation: { ...conversation, isRead: true }
       }
     }
   }
