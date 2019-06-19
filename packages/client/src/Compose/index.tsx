@@ -137,7 +137,13 @@ export default function Compose({ accountId }: Props) {
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <DisplayErrors results={[sendMessageResult]} />
-        <form className={classes.form} onSubmit={handleSubmit}>
+        <form
+          className={classes.form}
+          onSubmit={handleSubmit}
+          onKeyPress={e => {
+            e.key === "Enter" && e.preventDefault()
+          }}
+        >
           <TextField
             className={classes.formInput}
             label="Subject"
@@ -165,14 +171,7 @@ export default function Compose({ accountId }: Props) {
             value={content}
             variant="outlined"
           />
-          <Button
-            onKeyDown={e => {
-              e.preventDefault()
-            }}
-            color="primary"
-            variant="contained"
-            type="submit"
-          >
+          <Button color="primary" variant="contained" type="submit">
             Send
           </Button>
         </form>
