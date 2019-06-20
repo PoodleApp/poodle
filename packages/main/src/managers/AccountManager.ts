@@ -5,7 +5,11 @@
 
 import keytar from "keytar"
 import mailer, { Transporter } from "nodemailer"
-import { getConnectionFactory, getSmtpConfig } from "../account"
+import {
+  getConnectionFactory,
+  getSmtpConfig,
+  OauthCredentials
+} from "../account"
 import db from "../db"
 import {
   OAuthCredentials,
@@ -15,6 +19,7 @@ import {
 } from "../oauth"
 import { actions, schedule } from "../queue"
 import ConnectionManager from "./ConnectionManager"
+import ContactsApiClient from "../contacts"
 
 type Account = { id: ID; email: string }
 type ID = string
@@ -22,13 +27,15 @@ type ID = string
 export default class AccountManager {
   static connectionManagers: Record<ID, ConnectionManager> = {}
   static smtpTransporters: Record<ID, Transporter> = {}
+  static contactApiClients: Record<ID, ContactsApiClient> = {}
 
   static async addAccount(account: Account) {
     const token = await loadAccessToken(account)
     if (token) {
       await Promise.all([
         this.addConnectionManager(account, token),
-        this.addSmtpTransporter(account, token)
+        this.addSmtpTransporter(account, token),
+        this.addContactApiClient(account, token)
       ])
     }
   }
@@ -67,6 +74,14 @@ export default class AccountManager {
     return this.connectionManagers[accountId]
   }
 
+  static addContactApiClient(account: Account, token: OauthCredentials) {
+    this.contactApiClients[account.id] = new ContactsApiClient(token)
+  }
+
+  static getContactsApiClient(accountId: ID): ContactsApiClient | undefined {
+    return this.contactApiClients[accountId]
+  }
+
   static async addSmtpTransporter(
     account: Account,
     credentials: OAuthCredentials
@@ -94,8 +109,7 @@ export default class AccountManager {
   for (const account of getAccounts()) {
     const token = await loadAccessToken(account)
     if (token) {
-      AccountManager.addConnectionManager(account, token)
-      AccountManager.addSmtpTransporter(account, token)
+      AccountManager.addAccount(account)
     }
   }
 })()
