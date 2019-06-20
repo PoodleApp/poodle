@@ -29,13 +29,9 @@ it("archives a conversation from the list view", async () => {
     route: `accounts/${$.account.id}/dashboard`
   })
   await updates(app)
-  expect(findConversationRow(app, $.conversation)).toIncludeText(
-    "Hello from test"
-  )
-  app
-    .find(Avatar)
-    .first()
-    .simulate("click")
+  const row = findConversationRow(app, $.conversation)
+  expect(row).toIncludeText("Hello from test")
+  row.find(Avatar).simulate("click")
   app.find('button[aria-label="archive"]').simulate("click")
   await updates(app, 10)
   expect(findConversationRow(app, $.conversation)).not.toExist()
