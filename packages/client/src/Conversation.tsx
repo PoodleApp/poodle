@@ -14,7 +14,7 @@ import {
 import ArchiveIcon from "@material-ui/icons/Archive"
 import CloseIcon from "@material-ui/icons/Close"
 import MoreVertIcon from "@material-ui/icons/MoreVert"
-import { navigate, Redirect, RouteComponentProps } from "@reach/router"
+import { Redirect, RouteComponentProps } from "@reach/router"
 import moment from "moment"
 import * as React from "react"
 import Avatar from "./Avatar"
@@ -22,6 +22,7 @@ import DisplayContent from "./DisplayContent"
 import DisplayErrors from "./DisplayErrors"
 import * as graphql from "./generated/graphql"
 import useArchive from "./hooks/useArchive"
+import useSetIsRead from "./hooks/useSetIsRead"
 import { displayParticipant } from "./Participant"
 
 type Props = RouteComponentProps & {
@@ -70,7 +71,11 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function Conversation({ accountId, conversationId }: Props) {
+export default function Conversation({
+  accountId,
+  conversationId,
+  navigate
+}: Props) {
   const classes = useStyles()
   const { data, error, loading } = graphql.useGetConversationQuery({
     variables: { id: conversationId! }
@@ -79,14 +84,7 @@ export default function Conversation({ accountId, conversationId }: Props) {
     accountId: accountId!,
     conversationId: conversationId!
   })
-  const [setIsRead, setIsReadResult] = graphql.useSetIsReadMutation({
-    variables: { conversationId: conversationId!, isRead: true }
-  })
-  React.useEffect(() => {
-    if (data && data.conversation && !data.conversation.isRead) {
-      setIsRead()
-    }
-  }, [data, setIsRead])
+  const setIsReadResult = useSetIsRead(data && data.conversation)
 
   // TODO: is there a way to guarantee that `accountId` and `conversationId` are available?
   if (!accountId || !conversationId) {
@@ -104,12 +102,12 @@ export default function Conversation({ accountId, conversationId }: Props) {
     return <div>Conversation not found</div>
   }
 
-  const { labels, presentableElements, subject } = data.conversation
-
-  const onArchive = async () => {
+  async function onArchive() {
     await archive()
-    navigate(`/accounts/${accountId}/dashboard`)
+    navigate!(`/accounts/${accountId}/dashboard`)
   }
+
+  const { labels, presentableElements, subject } = data.conversation
 
   return (
     <div className={classes.root}>
@@ -120,7 +118,7 @@ export default function Conversation({ accountId, conversationId }: Props) {
             edge="start"
             color="inherit"
             aria-label="close view"
-            onClick={() => navigate(`/accounts/${accountId}/dashboard`)}
+            onClick={() => navigate!(`/accounts/${accountId}/dashboard`)}
           >
             <CloseIcon />
           </IconButton>
