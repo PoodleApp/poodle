@@ -60,6 +60,7 @@
     "cross-env": "^5.2.0",
     "enzyme": "^3.10.0",
     "enzyme-adapter-react-16": "^1.14.0",
+    "jest-enzyme": "^7.0.2",
     "typescript": "^3.5.2",
     "watch": "^1.0.2"
   }

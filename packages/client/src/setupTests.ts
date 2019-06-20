@@ -1,5 +1,6 @@
 import { configure } from "enzyme"
 import Adapter from "enzyme-adapter-react-16"
+import "jest-enzyme"
 import React from "react"
 import { act } from "react-dom/test-utils"
 

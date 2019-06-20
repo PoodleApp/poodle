@@ -281,11 +281,8 @@ type Conversation = NonNullable<
 >["conversations"][number]
 
 function Conversations({
-  accountId,
   conversations,
-  selected,
-  dispatch,
-  navigate
+  ...rest
 }: {
   accountId: string
   conversations: Conversation[]
@@ -297,85 +294,100 @@ function Conversations({
   return (
     <Paper>
       <List className={classes.root}>
-        {conversations.map(
-          ({ id, date, isRead, snippet, subject, from }, index) => {
-            const isSelected = selected.some(i => i === id)
-            const rowId = "conversation-row-" + id
-            return (
-              <React.Fragment key={index}>
-                <ListItem
-                  key={id}
-                  className={clsx(isRead && classes.read, classes.message)}
-                  alignItems="flex-start"
-                  onClick={() =>
-                    navigate!(`/accounts/${accountId}/conversations/${id}`)
-                  }
-                  selected={isSelected}
-                >
-                  <ListItemAvatar>
-                    {isSelected ? (
-                      <MuiAvatar
-                        role="checkbox"
-                        aria-checked="true"
-                        aria-labelledby={rowId}
-                        className={classes.selectedAvatar}
-                        onClick={event => {
-                          event.stopPropagation()
-                          dispatch(Sel.unselect(id))
-                        }}
-                      >
-                        <CheckIcon />
-                      </MuiAvatar>
-                    ) : (
-                      <Avatar
-                        role="checkbox"
-                        aria-checked="false"
-                        aria-labelledby={rowId}
-                        onClick={event => {
-                          event.stopPropagation()
-                          dispatch(Sel.select(id))
-                        }}
-                        address={from}
-                      />
-                    )}
-                  </ListItemAvatar>
-                  <ListItemText
-                    id={rowId}
-                    primary={subject || "[no subject]"}
-                    secondary={
-                      <>
-                        <Typography
-                          component="span"
-                          variant="body2"
-                          className={classes.inline}
-                          color="textPrimary"
-                        >
-                          {moment(date).calendar()}
-                          {"\u00A0"}
-                          from{" "}
-                          {from
-                            ? from.name || `${from.mailbox}@${from.host}`
-                            : "unknown sender"}
-                        </Typography>
-                        {` — ${snippet}`}
-                      </>
-                    }
-                    classes={{
-                      secondary: classes.snippetText
-                    }}
-                  />
-                </ListItem>
-                {index === conversations.length - 1 ? (
-                  ""
-                ) : (
-                  <Divider variant="inset" component="li" />
-                )}
-              </React.Fragment>
-            )
-          }
-        )}
+        {conversations.map((conversation, index) => {
+          return (
+            <React.Fragment key={conversation.id}>
+              <ConversationRow conversation={conversation} {...rest} />
+              {index === conversations.length - 1 ? (
+                ""
+              ) : (
+                <Divider variant="inset" component="li" />
+              )}
+            </React.Fragment>
+          )
+        })}
       </List>
     </Paper>
+  )
+}
+
+function ConversationRow({
+  accountId,
+  conversation,
+  selected,
+  dispatch,
+  navigate
+}: {
+  accountId: string
+  conversation: Conversation
+  selected: string[]
+  dispatch: (action: Sel.Action) => void
+  navigate: RouteComponentProps["navigate"]
+}) {
+  const { from, date, id, isRead, snippet, subject } = conversation
+  const classes = useConversationRowStyles()
+  const isSelected = selected.some(i => i === id)
+  const rowId = "conversation-row-" + id
+  return (
+    <ListItem
+      className={clsx(isRead && classes.read, classes.message)}
+      alignItems="flex-start"
+      onClick={() => navigate!(`/accounts/${accountId}/conversations/${id}`)}
+      selected={isSelected}
+    >
+      <ListItemAvatar>
+        {isSelected ? (
+          <MuiAvatar
+            role="checkbox"
+            aria-checked="true"
+            aria-labelledby={rowId}
+            className={classes.selectedAvatar}
+            onClick={event => {
+              event.stopPropagation()
+              dispatch(Sel.unselect(id))
+            }}
+          >
+            <CheckIcon />
+          </MuiAvatar>
+        ) : (
+          <Avatar
+            role="checkbox"
+            aria-checked="false"
+            aria-labelledby={rowId}
+            onClick={event => {
+              event.stopPropagation()
+              dispatch(Sel.select(id))
+            }}
+            address={from}
+          />
+        )}
+      </ListItemAvatar>
+      <ListItemText
+        id={rowId}
+        primary={subject || "[no subject]"}
+        secondary={
+          <>
+            <Typography
+              component="span"
+              variant="body2"
+              className={classes.inline}
+              color="textPrimary"
+            >
+              {moment(date).calendar()}
+              {"\u00A0"}
+              from{" "}
+              {from
+                ? from.name || `${from.mailbox}@${from.host}`
+                : "unknown sender"}
+            </Typography>
+            {` — ${snippet}`}
+          </>
+        }
+        classes={{
+          secondary: classes.snippetText
+        }}
+      />
+    </ListItem>
   )
 }
 

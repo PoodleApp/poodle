@@ -12,7 +12,7 @@ it("displays a conversation", async () => {
     }
   )
   await delay()
-  expect(app.text()).toMatch("Hello from test")
+  expect(app).toIncludeText("Hello from test")
 })
 
 it("displays a loading indicator while the conversation is leading", () => {
@@ -23,5 +23,5 @@ it("displays a loading indicator while the conversation is leading", () => {
       mocks
     }
   )
-  expect(app.text()).toMatch("Loading...")
+  expect(app).toIncludeText("Loading...")
 })
