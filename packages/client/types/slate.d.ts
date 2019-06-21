@@ -120,7 +120,7 @@ export class Value extends Immutable.Record({}) {
   static isValue(maybeValue: any): maybeValue is Value
 
   toJSON(): ValueJSON
-  addMark(path: Path, offset: number, length: number, mark: Mark): Value
+  addMark(path: Path, mark: Mark): Value
   insertNode(path: Path, node: Node): Value
   insertText(
     path: Path,
@@ -131,17 +131,11 @@ export class Value extends Immutable.Record({}) {
   isValue(value: Value): boolean
   mergeNode(path: Path): Value
   moveNode(path: Path, newPath: Path, newIndex?: number): Value
-  removeMark(path: Path, offset: number, length: number, mark: Mark): Value
+  removeMark(path: Path, mark: Mark): Value
   removeNode(path: Path): Value
   removeText(path: Path, offset: number, text: Text): Value
   setNode(path: Path, properties: any): Value
-  setMark(
-    path: Path,
-    offset: number,
-    length: number,
-    mark: Mark,
-    properties: MarkProperties
-  ): Value
+  setMark(path: Path, mark: Mark, properties: MarkProperties): Value
   setProperties(properties: ValueProperties): Value
   setSelection(properties: RangeProperties): Value
   splitNode(path: Path, position: number, properties: any): Value
@@ -252,8 +246,8 @@ export interface TextProperties {
 
 export interface TextJSON {
   key?: string
-  leaves: LeafJSON[]
   object: "text"
+  text: string
 }
 
 export interface LeafAndOffset {
@@ -785,7 +779,6 @@ export interface InsertTextOperation {
   path: Path
   offset: number
   text: string
-  marks: Mark[]
   data: Data
 }
 
@@ -800,8 +793,6 @@ export interface RemoveTextOperation {
 export interface AddMarkOperation {
   type: "add_mark"
   path: Path
-  offset: number
-  length: number
   mark: Mark
   data: Data
 }
@@ -809,8 +800,6 @@ export interface AddMarkOperation {
 export interface RemoveMarkOperation {
   type: "remove_mark"
   path: Path
-  offset: number
-  length: number
   mark: Mark
   data: Data
 }
@@ -818,8 +807,6 @@ export interface RemoveMarkOperation {
 export interface SetMarkOperation {
   type: "set_mark"
   path: Path
-  offset: number
-  length: number
   properties: MarkProperties
   newProperties: MarkProperties
   data: Data
