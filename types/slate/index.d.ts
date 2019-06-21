@@ -755,7 +755,7 @@ export class Point extends Immutable.Record({}) {
   setKey(key: string): Point
   setOffset(offset: number): Point
   setPath(path: Path): Point
-  toJSON(options: any): object
+  toJSON(options?: any): object
   unset(): Point
 }
 
