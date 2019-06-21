@@ -2,4 +2,4 @@ language: node_js
 node_js:
   - "12"
 before_install:
-  - "sudo apt-get -y libgnome-keyring-dev libsecret-1-dev"
+  - "sudo apt-get install -y libgnome-keyring-dev libsecret-1-dev"
