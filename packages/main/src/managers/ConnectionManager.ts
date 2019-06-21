@@ -75,11 +75,10 @@ export default class ConnectionManager {
   }
 
   public async closeConn() {
+    this.isClose = true
     if (this.conn) {
-      this.getConn().then(conn => {
-        this.isClose = true
-        conn.end()
-      })
+      const conn = await this.getConn()
+      conn.end()
     }
   }
 
