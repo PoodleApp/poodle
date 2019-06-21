@@ -175,7 +175,6 @@ export default function Compose({ accountId }: Props) {
             Send
           </Button>
         </form>
-        <script></script>
       </main>
       <Dialog
         open={Boolean(error)}

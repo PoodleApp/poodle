@@ -33,7 +33,7 @@ const useStyles = makeStyles(theme => ({
   },
   suggestionsContainerOpen: {
     position: "absolute",
-    zIndex: 6,
+    zIndex: theme.zIndex.snackbar,
     marginTop: theme.spacing(1),
     left: 0,
     right: 0
@@ -115,13 +115,17 @@ export default function RecipientsInput({
 
   const [focused, setFocused] = React.useState(false)
 
-  const { data } = graphql.useGetMatchingAddressesQuery({
-    variables: { inputValue }
-  })
-
-  let suggestions = data ? data.addresses : []
-
   const skip = inputValue.trim().length < 3
+
+  const { data } = graphql.useGetMatchingAddressesQuery({
+    variables: { inputValue },
+    skip
+  })
+  React.useEffect(() => {
+    onRecipients(recipients)
+  }, [onRecipients, recipients])
+
+  const suggestions = data ? data.addresses : []
 
   function renderSuggestion(
     suggestion: graphql.Address,
@@ -133,9 +137,9 @@ export default function RecipientsInput({
     return (
       <MenuItem selected={isHighlighted} component="div">
         <div>
-          {results.map(result => (
+          {results.map((result, index) => (
             <span
-              key={result.text}
+              key={index}
               style={{ fontWeight: result.highlight ? 500 : 400 }}
             >
               {result.text}
@@ -154,10 +158,6 @@ export default function RecipientsInput({
 
   const handleSuggestionsFetchRequested = () => {
     return suggestions
-  }
-
-  const handleSuggestionsClearRequested = () => {
-    suggestions = []
   }
 
   const onSuggestionSelected = () => {
@@ -207,21 +207,16 @@ export default function RecipientsInput({
     renderInputComponent,
     suggestions: skip ? [] : suggestions,
     onSuggestionsFetchRequested: handleSuggestionsFetchRequested,
-    onSuggestionsClearRequested: handleSuggestionsClearRequested,
+    onSuggestionsClearRequested: noop,
     onSuggestionSelected,
     getSuggestionValue,
     renderSuggestion
   }
 
-  React.useEffect(() => {
-    onRecipients(recipients)
-  }, [onRecipients, recipients])
-
   return (
     <Autosuggest
       {...autosuggestProps}
       inputProps={{
-        id: "react-autosuggest-simple",
         value: inputValue,
         onChange: (_event, { newValue }) =>
           dispatch({ type: "inputChange", value: newValue }),
@@ -266,3 +261,5 @@ function email({ address }: Address): string {
 function isParsedMailbox(a: ParsedMailbox | ParsedGroup): a is ParsedMailbox {
   return "address" in a
 }
+
+function noop() {}

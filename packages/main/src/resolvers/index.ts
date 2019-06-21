@@ -10,18 +10,34 @@ export const resolvers: Resolvers = {
     ...conversation.queries,
     addresses(_parent, variables): Address[] {
       const length = db
-        .prepare("select count(1) as contactCount from google_connections")
+        .prepare("select count() as contactCount from google_connections")
         .get()
-      console.log(length)
 
-      return db
-        .prepare(
-          "select name,mailbox,host from @table where printf('%s %s@%s',name,mailbox,host) like '%' || @inputValue  || '%' group by mailbox,host order by name,mailbox,host "
-        )
-        .all({
-          table: length === 1 ? "google_connections" : "message_participants",
-          inputValue: variables.inputValue
-        })
+      return length <= 1
+        ? db
+            .prepare(
+              `
+          select name,mailbox,host from message_participants 
+            where printf('%s %s@%s',name,mailbox,host) like '%' || @inputValue  || '%' 
+            group by mailbox,host 
+            order by name,mailbox,host
+          `
+            )
+            .all({
+              inputValue: variables.inputValue
+            })
+        : db
+            .prepare(
+              `
+          select name,mailbox,host from google_connections 
+            where printf('%s %s@%s',name,mailbox,host) like '%' || @inputValue  || '%' 
+            group by mailbox,host 
+            order by name,mailbox,host
+          `
+            )
+            .all({
+              inputValue: variables.inputValue
+            })
     }
   },
   Mutation: {

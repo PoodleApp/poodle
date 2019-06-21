@@ -260,10 +260,13 @@ export function persistContacts(
   connections.forEach(connection => {
     connection.emailAddresses &&
       connection.emailAddresses.forEach(email => {
-        const contact = build({ email: email.value!, name: email.displayName })
+        const contact = build({
+          email: email.value!,
+          name: connection.names && connection.names[0].displayName
+        })
 
         insertInto("google_connections", {
-          accountId,
+          account_id: accountId,
           host: contact.host,
           mailbox: contact.mailbox,
           name: contact.name
