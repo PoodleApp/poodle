@@ -1,6 +1,4 @@
 #!/bin/bash
-
-chmod +x
 set -e
 
 (cd packages/main && yarn test)
