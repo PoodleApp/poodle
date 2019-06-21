@@ -24,6 +24,7 @@ import * as graphql from "./generated/graphql"
 import useArchive from "./hooks/useArchive"
 import useSetIsRead from "./hooks/useSetIsRead"
 import { displayParticipant } from "./Participant"
+import ReplyForm from "./Compose/ReplyForm"
 
 type Props = RouteComponentProps & {
   accountId?: string
@@ -311,38 +312,6 @@ function EditForm({
       </button>
       <button type="submit" disabled={loading}>
         Send Edits
-      </button>
-    </form>
-  )
-}
-
-function ReplyForm({
-  accountId,
-  conversationId
-}: {
-  accountId: string
-  conversationId: string
-}) {
-  const [content, setContent] = React.useState("")
-  const [loading, setLoading] = React.useState(false)
-  const [reply] = graphql.useReplyMutation()
-  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setLoading(true)
-    await reply({
-      variables: {
-        accountId,
-        conversationId,
-        content: { type: "text", subtype: "plain", content }
-      }
-    })
-    setLoading(false)
-  }
-  return (
-    <form onSubmit={onSubmit}>
-      <textarea onChange={e => setContent(e.target.value)} value={content} />
-      <button type="submit" disabled={loading}>
-        Reply
       </button>
     </form>
   )
