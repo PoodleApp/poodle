@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-for d in packages/main ; do (cd "$d" && eslint src/**/*.ts)
-for d in packages/client ; do (cd "$d" && eslint src/**/*.ts)
+for d in packages/main ; do (cd "$d" && eslint src/**/*.ts); done
+for d in packages/client ; do (cd "$d" && eslint src/**/*.ts); done
 
 (cd packages/main && xvfb-run yarn test)
 (cd packages/client && xvfb-run yarn test)
