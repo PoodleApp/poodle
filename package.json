@@ -7,6 +7,7 @@
   ],
   "scripts": {
     "diagram": "unflatten -l 3 assets/architecture.dot | dot -Tsvg -o assets/architecture.svg",
+    "postinstall": "for d in types/*; do ln -s \"../../$d\" \"node_modules/@types/${d##*/}\"; done",
     "start": "./scripts/dev"
   },
   "prettier": {
