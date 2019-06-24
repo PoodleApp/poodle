@@ -262,7 +262,10 @@ export function persistContacts(
       connection.emailAddresses.forEach(email => {
         const contact = build({
           email: email.value!,
-          name: connection.names && connection.names[0].displayName
+          name:
+            connection.names &&
+            connection.names[0] &&
+            connection.names[0].displayName
         })
 
         insertInto("google_connections", {
