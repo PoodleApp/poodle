@@ -3,8 +3,8 @@ node_js:
   - "12"
 before_install:
   - "sudo apt-get install -y libgnome-keyring-dev libsecret-1-dev"
-  - "sudo apt-get install -y xvfb"
+  # - "sudo apt-get install -y xvfb"
 
-  # before_script:
-  # - "export DISPLAY=:99.0"
-  # - "sh -e /etc/init.d/xvfb start"
+  before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
