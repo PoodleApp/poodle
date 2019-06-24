@@ -4,5 +4,5 @@ set -e
 (cd packages/main && eslint src/**/*.ts)
 (cd packages/client && eslint src/**/*.ts)
 
-(cd packages/main && xvfb-run yarn test)
-(cd packages/client && xvfb-run yarn test)
+(cd packages/main && yarn test)
+(cd packages/client && yarn test)
