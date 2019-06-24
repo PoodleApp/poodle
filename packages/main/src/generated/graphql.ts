@@ -91,9 +91,13 @@ export type Conversation = {
   labels?: Maybe<Array<Scalars["String"]>>
   presentableElements: Array<Presentable>
   isRead: Scalars["Boolean"]
-  replyParticipants: Array<Address>
+  replyRecipients: Participants
   snippet?: Maybe<Scalars["String"]>
   subject?: Maybe<Scalars["String"]>
+}
+
+export type ConversationReplyRecipientsArgs = {
+  fromAccountId: Scalars["ID"]
 }
 
 export type ConversationMutations = {
@@ -152,6 +156,13 @@ export type Mutation = {
   __typename?: "Mutation"
   accounts: AccountMutations
   conversations: ConversationMutations
+}
+
+export type Participants = {
+  __typename?: "Participants"
+  from: Array<Address>
+  to: Array<Address>
+  cc: Array<Address>
 }
 
 export type PartSpec = {
@@ -269,6 +280,7 @@ export type ResolversTypes = {
   Presentable: Presentable
   Content: Content
   PartSpec: PartSpec
+  Participants: Participants
   Message: Message
   Mutation: {}
   AccountMutations: AccountMutations
@@ -363,10 +375,11 @@ export type ConversationResolvers<
     ContextType
   >
   isRead?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>
-  replyParticipants?: Resolver<
-    Array<ResolversTypes["Address"]>,
+  replyRecipients?: Resolver<
+    ResolversTypes["Participants"],
     ParentType,
-    ContextType
+    ContextType,
+    ConversationReplyRecipientsArgs
   >
   snippet?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
   subject?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
@@ -435,6 +448,15 @@ export type MutationResolvers<
   >
 }
 
+export type ParticipantsResolvers<
+  ContextType = any,
+  ParentType = ResolversTypes["Participants"]
+> = {
+  from?: Resolver<Array<ResolversTypes["Address"]>, ParentType, ContextType>
+  to?: Resolver<Array<ResolversTypes["Address"]>, ParentType, ContextType>
+  cc?: Resolver<Array<ResolversTypes["Address"]>, ParentType, ContextType>
+}
+
 export type PartSpecResolvers<
   ContextType = any,
   ParentType = ResolversTypes["PartSpec"]
@@ -483,6 +505,7 @@ export type Resolvers<ContextType = any> = {
   ConversationMutations?: ConversationMutationsResolvers<ContextType>
   Message?: MessageResolvers<ContextType>
   Mutation?: MutationResolvers<ContextType>
+  Participants?: ParticipantsResolvers<ContextType>
   PartSpec?: PartSpecResolvers<ContextType>
   Presentable?: PresentableResolvers<ContextType>
   Query?: QueryResolvers<ContextType>

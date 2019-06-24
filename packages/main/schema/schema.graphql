@@ -20,7 +20,7 @@ type Conversation {
   labels: [String!]
   presentableElements: [Presentable!]!
   isRead: Boolean!
-  replyParticipants: [Address!]!
+  replyRecipients(fromAccountId: ID!): Participants!
   snippet: String
   subject: String
 }
@@ -63,6 +63,12 @@ input AddressInput {
   host: String!
   mailbox: String!
   name: String
+}
+
+type Participants {
+  from: [Address!]!
+  to: [Address!]!
+  cc: [Address!]!
 }
 
 type Presentable {

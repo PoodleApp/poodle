@@ -69,7 +69,7 @@ it("gets metadata for a conversation from cache", async () => {
               host
             }
             isRead
-            replyRecipients
+            replyRecipients(fromAccountId: $accountId) { to { name, mailbox, host }}
             snippet
             subject
           }
@@ -87,9 +87,15 @@ it("gets metadata for a conversation from cache", async () => {
             date: "2019-05-01T22:29:31.000Z",
             from: { name: "Jesse Hallett", mailbox: "jesse", host: "sitr.us" },
             isRead: true,
-            replyRecipients: [
-              { name: "Jesse Hallett", mailbox: "jesse", host: "sitr.us" }
-            ],
+            replyRecipients: {
+              to: [
+                {
+                  name: "Jesse Hallett",
+                  mailbox: "hallettj",
+                  host: "gmail.com"
+                }
+              ]
+            },
             snippet: "A reply appears.",
             subject: "Test thread 2019-02"
           }
