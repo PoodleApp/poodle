@@ -3,4 +3,4 @@ node_js:
   - "12"
 before_install:
   - "sudo apt-get install -y libgnome-keyring-dev libsecret-1-dev"
-  - "apt-get install xvfb"
+  - "sudo apt-get install -y xvfb"
