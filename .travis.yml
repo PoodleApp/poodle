@@ -5,7 +5,7 @@ before_install:
   - "sudo apt-get install -y libgnome-keyring-dev libsecret-1-dev"
   - "sudo apt-get install -y xvfb"
 
-script: xvfb-run make test
+script: xvfb-run yarn test
 
   # before_script:
   # - "export DISPLAY=:99.0"
