@@ -91,6 +91,7 @@ export type Conversation = {
   labels?: Maybe<Array<Scalars["String"]>>
   presentableElements: Array<Presentable>
   isRead: Scalars["Boolean"]
+  replyParticipants: Array<Address>
   snippet?: Maybe<Scalars["String"]>
   subject?: Maybe<Scalars["String"]>
 }
@@ -362,6 +363,11 @@ export type ConversationResolvers<
     ContextType
   >
   isRead?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>
+  replyParticipants?: Resolver<
+    Array<ResolversTypes["Address"]>,
+    ParentType,
+    ContextType
+  >
   snippet?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
   subject?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
 }

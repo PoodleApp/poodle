@@ -67,8 +67,11 @@ const useStyles = makeStyles(theme => ({
     fontStyle: "italic"
   },
   presentable: {
-    marginTop: theme.spacing(2),
+    marginTop: theme.spacing(1),
     overflow: "visible"
+  },
+  replyForm: {
+    marginTop: theme.spacing(1)
   }
 }))
 
@@ -156,7 +159,11 @@ export default function Conversation({
             presentable={presentable}
           />
         ))}
-        <ReplyForm accountId={accountId} conversationId={conversationId} />
+        <ReplyForm
+          accountId={accountId}
+          conversationId={conversationId}
+          className={classes.replyForm}
+        />
       </main>
     </div>
   )

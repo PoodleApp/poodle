@@ -84,6 +84,7 @@ export type Conversation = {
   labels?: Maybe<Array<Scalars["String"]>>
   presentableElements: Array<Presentable>
   isRead: Scalars["Boolean"]
+  replyParticipants: Array<Address>
   snippet?: Maybe<Scalars["String"]>
   subject?: Maybe<Scalars["String"]>
 }
