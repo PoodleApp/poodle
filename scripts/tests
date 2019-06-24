@@ -1,8 +1,6 @@
 #!/bin/bash
 set -e
 
-# for d in packages/ ; do (cd "$d" && eslint src/**/*.ts); done
-# for d in packages/client ; do (cd "$d" && eslint src/**/*.ts); done
 (cd packages/main && eslint src/**/*.ts)
 (cd packages/client && eslint src/**/*.ts)
 
