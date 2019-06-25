@@ -31,17 +31,17 @@ export async function sync(accountId: cache.ID, manager: ConnectionManager) {
       .request(request.actions.getBox(specifier))
       .toPromise()
     const boxId = cache.persistBoxState(accountId, box)
-    await new BoxSync({
-      accountId,
-      box,
-      boxId,
-      manager
-    }).sync()
+    // await new BoxSync({
+    //   accountId,
+    //   box,
+    //   boxId,
+    //   manager
+    // }).sync()
   }
   const contactApiClient = AccountManager.getContactsApiClient(
     String(accountId)
   )
-  contactApiClient && contactApiClient.downloadContacts(accountId)
+  contactApiClient && (await contactApiClient.downloadContacts(accountId))
 }
 
 class BoxSync {

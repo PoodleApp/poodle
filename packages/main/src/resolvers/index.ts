@@ -13,11 +13,11 @@ export const resolvers: Resolvers = {
         .prepare("select count() as contactCount from google_connections")
         .get()
 
-      return length <= 1
+      return length.contactCount >= 1
         ? db
             .prepare(
               `
-          select name,mailbox,host from message_participants 
+          select name,mailbox,host from google_connections 
             where printf('%s %s@%s',name,mailbox,host) like '%' || @inputValue  || '%' 
             group by mailbox,host 
             order by name,mailbox,host
@@ -29,7 +29,7 @@ export const resolvers: Resolvers = {
         : db
             .prepare(
               `
-          select name,mailbox,host from google_connections 
+          select name,mailbox,host from message_participants 
             where printf('%s %s@%s',name,mailbox,host) like '%' || @inputValue  || '%' 
             group by mailbox,host 
             order by name,mailbox,host

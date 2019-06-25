@@ -121,11 +121,14 @@ export default function RecipientsInput({
     variables: { inputValue },
     skip
   })
+
   React.useEffect(() => {
     onRecipients(recipients)
   }, [onRecipients, recipients])
 
-  const suggestions = data ? data.addresses : []
+  console.log(data)
+
+  const suggestions = data && data.addresses ? data.addresses : []
 
   function renderSuggestion(
     suggestion: graphql.Address,
@@ -169,7 +172,7 @@ export default function RecipientsInput({
   ) {
     return (
       <TextField
-        {...(inputProps as any)}
+        {...inputProps as any}
         {...rest}
         fullWidth
         InputProps={{
