@@ -19,6 +19,7 @@ export default class ContactsApiClient {
   }
 
   async getContacts(accountId: ID) {
+    console.log(google.getSupportedAPIs())
     const syncToken = getSyncToken(accountId)
     const {
       data: { connections, nextSyncToken }

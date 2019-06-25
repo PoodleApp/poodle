@@ -126,8 +126,6 @@ export default function RecipientsInput({
     onRecipients(recipients)
   }, [onRecipients, recipients])
 
-  console.log(data)
-
   const suggestions = data && data.addresses ? data.addresses : []
 
   function renderSuggestion(
