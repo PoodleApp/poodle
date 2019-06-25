@@ -5,6 +5,21 @@
   "description": "Experimental email client with social features",
   "author": "Jesse Hallett <jesse@sitr.us>",
   "license": "Apache-2.0",
+  "scripts": {
+    "start": "cross-env BROWSER=none react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "codegen": "graphql-codegen --config codegen.yml && scripts/patch-generated-graphql",
+    "codegen:watch": "watch 'yarn codegen' ../main/schema src/documents",
+    "postinstall": "cd ../.. && yarn postinstall"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    "electron >= 4"
+  ],
   "dependencies": {
     "@material-ui/core": "^4.0.0",
     "@material-ui/icons": "^4.0.0",
@@ -36,20 +51,6 @@
     "string-hash": "^1.1.3",
     "typeface-roboto": "^0.0.54"
   },
-  "scripts": {
-    "start": "cross-env BROWSER=none react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "codegen": "graphql-codegen --config codegen.yml && scripts/patch-generated-graphql",
-    "codegen:watch": "watch 'yarn codegen' ../main/schema src/documents"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
-  },
-  "browserslist": [
-    "electron >= 4"
-  ],
   "devDependencies": {
     "@apollo/react-testing": "^0.1.0-beta.3",
     "@graphql-codegen/add": "^1.2.1",
