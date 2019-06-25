@@ -66,6 +66,7 @@ export const AccountMutations: AccountMutationsResolvers = {
   delete(_parent, { id }) {
     const stmt = db.prepare("delete from accounts where id = ?")
     const { changes } = stmt.run(id)
+    AccountManager.deleteConnectionManager(id)
     return changes === 1
   }
 }

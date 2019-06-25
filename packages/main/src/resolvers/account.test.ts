@@ -12,6 +12,7 @@ import * as sync from "../sync"
 import { mock } from "../testHelpers"
 import { ConnectionFactory } from "../types"
 import * as types from "./types"
+import AccountManager from "../managers/AccountManager"
 
 jest.mock("keytar")
 jest.mock("nodemailer")
@@ -373,6 +374,23 @@ describe("sync", () => {
     expect(result).toMatchObject({
       data: { accounts: { delete: false } }
     })
+  })
+
+  it("closes a connection to an account upon deleting that account", async () => {
+    await graphql(
+      schema,
+      `
+        mutation delete($id: ID!) {
+          accounts {
+            delete(id: $id)
+          }
+        }
+      `,
+      null,
+      null,
+      { id: accountId }
+    )
+    expect(AccountManager.isLoggedIn(accountId)).toBe(false)
   })
 })
 
