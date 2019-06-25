@@ -9,6 +9,17 @@ export const conversation: graphql.Conversation = {
     host: "sitr.us"
   },
   labels: [],
+  replyRecipients: {
+    to: [
+      {
+        name: null,
+        mailbox: "jesse",
+        host: "sitr.us"
+      }
+    ],
+    from: [],
+    cc: []
+  },
   presentableElements: [
     {
       id: "11",

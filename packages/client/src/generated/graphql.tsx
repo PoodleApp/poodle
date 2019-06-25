@@ -84,9 +84,13 @@ export type Conversation = {
   labels?: Maybe<Array<Scalars["String"]>>
   presentableElements: Array<Presentable>
   isRead: Scalars["Boolean"]
-  replyParticipants: Array<Address>
+  replyRecipients: Participants
   snippet?: Maybe<Scalars["String"]>
   subject?: Maybe<Scalars["String"]>
+}
+
+export type ConversationReplyRecipientsArgs = {
+  fromAccountId: Scalars["ID"]
 }
 
 export type ConversationMutations = {
@@ -145,6 +149,13 @@ export type Mutation = {
   __typename?: "Mutation"
   accounts: AccountMutations
   conversations: ConversationMutations
+}
+
+export type Participants = {
+  __typename?: "Participants"
+  from: Array<Address>
+  to: Array<Address>
+  cc: Array<Address>
 }
 
 export type PartSpec = {
