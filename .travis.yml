@@ -13,5 +13,5 @@ addons:
       - xvfb  
 
 script: 
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then yarn test
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then xvfb-run yarn test
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then yarn test; fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then xvfb-run yarn test; fi
