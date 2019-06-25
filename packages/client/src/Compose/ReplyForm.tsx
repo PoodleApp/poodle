@@ -27,15 +27,18 @@ const initialValue = Value.fromJSON({
 type Props = React.FormHTMLAttributes<HTMLFormElement> & {
   accountId: string
   conversationId: string
+  replyRecipients: graphql.Participants
 }
 
 export default function ReplyForm({
   accountId,
   conversationId,
+  replyRecipients,
   ...rest
 }: Props) {
   const [reply, replyResult] = graphql.useReplyMutation()
   const [value, setValue] = React.useState(initialValue)
+
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     await reply({

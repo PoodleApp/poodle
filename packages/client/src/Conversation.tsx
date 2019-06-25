@@ -82,7 +82,7 @@ export default function Conversation({
 }: Props) {
   const classes = useStyles()
   const { data, error, loading } = graphql.useGetConversationQuery({
-    variables: { id: conversationId! }
+    variables: { id: conversationId!, accountId: accountId! }
   })
   const [archive, archiveResult] = useArchive({
     accountId: accountId!,
@@ -111,7 +111,12 @@ export default function Conversation({
     navigate!(`/accounts/${accountId}/dashboard`)
   }
 
-  const { labels, presentableElements, subject } = data.conversation
+  const {
+    labels,
+    presentableElements,
+    replyRecipients,
+    subject
+  } = data.conversation
 
   return (
     <div className={classes.root}>
@@ -163,6 +168,7 @@ export default function Conversation({
           accountId={accountId}
           conversationId={conversationId}
           className={classes.replyForm}
+          replyRecipients={replyRecipients}
         />
       </main>
     </div>
