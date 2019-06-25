@@ -82,6 +82,13 @@ export default class AccountManager {
     return this.contactApiClients[accountId]
   }
 
+  static deleteConnectionManager(accountId: ID) {
+    const connection = this.getConnectionManager(accountId)
+    connection && connection.closeConn()
+
+    delete this.connectionManagers[accountId]
+  }
+
   static async addSmtpTransporter(
     account: Account,
     credentials: OAuthCredentials
