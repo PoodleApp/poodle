@@ -11,7 +11,7 @@ addons:
       - libgnome-keyring-dev
       - libsecret-1-dev
       - xvfb  
-# before_install:
-#   - "sudo apt-get install -y libgnome-keyring-dev libsecret-1-dev"
-#   - "sudo apt-get install -y xvfb"
-script: xvfb-run yarn test
+
+script: 
+  - if os = osx; then yarn test
+  - if os = linux; then xvfb-run yarn test
