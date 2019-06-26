@@ -93,6 +93,14 @@ query getConversation($id: ID!) {
   }
 }
 
+query getMatchingAddresses($inputValue: String!) {
+  addresses(inputValue: $inputValue) {
+    host
+    mailbox
+    name
+  }
+}
+
 mutation sync($accountId: ID!) {
   accounts {
     sync(id: $accountId) {

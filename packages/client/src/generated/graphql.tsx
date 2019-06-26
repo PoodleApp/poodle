@@ -171,11 +171,16 @@ export type Query = {
   __typename?: "Query"
   account?: Maybe<Account>
   accounts: Array<Account>
+  addresses: Array<Address>
   conversation?: Maybe<Conversation>
 }
 
 export type QueryAccountArgs = {
   id: Scalars["ID"]
+}
+
+export type QueryAddressesArgs = {
+  inputValue: Scalars["String"]
 }
 
 export type QueryConversationArgs = {
@@ -291,6 +296,16 @@ export type GetConversationQuery = { __typename?: "Query" } & {
             }
         >
       }
+  >
+}
+
+export type GetMatchingAddressesQueryVariables = {
+  inputValue: Scalars["String"]
+}
+
+export type GetMatchingAddressesQuery = { __typename?: "Query" } & {
+  addresses: Array<
+    { __typename?: "Address" } & Pick<Address, "host" | "mailbox" | "name">
   >
 }
 
@@ -1216,6 +1231,86 @@ export function useGetConversationQuery(
     GetConversationQuery,
     GetConversationQueryVariables
   >(GetConversationDocument, baseOptions)
+}
+export const GetMatchingAddressesDocument: DocumentNode = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "getMatchingAddresses" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "inputValue" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          },
+          directives: []
+        }
+      ],
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "addresses" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "inputValue" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "inputValue" }
+                }
+              }
+            ],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "host" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "mailbox" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "name" },
+                  arguments: [],
+                  directives: []
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+
+export function useGetMatchingAddressesQuery(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<
+    GetMatchingAddressesQuery,
+    GetMatchingAddressesQueryVariables
+  >
+) {
+  return ReactApolloHooks.useQuery<
+    GetMatchingAddressesQuery,
+    GetMatchingAddressesQueryVariables
+  >(GetMatchingAddressesDocument, baseOptions)
 }
 export const SyncDocument: DocumentNode = {
   kind: "Document",

@@ -8,6 +8,7 @@ import { getPartByPartId } from "./models/Message"
 import { publishMessageUpdates } from "./pubsub"
 import * as request from "./request"
 import * as kefirUtil from "./util/kefir"
+import AccountManager from "./managers/AccountManager"
 
 type R<T> = kefir.Observable<T, Error>
 
@@ -37,6 +38,10 @@ export async function sync(accountId: cache.ID, manager: ConnectionManager) {
       manager
     }).sync()
   }
+  const contactApiClient = AccountManager.getContactsApiClient(
+    String(accountId)
+  )
+  contactApiClient && (await contactApiClient.downloadContacts(accountId))
 }
 
 class BoxSync {
