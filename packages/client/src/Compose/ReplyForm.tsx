@@ -1,16 +1,17 @@
-import * as React from "react"
-import { Editor } from "slate-react"
-import * as graphql from "../generated/graphql"
-import DisplayErrors from "../DisplayErrors"
-import { Value } from "slate"
 import {
-  Card,
-  CardContent,
-  CardActions,
   Button,
+  Card,
+  CardActions,
+  CardContent,
   CardHeader
 } from "@material-ui/core"
 import ReplyIcon from "@material-ui/icons/Reply"
+import * as React from "react"
+import { Value } from "slate"
+import { Editor } from "slate-react"
+import DisplayErrors from "../DisplayErrors"
+import * as graphql from "../generated/graphql"
+import ParticipantChip from "../ParticipantChip"
 
 const initialValue = Value.fromJSON({
   document: {
@@ -54,11 +55,31 @@ export default function ReplyForm({
     })
     setValue(initialValue)
   }
+
+  const to = replyRecipients.to.map(address => (
+    <ParticipantChip
+      key={`${address.mailbox}@${address.host}`}
+      address={address}
+      nameOnly={true}
+    />
+  ))
+  const cc = replyRecipients.cc.map(address => (
+    <ParticipantChip
+      key={`${address.mailbox}@${address.host}`}
+      address={address}
+      nameOnly={true}
+    />
+  ))
+
   return (
     <form onSubmit={onSubmit} {...rest}>
       <DisplayErrors results={[replyResult]} />
       <Card>
-        <CardHeader avatar={<ReplyIcon />} title="Reply" />
+        <CardHeader
+          avatar={<ReplyIcon />}
+          title={<>Reply to {to}</>}
+          subheader={cc.length > 0 ? <>Cc {cc}</> : null}
+        />
         <CardContent>
           <Editor
             onChange={({ value }: { value: Value }) => setValue(value)}

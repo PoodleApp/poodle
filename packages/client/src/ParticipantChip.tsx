@@ -12,34 +12,41 @@ const useStyles = makeStyles(theme => ({
 }))
 
 type Props = ChipProps & {
-  recipient: Address | ParsedMailbox
+  address: Address | ParsedMailbox
+  nameOnly?: boolean
 }
 
-export default function ParticipantChip({ recipient, ...rest }: Props) {
+export default function ParticipantChip({
+  address,
+  nameOnly = false,
+  ...rest
+}: Props) {
   const classes = useStyles()
+  const addr = asAddress(address)
   return (
     <Chip
       {...rest}
-      avatar={
-        <Avatar
-          address={{
-            name: recipient.name,
-            mailbox: recipient.local,
-            host: recipient.domain
-          }}
-        />
-      }
+      avatar={<Avatar address={addr} />}
       tabIndex={-1}
-      label={display(recipient)}
+      label={display(addr, nameOnly)}
       className={classes.chip}
     />
   )
 }
 
-function display({ name, address }: ParsedMailbox): string {
-  return name ? `${name} <${address}>` : address
+function asAddress(addr: Address | ParsedMailbox): Address {
+  if ("mailbox" in addr) {
+    return addr
+  } else {
+    return { name: addr.name, mailbox: addr.local, host: addr.domain }
+  }
 }
 
-function email({ address }: ParsedMailbox): string {
-  return address
+function display({ name, mailbox, host }: Address, nameOnly?: boolean): string {
+  const email = `${mailbox}@${host}`
+  if (nameOnly) {
+    return name || email
+  } else {
+    return name ? `${name} <${email}>` : email
+  }
 }

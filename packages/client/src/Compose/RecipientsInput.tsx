@@ -81,7 +81,7 @@ export default function RecipientsInput({ onRecipients, ...rest }: Props) {
             {recipients.map(recipient => (
               <ParticipantChip
                 key={email(recipient)}
-                recipient={recipient}
+                address={recipient}
                 onDelete={() => dispatch({ type: "remove", recipient })}
               />
             ))}
