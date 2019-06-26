@@ -62,6 +62,7 @@ export function getReplyParticipants(
     Addr.normalizedEmail,
     participants.replyTo.filter(p => !Addr.equals(senderAddress, p))
   )
+
   return { to, cc, replyTo, from: Seq([senderAddress]) }
 }
 
