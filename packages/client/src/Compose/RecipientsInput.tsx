@@ -157,10 +157,6 @@ export default function RecipientsInput({
       : `${suggestion.mailbox}@${suggestion.host}`
   }
 
-  const handleSuggestionsFetchRequested = () => {
-    return suggestions
-  }
-
   const onSuggestionSelected = () => {
     dispatch({ type: "parseAddresses" })
   }
@@ -207,7 +203,7 @@ export default function RecipientsInput({
   const autosuggestProps = {
     renderInputComponent,
     suggestions: skip ? [] : suggestions,
-    onSuggestionsFetchRequested: handleSuggestionsFetchRequested,
+    onSuggestionsFetchRequested: noop,
     onSuggestionsClearRequested: noop,
     onSuggestionSelected,
     getSuggestionValue,

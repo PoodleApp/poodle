@@ -13,7 +13,7 @@ export const resolvers: Resolvers = {
         .prepare("select count() as contactCount from google_connections")
         .get()
 
-      return length.contactCount >= 1
+      return length.contactCount > 1
         ? db
             .prepare(
               `
