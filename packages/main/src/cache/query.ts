@@ -269,6 +269,12 @@ export function getPartByPartId(params: {
     .get(params)
 }
 
+export function getSyncToken(accountId: ID) {
+  return db
+    .prepare("select Google_API_syncToken from accounts where id = @accountId")
+    .get({ accountId }).Google_API_syncToken
+}
+
 /**
  * Look up a message part by RFC message ID and content ID
  *

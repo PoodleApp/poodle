@@ -178,11 +178,16 @@ export type Query = {
   __typename?: "Query"
   account?: Maybe<Account>
   accounts: Array<Account>
+  addresses: Array<Address>
   conversation?: Maybe<Conversation>
 }
 
 export type QueryAccountArgs = {
   id: Scalars["ID"]
+}
+
+export type QueryAddressesArgs = {
+  inputValue: Scalars["String"]
 }
 
 export type QueryConversationArgs = {
@@ -460,6 +465,12 @@ export type QueryResolvers<
     QueryAccountArgs
   >
   accounts?: Resolver<Array<ResolversTypes["Account"]>, ParentType, ContextType>
+  addresses?: Resolver<
+    Array<ResolversTypes["Address"]>,
+    ParentType,
+    ContextType,
+    QueryAddressesArgs
+  >
   conversation?: Resolver<
     Maybe<ResolversTypes["Conversation"]>,
     ParentType,
