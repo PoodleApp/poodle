@@ -8,7 +8,8 @@
   "scripts": {
     "diagram": "unflatten -l 3 assets/architecture.dot | dot -Tsvg -o assets/architecture.svg",
     "postinstall": "scripts/postinstall",
-    "start": "./scripts/dev"
+    "start": "./scripts/dev",
+    "test": "./scripts/tests"
   },
   "prettier": {
     "semi": false
