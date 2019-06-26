@@ -3,5 +3,4 @@ module.exports = {
   runner: "@jest-runner/electron/main",
   testEnvironment: "node",
   testPathIgnorePatterns: ["/node_modules/", "/lib/"],
-  setupTestFrameworkScriptFile: './jest.setup.js'
 }

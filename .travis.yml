@@ -4,7 +4,7 @@ node_js:
 dist: xenial
 os:
   - linux
-  - osx
+  # - osx
 addons:
   apt:
     packages:
@@ -12,6 +12,6 @@ addons:
       - libsecret-1-dev
       - xvfb  
 
-script:
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then yarn test; fi
-  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then xvfb-run yarn test; fi
+script: xvfb-run yarn test
+  # - if [ "$TRAVIS_OS_NAME" = "osx" ]; then yarn test; fi
+  # - if [ "$TRAVIS_OS_NAME" = "linux" ]; then xvfb-run yarn test; fi
