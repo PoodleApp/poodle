@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+
+(cd packages/main && eslint src/**/*.ts)
+(cd packages/client && eslint src/**/*.{ts,tsx})
+
+(cd packages/main && yarn test)
+(cd packages/client && yarn test)

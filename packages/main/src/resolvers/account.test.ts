@@ -104,7 +104,13 @@ it("adds an account", async () => {
     }
   })
   const accounts = db.query("select * from accounts")
-  expect(accounts).toEqual([{ email: "eve@test.com", id: expect.any(Number) }])
+  expect(accounts).toEqual([
+    {
+      email: "eve@test.com",
+      id: expect.any(Number),
+      Google_API_syncToken: null
+    }
+  ])
 })
 
 it("sets up connection for added account if credentials are available", async () => {
@@ -143,7 +149,13 @@ it("sets up connection for added account if credentials are available", async ()
     }
   })
   const accounts = db.query("select * from accounts")
-  expect(accounts).toEqual([{ email: "eve@test.com", id: expect.any(Number) }])
+  expect(accounts).toEqual([
+    {
+      email: "eve@test.com",
+      id: expect.any(Number),
+      Google_API_syncToken: null
+    }
+  ])
 })
 
 it("authenticates an account", async () => {
