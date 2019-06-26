@@ -12,18 +12,9 @@ import { Editor } from "slate-react"
 import DisplayErrors from "../DisplayErrors"
 import * as graphql from "../generated/graphql"
 import ParticipantChip from "../ParticipantChip"
+import serializer from "./serializer"
 
-const initialValue = Value.fromJSON({
-  document: {
-    nodes: [
-      {
-        object: "block",
-        type: "paragraph",
-        nodes: []
-      }
-    ]
-  }
-})
+const initialValue = serializer.deserialize("")
 
 type Props = React.FormHTMLAttributes<HTMLFormElement> & {
   accountId: string
@@ -48,8 +39,8 @@ export default function ReplyForm({
         conversationId,
         content: {
           type: "text",
-          subtype: "plain",
-          content: JSON.stringify(value)
+          subtype: "html",
+          content: serializer.serialize(value)
         }
       }
     })
@@ -82,7 +73,9 @@ export default function ReplyForm({
         />
         <CardContent>
           <Editor
-            onChange={({ value }: { value: Value }) => setValue(value)}
+            onChange={({ value }: { value: Value }) => {
+              setValue(value)
+            }}
             value={value}
             placeholder="Write your reply here."
           />

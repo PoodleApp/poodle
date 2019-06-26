@@ -4,11 +4,13 @@ import { delay, mount } from "./testing"
 import * as $ from "./testing/fixtures"
 
 it("displays a conversation", async () => {
-  const mocks = [$.getConversationMock, $.setIsReadMock]
   const app = mount(
-    <Conversation accountId="1" conversationId={$.conversation.id} />,
+    <Conversation
+      accountId={$.account.id}
+      conversationId={$.conversation.id}
+    />,
     {
-      mocks
+      mocks: [$.getConversationMock, $.setIsReadMock]
     }
   )
   await delay()
@@ -16,11 +18,13 @@ it("displays a conversation", async () => {
 })
 
 it("displays a loading indicator while the conversation is leading", () => {
-  const mocks = [$.getConversationMock, $.setIsReadMock]
   const app = mount(
-    <Conversation accountId="1" conversationId={$.conversation.id} />,
+    <Conversation
+      accountId={$.account.id}
+      conversationId={$.conversation.id}
+    />,
     {
-      mocks
+      mocks: [$.getConversationMock, $.setIsReadMock]
     }
   )
   expect(app).toIncludeText("Loading...")

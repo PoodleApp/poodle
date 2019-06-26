@@ -23,17 +23,15 @@ export function mount(
   {
     mocks = [],
     route = "/",
-    history = createHistory(createMemorySource(route)),
-    resolvers
+    history = createHistory(createMemorySource(route))
   }: {
     history?: History
     mocks?: MockedProviderProps["mocks"]
     route?: string
-    resolvers?: MockedProviderProps["resolvers"]
-  }
+  } = {}
 ): enzyme.ReactWrapper {
   const wrapper = enzyme.mount(
-    <MockedProvider addTypename={false} mocks={mocks} resolvers={resolvers}>
+    <MockedProvider addTypename={false} mocks={mocks}>
       <LocationProvider history={history}>{element}</LocationProvider>
     </MockedProvider>
   )
