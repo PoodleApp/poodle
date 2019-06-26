@@ -14,9 +14,10 @@ export interface Conversation {
 }
 
 type Participants = {
-  from: Collection.Indexed<imap.Address>
+  from?: Collection.Indexed<imap.Address>
   to: Collection.Indexed<imap.Address>
   cc: Collection.Indexed<imap.Address>
+  replyTo: Collection.Indexed<imap.Address>
 }
 
 export function getConversation(id: string): Conversation | null {
@@ -42,28 +43,41 @@ export function getReplyParticipants(
 ): Participants {
   const senderAddress = Addr.build(sender)
   const participants = getParticipants(conversation)
+
   const to = uniqBy(
     Addr.normalizedEmail,
-    participants.from
+    participants.replyTo
       .concat(participants.to)
       .filter(p => !Addr.equals(senderAddress, p))
   ).sortBy(Addr.formatAddress)
+
   const cc = uniqBy(
     Addr.normalizedEmail,
     participants.cc.filter(
       p => !Addr.equals(senderAddress, p) && !to.some(p_ => Addr.equals(p, p_))
     )
   ).sortBy(Addr.formatAddress)
-  return { to, cc, from: Seq([senderAddress]) }
+
+  const replyTo = uniqBy(
+    Addr.normalizedEmail,
+    participants.replyTo.filter(p => !Addr.equals(senderAddress, p))
+  )
+  return { to, cc, replyTo, from: Seq([senderAddress]) }
 }
 
 function getParticipants(conversation: Conversation): Participants {
-  const [from, to, cc] = (["from", "to", "cc"] as const).map(type =>
-    Seq(conversation.messages).flatMap(message =>
-      cache.getParticipants(message.id, type)
-    )
+  const [to, cc, replyTo] = (["to", "cc", "replyTo"] as const).map(type =>
+    Seq(conversation.messages).flatMap(message => {
+      if (type === "replyTo") {
+        const replyParts = cache.getParticipants(message.id, type)
+        return replyParts.length !== 0
+          ? replyParts
+          : cache.getParticipants(message.id, "from")
+      }
+      return cache.getParticipants(message.id, type)
+    })
   )
-  return { from, to, cc }
+  return { to, cc, replyTo }
 }
 
 type PartSpec = { messageId: string; contentId: string | null | undefined }
