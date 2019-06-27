@@ -34,6 +34,11 @@ export const Conversation: ConversationResolvers = {
       .sort()
   },
 
+  messageId({ messages }: C.Conversation) {
+    const message = messages.find(msg => Boolean(msg.envelope_messageId))
+    return message ? message.envelope_messageId : null
+  },
+
   presentableElements(conversation: C.Conversation) {
     return C.getPresentableElements(conversation).toArray()
   },
@@ -199,9 +204,30 @@ function updateAction(
   }
 }
 
+const tokenPattern = /^\S+\s+/
+
 export const queries: Partial<QueryResolvers> = {
   conversation(_parent, { id }): C.Conversation | null {
     return C.getConversation(id)
+  },
+
+  conversations(_parent, { query }): C.Conversation[] {
+    // The given query string might partially overlap a conversation subject if
+    // we are trying to provide suggestions as the user types. This code
+    // searches for successively smaller portions of the query until getting
+    // down to a single query, or to a point where there are too many results.
+    function go(q: string): C.Conversation[] {
+      const results = cache.searchBySubject(q)
+      if (results.length > 3) {
+        return []
+      }
+      if (results.length > 0) {
+        return results
+      }
+      const nextQ = q.replace(tokenPattern, "")
+      return nextQ === q ? [] : go(nextQ)
+    }
+    return go(query.trim())
   }
 }
 

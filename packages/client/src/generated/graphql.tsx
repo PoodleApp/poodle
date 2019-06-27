@@ -82,6 +82,8 @@ export type Conversation = {
   date: Scalars["String"]
   from: Address
   labels?: Maybe<Array<Scalars["String"]>>
+  /** RFC 2822 Message ID of the first message in the conversation, if available. */
+  messageId?: Maybe<Scalars["String"]>
   presentableElements: Array<Presentable>
   isRead: Scalars["Boolean"]
   replyRecipients: Participants
@@ -185,6 +187,7 @@ export type Query = {
   accounts: Array<Account>
   addresses: Array<Address>
   conversation?: Maybe<Conversation>
+  conversations: Array<Conversation>
 }
 
 export type QueryAccountArgs = {
@@ -197,6 +200,10 @@ export type QueryAddressesArgs = {
 
 export type QueryConversationArgs = {
   id: Scalars["ID"]
+}
+
+export type QueryConversationsArgs = {
+  query: Scalars["String"]
 }
 export type GetAllAccountsQueryVariables = {}
 

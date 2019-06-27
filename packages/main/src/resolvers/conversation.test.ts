@@ -613,6 +613,58 @@ it("applies edits to get updated content", async () => {
   })
 })
 
+describe("searching", () => {
+  it("lists conversations whose subject matches a given query", async () => {
+    const result = await request(
+      `
+        query searchConversations($query: String!) {
+          conversations(query: $query) {
+            messageId
+            subject
+          }
+        }
+      `,
+      { query: "test thread" }
+    )
+    expect(result).toMatchObject({
+      data: {
+        conversations: [
+          {
+            messageId:
+              "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>",
+            subject: "Test thread 2019-02"
+          }
+        ]
+      }
+    })
+  })
+
+  it("list conversations whose subject partially overlaps with a given query", async () => {
+    const result = await request(
+      `
+        query searchConversations($query: String!) {
+          conversations(query: $query) {
+            messageId
+            subject
+          }
+        }
+      `,
+      { query: "refer to the test thread" }
+    )
+    expect(result).toMatchObject({
+      data: {
+        conversations: [
+          {
+            messageId:
+              "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>",
+            subject: "Test thread 2019-02"
+          }
+        ]
+      }
+    })
+  })
+})
+
 async function sendEdit(content: {
   type: string
   subtype: string
