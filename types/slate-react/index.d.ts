@@ -76,8 +76,8 @@ export interface RenderInlineProps extends RenderNodeProps {
   node: Inline
 }
 
-export type EventHook = (
-  event: Event,
+export type EventHook<E = Event> = (
+  event: E,
   editor: CoreEditor,
   next: () => any
 ) => any
@@ -132,7 +132,7 @@ export interface Plugin extends CorePlugin {
   onDrop?: EventHook
   onFocus?: EventHook
   onInput?: EventHook
-  onKeyDown?: EventHook
+  onKeyDown?: EventHook<KeyboardEvent>
   onPaste?: EventHook
   onSelect?: EventHook
 }
