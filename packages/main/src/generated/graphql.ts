@@ -206,6 +206,8 @@ export type QueryConversationArgs = {
   id: Scalars["ID"]
 }
 
+export type ResolverTypeWrapper<T> = Promise<T> | T
+
 export type ResolverFn<TResult, TParent, TContext, TArgs> = (
   parent: TParent,
   args: TArgs,
@@ -275,6 +277,29 @@ export type DirectiveResolverFn<
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  Query: ResolverTypeWrapper<{}>
+  ID: ResolverTypeWrapper<Scalars["ID"]>
+  Account: ResolverTypeWrapper<Account>
+  String: ResolverTypeWrapper<Scalars["String"]>
+  Boolean: ResolverTypeWrapper<Scalars["Boolean"]>
+  Conversation: ResolverTypeWrapper<Conversation>
+  Address: ResolverTypeWrapper<Address>
+  Presentable: ResolverTypeWrapper<Presentable>
+  Content: ResolverTypeWrapper<Content>
+  PartSpec: ResolverTypeWrapper<PartSpec>
+  Participants: ResolverTypeWrapper<Participants>
+  Message: ResolverTypeWrapper<Message>
+  Mutation: ResolverTypeWrapper<{}>
+  AccountMutations: ResolverTypeWrapper<AccountMutations>
+  ConversationMutations: ResolverTypeWrapper<ConversationMutations>
+  PartSpecInput: PartSpecInput
+  ContentInput: ContentInput
+  MessageInput: MessageInput
+  AddressInput: AddressInput
+}
+
+/** Mapping between all available schema types and the resolvers parents */
+export type ResolversParentTypes = {
   Query: {}
   ID: Scalars["ID"]
   Account: Account
@@ -298,7 +323,7 @@ export type ResolversTypes = {
 
 export type AccountResolvers<
   ContextType = any,
-  ParentType = ResolversTypes["Account"]
+  ParentType = ResolversParentTypes["Account"]
 > = {
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
   email?: Resolver<ResolversTypes["String"], ParentType, ContextType>
@@ -314,7 +339,7 @@ export type AccountResolvers<
 
 export type AccountMutationsResolvers<
   ContextType = any,
-  ParentType = ResolversTypes["AccountMutations"]
+  ParentType = ResolversParentTypes["AccountMutations"]
 > = {
   create?: Resolver<
     ResolversTypes["Account"],
@@ -344,7 +369,7 @@ export type AccountMutationsResolvers<
 
 export type AddressResolvers<
   ContextType = any,
-  ParentType = ResolversTypes["Address"]
+  ParentType = ResolversParentTypes["Address"]
 > = {
   host?: Resolver<ResolversTypes["String"], ParentType, ContextType>
   mailbox?: Resolver<ResolversTypes["String"], ParentType, ContextType>
@@ -353,7 +378,7 @@ export type AddressResolvers<
 
 export type ContentResolvers<
   ContextType = any,
-  ParentType = ResolversTypes["Content"]
+  ParentType = ResolversParentTypes["Content"]
 > = {
   resource?: Resolver<ResolversTypes["PartSpec"], ParentType, ContextType>
   revision?: Resolver<ResolversTypes["PartSpec"], ParentType, ContextType>
@@ -364,7 +389,7 @@ export type ContentResolvers<
 
 export type ConversationResolvers<
   ContextType = any,
-  ParentType = ResolversTypes["Conversation"]
+  ParentType = ResolversParentTypes["Conversation"]
 > = {
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
   date?: Resolver<ResolversTypes["String"], ParentType, ContextType>
@@ -392,7 +417,7 @@ export type ConversationResolvers<
 
 export type ConversationMutationsResolvers<
   ContextType = any,
-  ParentType = ResolversTypes["ConversationMutations"]
+  ParentType = ResolversParentTypes["ConversationMutations"]
 > = {
   archive?: Resolver<
     ResolversTypes["Conversation"],
@@ -428,7 +453,7 @@ export type ConversationMutationsResolvers<
 
 export type MessageResolvers<
   ContextType = any,
-  ParentType = ResolversTypes["Message"]
+  ParentType = ResolversParentTypes["Message"]
 > = {
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
   date?: Resolver<ResolversTypes["String"], ParentType, ContextType>
@@ -439,7 +464,7 @@ export type MessageResolvers<
 
 export type MutationResolvers<
   ContextType = any,
-  ParentType = ResolversTypes["Mutation"]
+  ParentType = ResolversParentTypes["Mutation"]
 > = {
   accounts?: Resolver<
     ResolversTypes["AccountMutations"],
@@ -455,7 +480,7 @@ export type MutationResolvers<
 
 export type ParticipantsResolvers<
   ContextType = any,
-  ParentType = ResolversTypes["Participants"]
+  ParentType = ResolversParentTypes["Participants"]
 > = {
   from?: Resolver<Array<ResolversTypes["Address"]>, ParentType, ContextType>
   to?: Resolver<Array<ResolversTypes["Address"]>, ParentType, ContextType>
@@ -464,7 +489,7 @@ export type ParticipantsResolvers<
 
 export type PartSpecResolvers<
   ContextType = any,
-  ParentType = ResolversTypes["PartSpec"]
+  ParentType = ResolversParentTypes["PartSpec"]
 > = {
   messageId?: Resolver<ResolversTypes["String"], ParentType, ContextType>
   contentId?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
@@ -472,7 +497,7 @@ export type PartSpecResolvers<
 
 export type PresentableResolvers<
   ContextType = any,
-  ParentType = ResolversTypes["Presentable"]
+  ParentType = ResolversParentTypes["Presentable"]
 > = {
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
   contents?: Resolver<Array<ResolversTypes["Content"]>, ParentType, ContextType>
@@ -484,7 +509,7 @@ export type PresentableResolvers<
 
 export type QueryResolvers<
   ContextType = any,
-  ParentType = ResolversTypes["Query"]
+  ParentType = ResolversParentTypes["Query"]
 > = {
   account?: Resolver<
     Maybe<ResolversTypes["Account"]>,
