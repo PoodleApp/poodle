@@ -5,29 +5,48 @@ import {
   EditorProps,
   RenderBlockProps
 } from "slate-react"
-import schema from "./schema"
+import DisplayErrors from "../DisplayErrors"
+import * as graphql from "../generated/graphql"
+import { schema } from "./schema"
 import { useSuggestionsPlugin } from "./suggestions"
-
-// const plugins = [SuggestionsPlugin({ capture: /(\S+(?:\s+\S+){0,4})/ })]
 
 export default function Editor(props: EditorProps) {
   const [conversationQuery, setConversationQuery] = React.useState<
     string | null
   >(null)
-  useSuggestionsPlugin({
-    capture: /(\S+(?:\s+\S+){0,4})/,
-    onQuery(q) {
-      setConversationQuery(q), suggestions
-    }
+  const result = graphql.useSearchConversationsQuery({
+    skip: !conversationQuery,
+    variables: { query: conversationQuery! }
   })
+  const suggestions =
+    conversationQuery && result.data && result.data.conversations
+      ? result.data.conversations
+      : []
+  console.log("query", {
+    conversationQuery,
+    result,
+    suggestions
+  })
+  const { plugin } = useSuggestionsPlugin({
+    capture: /(\S+(?:\s+\S+){0,4})/,
+    onQuery: setConversationQuery,
+    suggestions
+  })
+  const plugins = React.useMemo(() => [plugin], [plugin])
   return (
-    <SlateEditor
-      {...props}
-      plugins={plugins}
-      spellCheck={true}
-      renderBlock={renderBlock}
-      schema={schema}
-    />
+    <>
+      <SlateEditor
+        {...props}
+        plugins={plugins}
+        spellCheck={true}
+        renderBlock={renderBlock}
+        schema={schema}
+      />
+      {suggestions.map(s => (
+        <p key={s.id}>{s.subject}</p>
+      ))}
+      <DisplayErrors results={[result]} />
+    </>
   )
 }
 

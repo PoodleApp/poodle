@@ -1,7 +1,9 @@
 import isUrl from "is-url"
 import { SchemaProperties } from "slate"
 
-const schema: SchemaProperties = {
+export const CONVERSATION_LINK = "conversationLink"
+
+export const schema: SchemaProperties = {
   document: {
     nodes: [
       {
@@ -19,7 +21,11 @@ const schema: SchemaProperties = {
         src: v => v && isUrl(v)
       }
     }
+  },
+  inlines: {
+    [CONVERSATION_LINK]: {
+      // Mark links as void nodes so that users can't edit the text of the node.
+      isVoid: true
+    }
   }
 }
-
-export default schema
