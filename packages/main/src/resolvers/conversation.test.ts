@@ -613,6 +613,90 @@ it("applies edits to get updated content", async () => {
   })
 })
 
+it("uses the replyTo field instead of from when replyTo is provided", async () => {
+  mock(Connection.prototype.fetch).mockImplementation(
+    mockFetchImplementation({
+      thread: [
+        testThread[0],
+        testThread[1],
+        {
+          ...testThread[1],
+          attributes: {
+            ...testThread[1].attributes,
+            envelope: {
+              ...testThread[1].attributes.envelope,
+              replyTo: [
+                { name: "Jesse Hallet", mailbox: "jesse", host: "test.com" }
+              ]
+            }
+          }
+        }
+      ]
+    })
+  )
+  await sync(accountId, connectionManager)
+
+  const result = await request(
+    `
+      query getConversation($conversationId: ID!) {
+        conversation(id: $conversationId) {
+          id
+          replyRecipients(fromAccountId: $accountId) {
+            from {
+              name
+              mailbox
+              host
+            }
+            to {
+              name
+              mailbox
+              host
+            }
+            cc {
+              name
+              mailbox
+              host
+            }
+            replyTo{
+              name
+              mailbox
+              host
+            }
+          }
+        }
+      }
+    `,
+    { conversationId: testThread[0].attributes["x-gm-thrid"] }
+  )
+  expect(result).toEqual({
+    data: {
+      conversation: {
+        id: "1624221157079778491",
+        replyRecipients: [
+          {
+            from: {
+              name: "Jesse Hallet",
+              mailbox: "halletj",
+              host: "gmail.com"
+            },
+            to: {
+              name: "Jesse Hallet",
+              mailbox: "jesse",
+              host: "sitr.us"
+            },
+            cc: null,
+            replyTo: {
+              name: "Jesse Hallet",
+              mailbox: "jesse",
+              host: "test.com"
+            }
+          }
+        ]
+      }
+    }
+  })
+})
+
 async function sendEdit(content: {
   type: string
   subtype: string
