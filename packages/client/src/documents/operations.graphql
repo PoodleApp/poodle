@@ -55,7 +55,7 @@ mutation authenticate($id: ID!) {
   }
 }
 
-query getConversation($id: ID!) {
+query getConversation($id: ID!, $accountId: ID!) {
   conversation(id: $id) {
     id
     presentableElements {
@@ -88,8 +88,33 @@ query getConversation($id: ID!) {
     }
     isRead
     labels
+    replyRecipients(fromAccountId: $accountId) {
+      from {
+        name
+        mailbox
+        host
+      }
+      to {
+        name
+        mailbox
+        host
+      }
+      cc {
+        name
+        mailbox
+        host
+      }
+    }
     snippet
     subject
+  }
+}
+
+query getMatchingAddresses($inputValue: String!) {
+  addresses(inputValue: $inputValue) {
+    host
+    mailbox
+    name
   }
 }
 

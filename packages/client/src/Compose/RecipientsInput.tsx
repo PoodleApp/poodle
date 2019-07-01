@@ -1,10 +1,16 @@
 /* eslint-disable default-case */
 
-import { Chip, InputAdornment, makeStyles, TextField } from "@material-ui/core"
+import { InputAdornment, makeStyles, TextField, Paper } from "@material-ui/core"
 import { TextFieldProps } from "@material-ui/core/TextField"
 import { parseAddressList, ParsedGroup, ParsedMailbox } from "email-addresses"
 import * as React from "react"
-import Avatar from "../Avatar"
+import match from "autosuggest-highlight/match"
+import parse from "autosuggest-highlight/parse"
+import MenuItem from "@material-ui/core/MenuItem"
+import Autosuggest from "react-autosuggest"
+import * as graphql from "../generated/graphql"
+import clsx from "clsx"
+import ParticipantChip from "../ParticipantChip"
 
 export type Address = ParsedMailbox
 
@@ -13,8 +19,26 @@ type Props = TextFieldProps & {
 }
 
 const useStyles = makeStyles(theme => ({
-  chip: {
-    margin: theme.spacing(0.5, 0.25)
+  container: {
+    position: "relative"
+  },
+  suggestionsContainerOpen: {
+    position: "absolute",
+    zIndex: theme.zIndex.snackbar,
+    marginTop: theme.spacing(1),
+    left: 0,
+    right: 0
+  },
+  suggestion: {
+    display: "block"
+  },
+  suggestionsList: {
+    margin: 0,
+    padding: 0,
+    listStyleType: "none"
+  },
+  fullWidth: {
+    width: "100%"
   }
 }))
 
@@ -31,6 +55,7 @@ const delimiterPattern = /(?:\s+|\s*,\s*)$/
 
 function reducer(state: State, action: Action): State {
   const { recipients, inputValue } = state
+
   switch (action.type) {
     case "add":
       return recipients.some(r => email(r) === email(action.recipient))
@@ -67,46 +92,111 @@ function reducer(state: State, action: Action): State {
   }
 }
 
-export default function RecipientsInput({ onRecipients, ...rest }: Props) {
+export default function RecipientsInput({
+  onRecipients,
+  fullWidth,
+  className,
+  ...rest
+}: Props) {
   const classes = useStyles()
   const [{ recipients, inputValue }, dispatch] = React.useReducer(reducer, {
     recipients: [],
     inputValue: ""
   })
+
   const [focused, setFocused] = React.useState(false)
+
+  const skip = inputValue.trim().length < 3
+
+  const { data } = graphql.useGetMatchingAddressesQuery({
+    variables: { inputValue },
+    skip
+  })
 
   React.useEffect(() => {
     onRecipients(recipients)
   }, [onRecipients, recipients])
 
+  const suggestions = data && data.addresses ? data.addresses : []
+
+  function renderSuggestion(
+    suggestion: graphql.Address,
+    { query, isHighlighted }: Autosuggest.RenderSuggestionParams
+  ) {
+    const matches = match(getSuggestionValue(suggestion), query)
+    const results = parse(getSuggestionValue(suggestion), matches)
+
+    return (
+      <MenuItem selected={isHighlighted} component="div">
+        <div>
+          {results.map((result, index) => (
+            <span
+              key={index}
+              style={{ fontWeight: result.highlight ? 500 : 400 }}
+            >
+              {result.text}
+            </span>
+          ))}
+        </div>
+      </MenuItem>
+    )
+  }
+
+  function getSuggestionValue(suggestion: graphql.Address) {
+    return suggestion.name
+      ? `${suggestion.name} <${suggestion.mailbox}@${suggestion.host}>`
+      : `${suggestion.mailbox}@${suggestion.host}`
+  }
+
+  const onSuggestionSelected = () => {
+    dispatch({ type: "parseAddresses" })
+  }
+
+  function renderInputComponent(
+    inputProps: Autosuggest.InputProps<typeof suggestions[number]>
+  ) {
+    return (
+      <TextField
+        {...(inputProps as any)}
+        {...rest}
+        fullWidth
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              {recipients.map(recipient => (
+                <ParticipantChip
+                  key={email(recipient)}
+                  address={recipient}
+                  onDelete={() => dispatch({ type: "remove", recipient })}
+                />
+              ))}
+            </InputAdornment>
+          )
+        }}
+        InputLabelProps={{
+          shrink: recipients.length > 0 || inputValue.length > 0 || focused
+        }}
+      />
+    )
+  }
+
+  const autosuggestProps = {
+    renderInputComponent,
+    suggestions: skip ? [] : suggestions,
+    onSuggestionsFetchRequested: noop,
+    onSuggestionsClearRequested: noop,
+    onSuggestionSelected,
+    getSuggestionValue,
+    renderSuggestion
+  }
+
   return (
-    <TextField
-      {...rest}
-      InputProps={{
-        startAdornment: (
-          <InputAdornment position="start">
-            {recipients.map(recipient => (
-              <Chip
-                key={email(recipient)}
-                avatar={
-                  <Avatar
-                    address={{
-                      name: recipient.name,
-                      mailbox: recipient.local,
-                      host: recipient.domain
-                    }}
-                  />
-                }
-                tabIndex={-1}
-                label={display(recipient)}
-                className={classes.chip}
-                onDelete={() => dispatch({ type: "remove", recipient })}
-              />
-            ))}
-          </InputAdornment>
-        ),
-        onChange: event =>
-          dispatch({ type: "inputChange", value: event.target.value }),
+    <Autosuggest
+      {...autosuggestProps}
+      inputProps={{
+        value: inputValue,
+        onChange: (_event, { newValue }) =>
+          dispatch({ type: "inputChange", value: newValue }),
         onKeyDown: event => {
           if (event.key === "Backspace") {
             dispatch({ type: "backspace" })
@@ -118,16 +208,23 @@ export default function RecipientsInput({ onRecipients, ...rest }: Props) {
           dispatch({ type: "parseAddresses" })
         }
       }}
-      InputLabelProps={{
-        shrink: recipients.length > 0 || inputValue.length > 0 || focused
+      theme={{
+        container: clsx(
+          className,
+          { [classes.fullWidth]: fullWidth },
+          classes.container
+        ),
+        suggestionsContainerOpen: classes.suggestionsContainerOpen,
+        suggestionsList: classes.suggestionsList,
+        suggestion: classes.suggestion
       }}
-      value={inputValue}
+      renderSuggestionsContainer={options => (
+        <Paper {...options.containerProps} square>
+          {options.children}
+        </Paper>
+      )}
     />
   )
-}
-
-function display({ name, address }: Address): string {
-  return name ? `${name} <${address}>` : address
 }
 
 function email({ address }: Address): string {
@@ -137,3 +234,5 @@ function email({ address }: Address): string {
 function isParsedMailbox(a: ParsedMailbox | ParsedGroup): a is ParsedMailbox {
   return "address" in a
 }
+
+function noop() {}

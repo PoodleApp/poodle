@@ -20,6 +20,7 @@ type Conversation {
   labels: [String!]
   presentableElements: [Presentable!]!
   isRead: Boolean!
+  replyRecipients(fromAccountId: ID!): Participants!
   snippet: String
   subject: String
 }
@@ -64,6 +65,12 @@ input AddressInput {
   name: String
 }
 
+type Participants {
+  from: [Address!]!
+  to: [Address!]!
+  cc: [Address!]!
+}
+
 type Presentable {
   id: ID!
   contents: [Content!]!
@@ -105,6 +112,7 @@ type Mutation {
 type Query {
   account(id: ID!): Account
   accounts: [Account!]!
+  addresses(inputValue: String!): [Address!]!
   conversation(id: ID!): Conversation
 }
 

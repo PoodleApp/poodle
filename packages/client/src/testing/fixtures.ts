@@ -9,6 +9,17 @@ export const conversation: graphql.Conversation = {
     host: "sitr.us"
   },
   labels: [],
+  replyRecipients: {
+    to: [
+      {
+        name: null,
+        mailbox: "jesse",
+        host: "sitr.us"
+      }
+    ],
+    from: [],
+    cc: []
+  },
   presentableElements: [
     {
       id: "11",
@@ -44,24 +55,24 @@ export const conversation: graphql.Conversation = {
   subject: "Test Thread"
 }
 
-export const getConversationMock = {
-  request: {
-    query: graphql.GetConversationDocument,
-    variables: { id: conversation.id }
-  },
-  result: {
-    data: {
-      conversation
-    }
-  }
-}
-
 export const account: graphql.Account = {
   id: "1",
   conversations: [conversation],
   email: "jesse@sitr.us",
   loggedIn: true,
   messages: []
+}
+
+export const getConversationMock = {
+  request: {
+    query: graphql.GetConversationDocument,
+    variables: { id: conversation.id, accountId: account.id }
+  },
+  result: {
+    data: {
+      conversation
+    }
+  }
 }
 
 export const getAccountMock = {
@@ -84,6 +95,30 @@ export const archiveMock = {
   result: {
     data: {
       conversations: { archive: conversation }
+    }
+  }
+}
+
+export function replyMock(content: string) {
+  return {
+    request: {
+      query: graphql.ReplyDocument,
+      variables: {
+        accountId: account.id,
+        conversationId: conversation.id,
+        content: {
+          type: "text",
+          subtype: "html",
+          content
+        }
+      }
+    },
+    result: {
+      data: {
+        conversations: {
+          reply: conversation
+        }
+      }
     }
   }
 }

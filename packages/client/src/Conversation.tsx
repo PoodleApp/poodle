@@ -24,6 +24,7 @@ import * as graphql from "./generated/graphql"
 import useArchive from "./hooks/useArchive"
 import useSetIsRead from "./hooks/useSetIsRead"
 import { displayParticipant } from "./Participant"
+import ReplyForm from "./Compose/ReplyForm"
 
 type Props = RouteComponentProps & {
   accountId?: string
@@ -66,8 +67,11 @@ const useStyles = makeStyles(theme => ({
     fontStyle: "italic"
   },
   presentable: {
-    marginTop: theme.spacing(2),
+    marginTop: theme.spacing(1),
     overflow: "visible"
+  },
+  replyForm: {
+    marginTop: theme.spacing(1)
   }
 }))
 
@@ -78,7 +82,7 @@ export default function Conversation({
 }: Props) {
   const classes = useStyles()
   const { data, error, loading } = graphql.useGetConversationQuery({
-    variables: { id: conversationId! }
+    variables: { id: conversationId!, accountId: accountId! }
   })
   const [archive, archiveResult] = useArchive({
     accountId: accountId!,
@@ -107,7 +111,12 @@ export default function Conversation({
     navigate!(`/accounts/${accountId}/dashboard`)
   }
 
-  const { labels, presentableElements, subject } = data.conversation
+  const {
+    labels,
+    presentableElements,
+    replyRecipients,
+    subject
+  } = data.conversation
 
   return (
     <div className={classes.root}>
@@ -155,7 +164,12 @@ export default function Conversation({
             presentable={presentable}
           />
         ))}
-        <ReplyForm accountId={accountId} conversationId={conversationId} />
+        <ReplyForm
+          accountId={accountId}
+          conversationId={conversationId}
+          className={classes.replyForm}
+          replyRecipients={replyRecipients}
+        />
       </main>
     </div>
   )
@@ -311,38 +325,6 @@ function EditForm({
       </button>
       <button type="submit" disabled={loading}>
         Send Edits
-      </button>
-    </form>
-  )
-}
-
-function ReplyForm({
-  accountId,
-  conversationId
-}: {
-  accountId: string
-  conversationId: string
-}) {
-  const [content, setContent] = React.useState("")
-  const [loading, setLoading] = React.useState(false)
-  const [reply] = graphql.useReplyMutation()
-  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setLoading(true)
-    await reply({
-      variables: {
-        accountId,
-        conversationId,
-        content: { type: "text", subtype: "plain", content }
-      }
-    })
-    setLoading(false)
-  }
-  return (
-    <form onSubmit={onSubmit}>
-      <textarea onChange={e => setContent(e.target.value)} value={content} />
-      <button type="submit" disabled={loading}>
-        Reply
       </button>
     </form>
   )

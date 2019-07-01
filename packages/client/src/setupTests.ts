@@ -10,6 +10,12 @@ configure({ adapter: new Adapter() })
 // `window.require("electron")`
 window.require = require
 
+// Stub some DOM methods that will be called during tests.
+window.getSelection = () =>
+  ({
+    removeAllRanges: () => {}
+  } as any)
+
 // Buckle up, this is a ridiculous workaround. This code avoids a warning when
 // testing components that use react-apollo hooks.
 //
@@ -51,17 +57,12 @@ React.useReducer = ((reducer: Function, init: unknown) => {
 const useState = React.useState
 React.useState = ((init: any) => {
   const [value, setter] = useState(init)
-  const isMutation = init && init.called === false && init.loading === false
-  const isSubscription =
-    init && init.loading === true && "error" in init && "data" in init
-  return isMutation || isSubscription
-    ? [
-        value,
-        (...args: any[]) => {
-          act(() => {
-            ;(setter as any)(...args)
-          })
-        }
-      ]
-    : [value, setter]
+  return [
+    value,
+    (...args: any[]) => {
+      act(() => {
+        ;(setter as any)(...args)
+      })
+    }
+  ]
 }) as typeof useState
