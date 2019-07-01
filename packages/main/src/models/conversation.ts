@@ -41,7 +41,7 @@ export function getReplyParticipants(
   sender: cache.Account
 ): Participants {
   const senderAddress = Addr.build(sender)
-  const participants = getParticipants(conversation)
+  const participants = getParticipantMap(conversation)
   const to = uniqBy(
     Addr.normalizedEmail,
     participants.from
@@ -57,7 +57,7 @@ export function getReplyParticipants(
   return { to, cc, from: Seq([senderAddress]) }
 }
 
-function getParticipants(conversation: Conversation): Participants {
+function getParticipantMap(conversation: Conversation): Participants {
   const [from, to, cc] = (["from", "to", "cc"] as const).map(type =>
     Seq(conversation.messages).flatMap(message =>
       cache.getParticipants(message.id, type)

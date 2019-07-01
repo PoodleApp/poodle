@@ -1,22 +1,16 @@
 /* eslint-disable default-case */
 
-import {
-  Chip,
-  InputAdornment,
-  makeStyles,
-  TextField,
-  Paper
-} from "@material-ui/core"
+import { InputAdornment, makeStyles, TextField, Paper } from "@material-ui/core"
 import { TextFieldProps } from "@material-ui/core/TextField"
 import { parseAddressList, ParsedGroup, ParsedMailbox } from "email-addresses"
 import * as React from "react"
-import Avatar from "../Avatar"
 import match from "autosuggest-highlight/match"
 import parse from "autosuggest-highlight/parse"
 import MenuItem from "@material-ui/core/MenuItem"
 import Autosuggest from "react-autosuggest"
 import * as graphql from "../generated/graphql"
 import clsx from "clsx"
+import ParticipantChip from "../ParticipantChip"
 
 export type Address = ParsedMailbox
 
@@ -25,9 +19,6 @@ type Props = TextFieldProps & {
 }
 
 const useStyles = makeStyles(theme => ({
-  chip: {
-    margin: theme.spacing(0.5, 0.25)
-  },
   container: {
     position: "relative"
   },
@@ -173,20 +164,9 @@ export default function RecipientsInput({
           startAdornment: (
             <InputAdornment position="start">
               {recipients.map(recipient => (
-                <Chip
+                <ParticipantChip
                   key={email(recipient)}
-                  avatar={
-                    <Avatar
-                      address={{
-                        name: recipient.name,
-                        mailbox: recipient.local,
-                        host: recipient.domain
-                      }}
-                    />
-                  }
-                  tabIndex={-1}
-                  label={display(recipient)}
-                  className={classes.chip}
+                  address={recipient}
                   onDelete={() => dispatch({ type: "remove", recipient })}
                 />
               ))}
@@ -245,10 +225,6 @@ export default function RecipientsInput({
       )}
     />
   )
-}
-
-function display({ name, address }: Address): string {
-  return name ? `${name} <${address}>` : address
 }
 
 function email({ address }: Address): string {

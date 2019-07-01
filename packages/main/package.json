@@ -11,7 +11,7 @@
     "codegen": "graphql-codegen --config codegen.yml",
     "codegen:watch": "watch 'yarn codegen' schema",
     "lint": "eslint . --ext .ts,.tsx",
-    "postinstall": "cross-env FORCE_YARN=true electron-builder install-app-deps",
+    "postinstall": "cross-env FORCE_YARN=true electron-builder install-app-deps && cd ../.. && yarn postinstall",
     "prestart": "yarn run build",
     "start": "electron .",
     "test": "jest --runInBand"

@@ -13,6 +13,7 @@ import { mustGetAccount } from "../models/account"
 import * as C from "../models/conversation"
 import { actions, schedule } from "../queue"
 import { nonNull } from "../util/array"
+import { mapObject } from "../util/object"
 import * as types from "./types"
 
 export const Conversation: ConversationResolvers = {
@@ -41,6 +42,12 @@ export const Conversation: ConversationResolvers = {
     return messages.every(message =>
       cache.getFlags(message.id).includes("\\Seen")
     )
+  },
+
+  replyRecipients(conversation: C.Conversation, { fromAccountId }) {
+    const account = mustGetAccount(fromAccountId)
+    const recipients = C.getReplyParticipants(conversation, account)
+    return mapObject(recipients, rs => rs.toArray())
   },
 
   snippet(conversation: C.Conversation) {

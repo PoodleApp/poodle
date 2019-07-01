@@ -84,8 +84,13 @@ export type Conversation = {
   labels?: Maybe<Array<Scalars["String"]>>
   presentableElements: Array<Presentable>
   isRead: Scalars["Boolean"]
+  replyRecipients: Participants
   snippet?: Maybe<Scalars["String"]>
   subject?: Maybe<Scalars["String"]>
+}
+
+export type ConversationReplyRecipientsArgs = {
+  fromAccountId: Scalars["ID"]
 }
 
 export type ConversationMutations = {
@@ -144,6 +149,13 @@ export type Mutation = {
   __typename?: "Mutation"
   accounts: AccountMutations
   conversations: ConversationMutations
+}
+
+export type Participants = {
+  __typename?: "Participants"
+  from: Array<Address>
+  to: Array<Address>
+  cc: Array<Address>
 }
 
 export type PartSpec = {
@@ -255,6 +267,7 @@ export type AuthenticateMutation = { __typename?: "Mutation" } & {
 
 export type GetConversationQueryVariables = {
   id: Scalars["ID"]
+  accountId: Scalars["ID"]
 }
 
 export type GetConversationQuery = { __typename?: "Query" } & {
@@ -295,6 +308,26 @@ export type GetConversationQuery = { __typename?: "Query" } & {
               >
             }
         >
+        replyRecipients: { __typename?: "Participants" } & {
+          from: Array<
+            { __typename?: "Address" } & Pick<
+              Address,
+              "name" | "mailbox" | "host"
+            >
+          >
+          to: Array<
+            { __typename?: "Address" } & Pick<
+              Address,
+              "name" | "mailbox" | "host"
+            >
+          >
+          cc: Array<
+            { __typename?: "Address" } & Pick<
+              Address,
+              "name" | "mailbox" | "host"
+            >
+          >
+        }
       }
   >
 }
@@ -1000,6 +1033,18 @@ export const GetConversationDocument: DocumentNode = {
             type: { kind: "NamedType", name: { kind: "Name", value: "ID" } }
           },
           directives: []
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "accountId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } }
+          },
+          directives: []
         }
       ],
       directives: [],
@@ -1199,6 +1244,113 @@ export const GetConversationDocument: DocumentNode = {
                   name: { kind: "Name", value: "labels" },
                   arguments: [],
                   directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "replyRecipients" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "fromAccountId" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "accountId" }
+                      }
+                    }
+                  ],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "from" },
+                        arguments: [],
+                        directives: [],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "name" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "mailbox" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "host" },
+                              arguments: [],
+                              directives: []
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "to" },
+                        arguments: [],
+                        directives: [],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "name" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "mailbox" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "host" },
+                              arguments: [],
+                              directives: []
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "cc" },
+                        arguments: [],
+                        directives: [],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "name" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "mailbox" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "host" },
+                              arguments: [],
+                              directives: []
+                            }
+                          ]
+                        }
+                      }
+                    ]
+                  }
                 },
                 {
                   kind: "Field",
