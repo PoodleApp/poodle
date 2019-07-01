@@ -13,13 +13,19 @@ function capturedValue(value: Value, capture: RegExp): string | null {
   return match && match[1]
 }
 
-export default function useSuggestionsPlugin({ capture }: { capture: RegExp }) {
-  const [query, setQuery] = React.useState<string | null>(null)
-
+export function useSuggestionsPlugin({
+  capture,
+  onQuery,
+  suggestions
+}: {
+  capture: RegExp
+  onQuery: (q: string | null) => void
+  suggestions: TODO
+}) {
   const onKeyDown: EventHook<KeyboardEvent> = (_event, editor, next) => {
     // const { keyCode } = event
     const query = capturedValue(editor.value, capture)
-    setQuery(query)
+    onQuery(query)
 
     // if (query) {
     //   // Up and down arrow keys will cycle through suggestions instead of usual

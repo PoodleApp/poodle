@@ -110,6 +110,14 @@ query getConversation($id: ID!, $accountId: ID!) {
   }
 }
 
+query searchConversations($query: String!) {
+  conversations(query: $query) {
+    id
+    messageId
+    subject
+  }
+}
+
 query getMatchingAddresses($inputValue: String!) {
   addresses(inputValue: $inputValue) {
     host

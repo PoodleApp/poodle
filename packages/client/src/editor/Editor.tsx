@@ -6,11 +6,20 @@ import {
   RenderBlockProps
 } from "slate-react"
 import schema from "./schema"
-import SuggestionsPlugin from "./suggestions"
+import { useSuggestionsPlugin } from "./suggestions"
 
-const plugins = [SuggestionsPlugin({ capture: /(\S+(?:\s+\S+){0,4})/ })]
+// const plugins = [SuggestionsPlugin({ capture: /(\S+(?:\s+\S+){0,4})/ })]
 
 export default function Editor(props: EditorProps) {
+  const [conversationQuery, setConversationQuery] = React.useState<
+    string | null
+  >(null)
+  useSuggestionsPlugin({
+    capture: /(\S+(?:\s+\S+){0,4})/,
+    onQuery(q) {
+      setConversationQuery(q), suggestions
+    }
+  })
   return (
     <SlateEditor
       {...props}

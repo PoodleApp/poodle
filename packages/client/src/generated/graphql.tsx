@@ -339,6 +339,19 @@ export type GetConversationQuery = { __typename?: "Query" } & {
   >
 }
 
+export type SearchConversationsQueryVariables = {
+  query: Scalars["String"]
+}
+
+export type SearchConversationsQuery = { __typename?: "Query" } & {
+  conversations: Array<
+    { __typename?: "Conversation" } & Pick<
+      Conversation,
+      "id" | "messageId" | "subject"
+    >
+  >
+}
+
 export type GetMatchingAddressesQueryVariables = {
   inputValue: Scalars["String"]
 }
@@ -1390,6 +1403,86 @@ export function useGetConversationQuery(
     GetConversationQuery,
     GetConversationQueryVariables
   >(GetConversationDocument, baseOptions)
+}
+export const SearchConversationsDocument: DocumentNode = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "searchConversations" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "query" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          },
+          directives: []
+        }
+      ],
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "conversations" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "query" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "query" }
+                }
+              }
+            ],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "id" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "messageId" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "subject" },
+                  arguments: [],
+                  directives: []
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+
+export function useSearchConversationsQuery(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<
+    SearchConversationsQuery,
+    SearchConversationsQueryVariables
+  >
+) {
+  return ReactApolloHooks.useQuery<
+    SearchConversationsQuery,
+    SearchConversationsQueryVariables
+  >(SearchConversationsDocument, baseOptions)
 }
 export const GetMatchingAddressesDocument: DocumentNode = {
   kind: "Document",
