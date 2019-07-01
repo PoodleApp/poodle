@@ -3,7 +3,7 @@ import * as React from "react"
 import "./App.css"
 import * as graphql from "./generated/graphql"
 import Accounts from "./Accounts"
-import Compose from "./Compose"
+import Compose from "./compose/Compose"
 import Conversation from "./Conversation"
 import Dashboard from "./Dashboard"
 

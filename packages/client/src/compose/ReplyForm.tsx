@@ -7,54 +7,11 @@ import {
 } from "@material-ui/core"
 import ReplyIcon from "@material-ui/icons/Reply"
 import * as React from "react"
-import { Editor as CoreEditor, Value } from "slate"
-import {
-  Editor,
-  RenderBlockProps,
-  EventHook,
-  RenderMarkProps
-} from "slate-react"
+import { Value } from "slate"
 import DisplayErrors from "../DisplayErrors"
+import { Editor, serializer } from "../editor"
 import * as graphql from "../generated/graphql"
 import ParticipantChip from "../ParticipantChip"
-import serializer from "./serializer"
-
-function MarkHotKey({ type, key }: { type: string; key: string }) {
-  const onKeyDown: EventHook<KeyboardEvent> = (event, editor, next) => {
-    if (!event.ctrlKey || event.key !== key) {
-      return next()
-    }
-    event.preventDefault()
-    editor.toggleMark(type)
-  }
-  return {
-    onKeyDown
-  }
-}
-
-function BlockHotKey({ type, key }: { type: string; key: string }) {
-  const onKeyDown: EventHook<KeyboardEvent> = (event, editor, next) => {
-    if (!event.ctrlKey || event.key !== key) {
-      return next()
-    }
-    const isSpecialBlock = editor.value.blocks.some(
-      block => block.type === type
-    )
-    event.preventDefault()
-    editor.setBlocks(isSpecialBlock ? "paragraph" : "code")
-  }
-  return {
-    onKeyDown
-  }
-}
-
-const plugins = [
-  MarkHotKey({ key: "b", type: "bold" }),
-  MarkHotKey({ key: "`", type: "code" }),
-  MarkHotKey({ key: "i", type: "italic" }),
-  MarkHotKey({ key: "~", type: "strikethrough" }),
-  MarkHotKey({ key: "u", type: "underline" })
-]
 
 const initialValue = serializer.deserialize("")
 
@@ -120,10 +77,6 @@ export default function ReplyForm({
             }}
             value={value}
             placeholder="Write your reply here."
-            plugins={plugins}
-            spellCheck={true}
-            renderBlock={renderBlock}
-            renderMark={renderMark}
           />
         </CardContent>
         <CardActions>
@@ -133,49 +86,5 @@ export default function ReplyForm({
         </CardActions>
       </Card>
     </form>
-  )
-}
-
-function renderBlock(
-  props: RenderBlockProps,
-  _editor: CoreEditor,
-  next: () => any
-) {
-  switch (props.node.type) {
-    case "code":
-      return <CodeNode {...props} />
-    default:
-      return next()
-  }
-}
-
-function renderMark(
-  props: RenderMarkProps,
-  _editor: CoreEditor,
-  next: () => any
-) {
-  const tags: Record<string, string> = {
-    bold: "strong",
-    code: "code",
-    italic: "em",
-    strikethrough: "del",
-    underline: "u"
-  }
-  const tag = tags[props.mark.type]
-  if (tag) {
-    return React.createElement(tag, {
-      ...props.attributes,
-      children: props.children
-    })
-  } else {
-    return next()
-  }
-}
-
-function CodeNode(props: RenderBlockProps) {
-  return (
-    <pre {...props.attributes}>
-      <code>{props.children}</code>
-    </pre>
   )
 }

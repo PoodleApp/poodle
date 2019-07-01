@@ -24,7 +24,7 @@ import * as graphql from "./generated/graphql"
 import useArchive from "./hooks/useArchive"
 import useSetIsRead from "./hooks/useSetIsRead"
 import { displayParticipant } from "./Participant"
-import ReplyForm from "./Compose/ReplyForm"
+import ReplyForm from "./compose/ReplyForm"
 
 type Props = RouteComponentProps & {
   accountId?: string

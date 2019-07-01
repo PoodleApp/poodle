@@ -1,16 +1,13 @@
+/*
+ * The Slate editor uses its own AST representation for content. This module
+ * defines how editor content is serialized to HTML, and deserialized from HTML.
+ */
+
 import Html, { Rule } from "slate-html-serializer"
 import * as React from "react"
 
 const BLOCK_TAGS: Record<string, string> = {
-  p: "paragraph",
-  blockquote: "quote",
-  pre: "code"
-}
-
-const MARK_TAGS: Record<string, string> = {
-  em: "italic",
-  strong: "bold",
-  u: "underline"
+  p: "paragraph"
 }
 
 const rules: Rule[] = [
@@ -42,32 +39,6 @@ const rules: Rule[] = [
                 <code>{children}</code>
               </pre>
             )
-        }
-      }
-    }
-  },
-
-  // rules to handle marks
-  {
-    deserialize(el, next) {
-      const type = MARK_TAGS[el.tagName.toLowerCase()]
-      if (type) {
-        return {
-          object: "mark",
-          type,
-          nodes: next(el.childNodes)
-        }
-      }
-    },
-    serialize(obj, children) {
-      if (obj.object === "mark") {
-        switch (obj.type) {
-          case "bold":
-            return <strong>{children}</strong>
-          case "italic":
-            return <em>{children}</em>
-          case "underline":
-            return <u>{children}</u>
         }
       }
     }
