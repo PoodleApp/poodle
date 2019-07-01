@@ -18,13 +18,13 @@ import { Redirect, RouteComponentProps } from "@reach/router"
 import moment from "moment"
 import * as React from "react"
 import Avatar from "./Avatar"
+import ReplyForm from "./compose/ReplyForm"
 import DisplayContent from "./DisplayContent"
 import DisplayErrors from "./DisplayErrors"
 import * as graphql from "./generated/graphql"
 import useArchive from "./hooks/useArchive"
 import useSetIsRead from "./hooks/useSetIsRead"
 import { displayParticipant } from "./Participant"
-import ReplyForm from "./compose/ReplyForm"
 
 type Props = RouteComponentProps & {
   accountId?: string
