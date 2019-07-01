@@ -125,11 +125,13 @@ function onFailure<HM extends Handlers>(
   error: JobFailure<HM>,
   _stats: { elapsed: number }
 ) => Promise<void> {
-  return async (_taskId, { cause, task }) => {
-    const failureHandler = handlers[task.type].failure
-    if (failureHandler) {
-      await failureHandler(cause, task.params)
-    }
+  return async (_taskId, error) => {
+    console.error(error)
+    // TODO: run the `failure` callback for the appropriate task type
+    // const failureHandler = handlers[task.type].failure
+    // if (failureHandler) {
+    //   await failureHandler(cause, task.params)
+    // }
   }
 }
 
