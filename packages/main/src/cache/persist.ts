@@ -3,8 +3,6 @@ import db from "../db"
 import { MessageAttributes } from "../types"
 import { getPartByPartId } from "./query"
 import { ID, SerializedHeaders } from "./types"
-import { people_v1 } from "googleapis"
-import { build } from "../models/Address"
 
 export function persistBoxState(accountId: ID, box: imap.Box): ID {
   return db.transaction(() => {
@@ -253,28 +251,13 @@ export function persistTokens(syncToken: string, accountId: ID) {
   )
 }
 
-export function persistContacts(
+export function persistContact(
   accountId: ID,
-  connections: people_v1.Schema$Person[]
+  contact: { name?: string; mailbox: string; host: string }
 ) {
-  connections.forEach(connection => {
-    connection.emailAddresses &&
-      connection.emailAddresses.forEach(email => {
-        const contact = build({
-          email: email.value!,
-          name:
-            connection.names &&
-            connection.names[0] &&
-            connection.names[0].displayName
-        })
-
-        insertInto("google_connections", {
-          account_id: accountId,
-          host: contact.host,
-          mailbox: contact.mailbox,
-          name: contact.name
-        })
-      })
+  insertInto("google_connections", {
+    account_id: accountId,
+    ...contact
   })
 }
 

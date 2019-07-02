@@ -1,18 +1,12 @@
-import db from "./db"
-import * as cache from "./cache/persist"
+import { google } from "googleapis"
 import { ID } from "./cache/types"
-import keytar from "keytar"
-import * as types from "./resolvers/types"
-import { google, people_v1 } from "googleapis"
-import { mock, testAccount } from "./testHelpers"
-import { OAuthCredentials, getAccessToken } from "./oauth"
 import ContactsApiClient from "./contacts"
-import { MethodOptions } from "googleapis-common"
+import db from "./db"
+import { mock, testAccount } from "./testHelpers"
 
 jest.mock("googleapis")
 
-// type List = people_v1.People["people"]["connections"]["list"];
-let listMock: jest.Mock //<Promise<people_v1.Schema$ListConnectionsResponse>, [people_v1.Params$Resource$People$Connections$List?, MethodOptions?]>
+let listMock: jest.Mock
 
 let accountId: ID
 
@@ -108,6 +102,22 @@ it("should allow for a contact's name to be null", async () => {
       name: null
     }
   ])
+})
+
+it("skips contacts whose email addresses cannot be parsed", async () => {
+  listMock.mockResolvedValue({
+    data: {
+      connections: [{ emailAddresses: [{ value: "Ben Reitman" }], names: [] }],
+      nextSyncToken: "xe987nsds"
+    }
+  })
+  const client = new ContactsApiClient({} as any)
+
+  await client.downloadContacts(accountId)
+
+  const result = db.prepare("select * from google_connections").all()
+
+  expect(result).toEqual([])
 })
 
 it("should include the syncToken when requesting from the API twice", async () => {
