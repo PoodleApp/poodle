@@ -2,12 +2,11 @@ import * as addrs from "email-addresses"
 import imap from "imap"
 import { Seq } from "immutable"
 import { URI, mailtoUri } from "./uri"
-import { Address as Addr } from "../generated/graphql"
 
 export type Email = string
 
 export default class Address {
-  name: string | undefined
+  name: string | null | undefined
   mailbox: string
   host: string
 
@@ -35,10 +34,7 @@ export default class Address {
 }
 
 // TODO: normalize when comparing
-export function equals(
-  x: imap.Address | Addr,
-  y: imap.Address | Addr
-): boolean {
+export function equals(x: imap.Address, y: imap.Address): boolean {
   return x.host === y.host && x.mailbox === y.mailbox
 }
 
@@ -62,7 +58,7 @@ export function build({
 const specialChar = /[()<>[]:;@\\,."]/
 
 // Print an address according to RFC 5322
-export function formatAddress(a: imap.Address | Addr): string {
+export function formatAddress(a: imap.Address): string {
   const rawName = a.name
   if (!rawName) {
     return `${a.mailbox}@${a.host}`

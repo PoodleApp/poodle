@@ -48,11 +48,11 @@ export function composeEdit({
       envelope: {
         date,
         subject: subject ? `Re: ${subject}` : null,
-        from: from!.toArray(),
-        sender: from!.toArray(),
-        replyTo: replyTo.toArray(),
-        to: to.toArray(),
-        cc: cc.toArray(),
+        from: from!,
+        sender: from!,
+        replyTo: replyTo ? replyTo : null,
+        to: to,
+        cc: cc,
         bcc: null,
         inReplyTo: replyToMessage ? replyToMessage.envelope_messageId : null,
         messageId

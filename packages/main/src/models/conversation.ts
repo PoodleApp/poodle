@@ -1,6 +1,6 @@
 import { convert } from "encoding"
 import imap from "imap"
-import { Collection, is, List, Seq, fromJS } from "immutable"
+import { Collection, is, List, Seq } from "immutable"
 import * as cache from "../cache"
 import { Content, Presentable, Participants } from "../generated/graphql"
 import { uniqBy } from "../util/immutable"
@@ -51,7 +51,9 @@ export function getReplyParticipants(
         .replyTo!.concat(participants.to)
         .filter(p => !Addr.equals(senderAddress, p))
     )
-  ).sortBy(Addr.formatAddress)
+  )
+    .sortBy(Addr.formatAddress)
+    .toArray()
 
   const cc = uniqBy(
     Addr.normalizedEmail,
@@ -61,14 +63,18 @@ export function getReplyParticipants(
           !Addr.equals(senderAddress, p) && !to.some(p_ => Addr.equals(p, p_))
       )
     )
-  ).sortBy(Addr.formatAddress)
+  )
+    .sortBy(Addr.formatAddress)
+    .toArray()
 
+  // console.log(participants.replyTo)
+  // const replyTo = participants.replyTo
   const replyTo = uniqBy(
     Addr.normalizedEmail,
     List(participants.replyTo!.filter(p => !Addr.equals(senderAddress, p)))
-  )
+  ).toArray()
 
-  return { to, cc, replyTo, from: Seq([senderAddress]) }
+  return { to, cc, replyTo, from: [senderAddress] }
 }
 
 function getParticipants(conversation: Conversation): Participants {
