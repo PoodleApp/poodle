@@ -350,9 +350,10 @@ export function searchBySubject(query: string): Thread[] {
   const threadIds = db
     .prepare(
       `
-        select distinct x_gm_thrid as thrid from messages
+        select x_gm_thrid as thrid from messages
         join message_subject_index on message_subject_index.rowid = messages.id
         where message_subject_index match ?
+        group by x_gm_thrid
         order by rank
       `
     )
