@@ -18,17 +18,12 @@ export default function Editor(props: EditorProps) {
   >(null)
   const result = graphql.useSearchConversationsQuery({
     skip: !conversationQuery,
-    variables: { maxResults: 2, query: conversationQuery! }
+    variables: { query: conversationQuery!, specificityThreshold: 2 }
   })
   const suggestions =
     conversationQuery && result.data && result.data.conversations
       ? result.data.conversations
       : []
-  console.log("query", {
-    conversationQuery,
-    result,
-    suggestions
-  })
   const { plugin } = useSuggestionsPlugin({
     capture,
     onQuery: setConversationQuery,

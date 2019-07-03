@@ -35,6 +35,7 @@ export function useSuggestionsPlugin({
   const plugin = React.useMemo(() => {
     const onChange: Plugin["onChange"] = (change, next) => {
       const query = getCapturedValue(change.value, capture)
+      // This timeout is necessary to escape a re-render paradox.
       setTimeout(() => onQuery(query), 0)
       next()
     }

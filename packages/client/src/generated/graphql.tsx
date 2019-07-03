@@ -203,8 +203,8 @@ export type QueryConversationArgs = {
 }
 
 export type QueryConversationsArgs = {
-  maxResults?: Maybe<Scalars["Int"]>
   query: Scalars["String"]
+  specificityThreshold?: Maybe<Scalars["Int"]>
 }
 export type GetAllAccountsQueryVariables = {}
 
@@ -341,8 +341,8 @@ export type GetConversationQuery = { __typename?: "Query" } & {
 }
 
 export type SearchConversationsQueryVariables = {
-  maxResults?: Maybe<Scalars["Int"]>
   query: Scalars["String"]
+  specificityThreshold?: Maybe<Scalars["Int"]>
 }
 
 export type SearchConversationsQuery = { __typename?: "Query" } & {
@@ -1418,21 +1418,21 @@ export const SearchConversationsDocument: DocumentNode = {
           kind: "VariableDefinition",
           variable: {
             kind: "Variable",
-            name: { kind: "Name", value: "maxResults" }
-          },
-          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
-          directives: []
-        },
-        {
-          kind: "VariableDefinition",
-          variable: {
-            kind: "Variable",
             name: { kind: "Name", value: "query" }
           },
           type: {
             kind: "NonNullType",
             type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
           },
+          directives: []
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "specificityThreshold" }
+          },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
           directives: []
         }
       ],
@@ -1446,18 +1446,18 @@ export const SearchConversationsDocument: DocumentNode = {
             arguments: [
               {
                 kind: "Argument",
-                name: { kind: "Name", value: "maxResults" },
-                value: {
-                  kind: "Variable",
-                  name: { kind: "Name", value: "maxResults" }
-                }
-              },
-              {
-                kind: "Argument",
                 name: { kind: "Name", value: "query" },
                 value: {
                   kind: "Variable",
                   name: { kind: "Name", value: "query" }
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "specificityThreshold" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "specificityThreshold" }
                 }
               }
             ],

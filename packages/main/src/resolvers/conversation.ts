@@ -211,14 +211,14 @@ export const queries: Partial<QueryResolvers> = {
     return C.getConversation(id)
   },
 
-  conversations(_parent, { maxResults, query }): C.Conversation[] {
+  conversations(_parent, { query, specificityThreshold }): C.Conversation[] {
     // The given query string might partially overlap a conversation subject if
     // we are trying to provide suggestions as the user types. This code
     // searches for successively smaller portions of the query until getting
     // down to a single query, or to a point where there are too many results.
     function go(q: string): C.Conversation[] {
       const results = cache.searchBySubject(q)
-      if (maxResults && results.length > maxResults) {
+      if (specificityThreshold && results.length > specificityThreshold) {
         return []
       }
       if (results.length > 0) {

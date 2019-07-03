@@ -120,7 +120,15 @@ type Query {
   accounts: [Account!]!
   addresses(inputValue: String!): [Address!]!
   conversation(id: ID!): Conversation
-  conversations(maxResults: Int, query: String!): [Conversation!]!
+  conversations(
+    query: String!
+    """
+    Ignore search results if the number of results exceeds
+    `specificityThreshold`. The idea is that if there are too many results then
+    the query is not specific enough.
+    """
+    specificityThreshold: Int
+  ): [Conversation!]!
 }
 
 schema {

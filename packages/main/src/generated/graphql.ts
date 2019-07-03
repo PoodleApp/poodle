@@ -210,8 +210,8 @@ export type QueryConversationArgs = {
 }
 
 export type QueryConversationsArgs = {
-  maxResults?: Maybe<Scalars["Int"]>
   query: Scalars["String"]
+  specificityThreshold?: Maybe<Scalars["Int"]>
 }
 
 export type ResolverTypeWrapper<T> = Promise<T> | T
