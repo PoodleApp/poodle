@@ -18,7 +18,7 @@ export default function Editor(props: EditorProps) {
   >(null)
   const result = graphql.useSearchConversationsQuery({
     skip: !conversationQuery,
-    variables: { query: conversationQuery! }
+    variables: { maxResults: 2, query: conversationQuery! }
   })
   const suggestions =
     conversationQuery && result.data && result.data.conversations

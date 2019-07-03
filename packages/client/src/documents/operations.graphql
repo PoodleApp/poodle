@@ -110,8 +110,8 @@ query getConversation($id: ID!, $accountId: ID!) {
   }
 }
 
-query searchConversations($query: String!) {
-  conversations(query: $query) {
+query searchConversations($maxResults: Int, $query: String!) {
+  conversations(maxResults: $maxResults, query: $query) {
     id
     messageId
     subject

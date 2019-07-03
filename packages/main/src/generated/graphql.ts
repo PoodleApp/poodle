@@ -210,6 +210,7 @@ export type QueryConversationArgs = {
 }
 
 export type QueryConversationsArgs = {
+  maxResults?: Maybe<Scalars["Int"]>
   query: Scalars["String"]
 }
 
@@ -296,6 +297,7 @@ export type ResolversTypes = {
   PartSpec: ResolverTypeWrapper<PartSpec>
   Participants: ResolverTypeWrapper<Participants>
   Message: ResolverTypeWrapper<Message>
+  Int: ResolverTypeWrapper<Scalars["Int"]>
   Mutation: ResolverTypeWrapper<{}>
   AccountMutations: ResolverTypeWrapper<AccountMutations>
   ConversationMutations: ResolverTypeWrapper<ConversationMutations>
@@ -319,6 +321,7 @@ export type ResolversParentTypes = {
   PartSpec: PartSpec
   Participants: Participants
   Message: Message
+  Int: Scalars["Int"]
   Mutation: {}
   AccountMutations: AccountMutations
   ConversationMutations: ConversationMutations

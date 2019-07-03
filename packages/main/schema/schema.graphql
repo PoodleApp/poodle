@@ -120,7 +120,7 @@ type Query {
   accounts: [Account!]!
   addresses(inputValue: String!): [Address!]!
   conversation(id: ID!): Conversation
-  conversations(query: String!): [Conversation!]!
+  conversations(maxResults: Int, query: String!): [Conversation!]!
 }
 
 schema {

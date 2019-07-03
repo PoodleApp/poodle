@@ -118,10 +118,13 @@ export interface Plugin extends CorePlugin {
 
   onBeforeInput?: EventHook
   onBlur?: EventHook
-  onChange?: (change: {
-    operations: Immutable.List<Operation>
-    value: Value
-  }) => any
+  onChange?: (
+    change: {
+      operations: Immutable.List<Operation>
+      value: Value
+    },
+    next: () => unknown
+  ) => any
   onClick?: EventHook
   onCompositionEnd?: EventHook
   onCompositionStart?: EventHook

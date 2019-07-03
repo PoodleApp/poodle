@@ -33,9 +33,10 @@ export function useSuggestionsPlugin({
   // }
 
   const plugin = React.useMemo(() => {
-    const onChange: Plugin["onChange"] = change => {
+    const onChange: Plugin["onChange"] = (change, next) => {
       const query = getCapturedValue(change.value, capture)
-      onQuery(query)
+      setTimeout(() => onQuery(query), 0)
+      next()
     }
     return { onChange }
   }, [capture, onQuery])

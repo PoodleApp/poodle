@@ -203,6 +203,7 @@ export type QueryConversationArgs = {
 }
 
 export type QueryConversationsArgs = {
+  maxResults?: Maybe<Scalars["Int"]>
   query: Scalars["String"]
 }
 export type GetAllAccountsQueryVariables = {}
@@ -340,6 +341,7 @@ export type GetConversationQuery = { __typename?: "Query" } & {
 }
 
 export type SearchConversationsQueryVariables = {
+  maxResults?: Maybe<Scalars["Int"]>
   query: Scalars["String"]
 }
 
@@ -1416,6 +1418,15 @@ export const SearchConversationsDocument: DocumentNode = {
           kind: "VariableDefinition",
           variable: {
             kind: "Variable",
+            name: { kind: "Name", value: "maxResults" }
+          },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
+          directives: []
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
             name: { kind: "Name", value: "query" }
           },
           type: {
@@ -1433,6 +1444,14 @@ export const SearchConversationsDocument: DocumentNode = {
             kind: "Field",
             name: { kind: "Name", value: "conversations" },
             arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "maxResults" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "maxResults" }
+                }
+              },
               {
                 kind: "Argument",
                 name: { kind: "Name", value: "query" },
