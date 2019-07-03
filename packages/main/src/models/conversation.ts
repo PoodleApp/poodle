@@ -13,13 +13,6 @@ export interface Conversation {
   messages: cache.Message[]
 }
 
-// type Participants = {
-//   from?: Collection.Indexed<imap.Address>
-//   to: Collection.Indexed<imap.Address>
-//   cc: Collection.Indexed<imap.Address>
-//   replyTo: Collection.Indexed<imap.Address>
-// }
-
 export function getConversation(id: string): Conversation | null {
   return cache.getThread(id)
 }
@@ -67,12 +60,16 @@ export function getReplyParticipants(
     .sortBy(Addr.formatAddress)
     .toArray()
 
-  // console.log(participants.replyTo)
-  // const replyTo = participants.replyTo
   const replyTo = uniqBy(
     Addr.normalizedEmail,
-    List(participants.replyTo!.filter(p => !Addr.equals(senderAddress, p)))
-  ).toArray()
+    List(
+      participants.replyTo!.filter(
+        p => !participants.to.some(p_ => Addr.equals(p, p_))
+      )
+    )
+  )
+    .sortBy(Addr.formatAddress)
+    .toArray()
 
   return { to, cc, replyTo, from: [senderAddress] }
 }

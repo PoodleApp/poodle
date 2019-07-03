@@ -30,9 +30,9 @@ export function composeReply({
       envelope: {
         date,
         subject: subject ? `Re: ${subject}` : null,
-        from: from!,
-        sender: from!,
-        replyTo: replyTo ? replyTo : null,
+        from: from || null,
+        sender: from || null,
+        replyTo: replyTo || null,
         to: to,
         cc: cc,
         bcc: null,

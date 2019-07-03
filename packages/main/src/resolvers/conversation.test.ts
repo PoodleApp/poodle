@@ -637,7 +637,7 @@ describe("same sync tests", () => {
   })
 })
 
-describe("no before sync test", () => {
+describe("when addressing replies", () => {
   beforeEach(async () => {
     const { lastInsertRowid } = db
       .prepare("insert into accounts (email) values (?)")
@@ -647,12 +647,11 @@ describe("no before sync test", () => {
     connectionManager = mockConnection()
   })
 
-  it("uses the replyTo field instead of from when replyTo is provided", async () => {
+  it("sends to a previous message's replyTo address when one is provided", async () => {
     mock(Connection.prototype.fetch).mockImplementation(
       mockFetchImplementation({
         thread: [
           testThread[0],
-          // testThread[1],
           {
             ...testThread[1],
             attributes: {
@@ -728,11 +727,6 @@ describe("no before sync test", () => {
             ],
             cc: [],
             replyTo: [
-              {
-                name: "Jesse Hallett",
-                mailbox: "hallettj",
-                host: "gmail.com"
-              },
               {
                 name: "Jesse Hallett",
                 mailbox: "jesse",
