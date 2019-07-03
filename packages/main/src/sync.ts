@@ -9,6 +9,7 @@ import { publishMessageUpdates } from "./pubsub"
 import * as request from "./request"
 import * as kefirUtil from "./util/kefir"
 import AccountManager from "./managers/AccountManager"
+import { promised } from "q"
 
 type R<T> = kefir.Observable<T, Error>
 
@@ -25,23 +26,33 @@ const cachePolicy = {
 
 const BATCH_SIZE = 50
 
-export async function sync(accountId: cache.ID, manager: ConnectionManager) {
+async function boxSyncer(accountId: cache.ID, manager: ConnectionManager) {
+  let boxSync
+  let box
+
   for (const specifier of cachePolicy.boxes) {
-    const box = await manager
-      .request(request.actions.getBox(specifier))
-      .toPromise()
+    box = await manager.request(request.actions.getBox(specifier)).toPromise()
+
     const boxId = cache.persistBoxState(accountId, box)
-    await new BoxSync({
+
+    boxSync = await new BoxSync({
       accountId,
       box,
       boxId,
       manager
     }).sync()
   }
+  return boxSync
+}
+
+export async function sync(accountId: cache.ID, manager: ConnectionManager) {
   const contactApiClient = AccountManager.getContactsApiClient(
     String(accountId)
   )
-  contactApiClient && (await contactApiClient.downloadContacts(accountId))
+  const contactSync =
+    contactApiClient && (await contactApiClient.downloadContacts(accountId))
+
+  Promise.all([boxSyncer(accountId, manager), contactSync])
 }
 
 class BoxSync {
