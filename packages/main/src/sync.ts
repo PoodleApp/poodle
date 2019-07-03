@@ -48,7 +48,7 @@ export async function sync(accountId: cache.ID, manager: ConnectionManager) {
   const contactSync =
     contactApiClient && contactApiClient.downloadContacts(accountId)
 
-  Promise.all([boxSyncer(accountId, manager), contactSync])
+  await Promise.all([boxSyncer(accountId, manager), contactSync])
 }
 
 class BoxSync {
