@@ -5,6 +5,9 @@ create virtual table message_subject_index using fts5(
   content_rowid=id
 );
 
+insert into message_subject_index (rowid, envelope_subject)
+select id, envelope_subject from messages;
+
 create trigger messages_afterinsert_subject_index after insert on messages begin
   insert into message_subject_index (rowid, envelope_subject) values (new.id, new.envelope_subject);
 end;
