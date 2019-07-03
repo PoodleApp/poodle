@@ -35,30 +35,33 @@ export function getReplyParticipants(
 ): Participants {
   const senderAddress = Addr.build(sender)!
   const participants = getParticipants(conversation)
-  const to =
-    participants.replyTo &&
-    uniqBy(
-      Addr.normalizedEmail,
-      List(
-        participants.replyTo
-          .concat(participants.to)
-          .filter(p => !Addr.equals(senderAddress, p))
+  const to = participants.replyTo
+    ? uniqBy(
+        Addr.normalizedEmail,
+        List(
+          participants.replyTo
+            .concat(participants.to)
+            .filter(p => !Addr.equals(senderAddress, p))
+        )
       )
-    )
-      .sortBy(Addr.formatAddress)
-      .toArray()
+        .sortBy(Addr.formatAddress)
+        .toArray()
+    : []
 
-  const cc = uniqBy(
-    Addr.normalizedEmail,
-    List(
-      participants.cc.filter(
-        p =>
-          !Addr.equals(senderAddress, p) && !to.some(p_ => Addr.equals(p, p_))
+  const cc = to
+    ? uniqBy(
+        Addr.normalizedEmail,
+        List(
+          participants.cc.filter(
+            p =>
+              !Addr.equals(senderAddress, p) &&
+              !to.some(p_ => Addr.equals(p, p_))
+          )
+        )
       )
-    )
-  )
-    .sortBy(Addr.formatAddress)
-    .toArray()
+        .sortBy(Addr.formatAddress)
+        .toArray()
+    : []
 
   return { to, cc, from: [senderAddress] }
 }
