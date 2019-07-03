@@ -605,6 +605,34 @@ export class Range extends BaseRange {
   toJSON(): RangeJSON
 }
 
+export interface AnnotationJSON {
+  key: string
+  type: string
+  data?: Record<string, any>
+  anchor?: PointJSON
+  focus?: PointJSON
+}
+
+export class Annotation extends Immutable.Record({}) {
+  key: string
+  type: string
+  data: Data
+  anchor: Point
+  focus: Point
+
+  static create(attrs?: Annotation | AnnotationJSON | Range): Annotation
+  static createMap(
+    elements?: Record<string, Annotation> | Map<string, Annotation>
+  ): Map<string, Annotation>
+  static createProperties(
+    attrs?: Annotation | Partial<AnnotationJSON>
+  ): Partial<Annotation>
+  static fromJSON(object: AnnotationJSON): Annotation
+
+  setProperties(properties: Annotation | Partial<AnnotationJSON>): Annotation
+  toJSON(options?: any): AnnotationJSON
+}
+
 export interface DecorationProperties {
   anchor?: Point
   focus?: Point

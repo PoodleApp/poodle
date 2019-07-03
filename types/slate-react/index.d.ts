@@ -14,6 +14,8 @@
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 3.5
 import {
+  Annotation,
+  Decoration,
   Document,
   Editor as CoreEditor,
   Mark,
@@ -37,29 +39,57 @@ import {
 import * as Immutable from "immutable"
 import * as React from "react"
 
+export interface NodeProps {
+  annotations: Immutable.Map<string, Annotation>
+  block?: Block
+  decorations: Immutable.List<Decoration>
+  editor: CoreEditor
+  node: Node
+  parent?: Node
+  readOnly: boolean
+  selection?: Selection
+}
+
 // Values prefixed with "data-..." (Used for spellchecking according to docs)
 export interface RenderAttributes {
   [key: string]: any
 }
 
-export interface RenderMarkProps {
-  attributes: RenderAttributes
-  children: React.ReactNode
+interface RenderMetaProps {
   editor: CoreEditor
-  mark: Mark
   marks: Immutable.Set<Mark>
+  annotations: Immutable.List<Annotation>
+  decorations: Immutable.List<Decoration>
   node: Node
   offset: number
   text: string
 }
 
-export interface RenderNodeProps {
+export interface RenderAnnotationProps extends RenderMetaProps {
+  attributes: RenderAttributes
+  annotation: Annotation
+  children: React.ReactNode
+}
+
+export interface RenderDecorationProps extends RenderMetaProps {
   attributes: RenderAttributes
   children: React.ReactNode
-  editor: CoreEditor
+  decoration: Decoration
+}
+
+export interface RenderMarkProps extends RenderMetaProps {
+  attributes: RenderAttributes
+  children: React.ReactNode
+  mark: Mark
+}
+
+interface RenderNodeProps {
+  attributes: RenderAttributes
+  children: React.ReactNode
+  Editor: CoreEditor
   isFocused: boolean
   isSelected: boolean
-  key: string
+  node: Node
   parent: Node
   readOnly: boolean
 }
@@ -84,13 +114,23 @@ export type EventHook<E = Event> = (
 
 export interface Plugin extends CorePlugin {
   decorateNode?: (node: Node, editor: CoreEditor, next: () => any) => any
-  renderEditor?: (
-    props: EditorProps,
+  renderAnnotation?: (
+    props: RenderAnnotationProps,
+    editor: CoreEditor,
+    next: () => any
+  ) => any
+  renderDecoration?: (
+    props: RenderDecorationProps,
     editor: CoreEditor,
     next: () => any
   ) => any
   renderMark?: (
     props: RenderMarkProps,
+    editor: CoreEditor,
+    next: () => any
+  ) => any
+  renderEditor?: (
+    props: EditorProps,
     editor: CoreEditor,
     next: () => any
   ) => any
@@ -110,8 +150,8 @@ export interface Plugin extends CorePlugin {
     next: () => any
   ) => any
   shouldNodeComponentUpdate?: (
-    previousProps: RenderNodeProps,
-    props: RenderNodeProps,
+    previousProps: NodeProps,
+    props: NodeProps,
     editor: CoreEditor,
     next: () => any
   ) => any
