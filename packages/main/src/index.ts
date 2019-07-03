@@ -1,6 +1,7 @@
 // Modules to control application life and create native browser window
 import { app, BrowserWindow, ipcMain } from "electron"
 import contextMenu from "electron-context-menu"
+import isDev from "electron-is-dev"
 import { createIpcExecutor, createSchemaLink } from "graphql-transport-electron"
 import schema from "./schema"
 
@@ -39,7 +40,20 @@ function createWindow() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on("ready", createWindow)
+app.on("ready", async () => {
+  if (isDev) {
+    const {
+      default: installExtension,
+      APOLLO_DEVELOPER_TOOLS,
+      REACT_DEVELOPER_TOOLS
+    } = require("electron-devtools-installer")
+    const IMMUTABLE_JS_OBJECT_FORMATTER = "hgldghadipiblonfkkicmgcbbijnpeog"
+    await installExtension(APOLLO_DEVELOPER_TOOLS)
+    await installExtension(REACT_DEVELOPER_TOOLS)
+    await installExtension(IMMUTABLE_JS_OBJECT_FORMATTER)
+  }
+  createWindow()
+})
 
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {

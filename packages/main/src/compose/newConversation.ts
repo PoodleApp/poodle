@@ -13,7 +13,7 @@ export function composeNewConversation({
 }): ComposedMessage {
   const date = new Date()
   const messageId = mkMessageId(account.email)
-  const from = [A.build({ email: account.email })]
+  const from = [A.build({ email: account.email })!]
   const to = message.to.map(a => ({ ...a, name: a.name || undefined }))
   return {
     attributes: {

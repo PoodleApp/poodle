@@ -34,9 +34,8 @@ export function getReplyParticipants(
   conversation: Conversation,
   sender: cache.Account
 ): Participants {
-  const senderAddress = Addr.build(sender)
-  const participants = getParticipants(conversation)
-
+  const senderAddress = Addr.build(sender)!
+  const participants = getParticipantMap(conversation)
   const to = uniqBy(
     Addr.normalizedEmail,
     List(

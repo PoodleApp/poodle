@@ -1,10 +1,9 @@
-// import * as google from './oauth/google'
 import { google, people_v1 } from "googleapis"
-import { oauthClient } from "./oauth/google"
-import { client_id, client_secret } from "./oauth"
-import { persistTokens, getSyncToken, persistContacts } from "./cache"
-import { ID } from "./cache"
 import { OauthCredentials } from "./account"
+import { getSyncToken, ID, persistContact, persistTokens } from "./cache"
+import { build } from "./models/Address"
+import { client_id, client_secret } from "./oauth"
+import { oauthClient } from "./oauth/google"
 
 export default class ContactsApiClient {
   private people: people_v1.People
@@ -36,8 +35,19 @@ export default class ContactsApiClient {
 
   async downloadContacts(accountId: ID) {
     const connections = await this.getContacts(accountId)
-    if (connections) {
-      persistContacts(accountId, connections)
+    for (const connection of connections || []) {
+      for (const email of connection.emailAddresses || []) {
+        const contact = build({
+          email: email.value!,
+          name:
+            connection.names &&
+            connection.names[0] &&
+            connection.names[0].displayName
+        })
+        if (contact) {
+          persistContact(accountId, contact)
+        }
+      }
     }
   }
 }

@@ -1,6 +1,15 @@
 #!/bin/bash
 set -e
 
+if [[ -n "$CI" ]]; then
+  # Check that generated code is up-to-date with GraphQL schema and operations
+  # files.
+  (cd packages/main && yarn codegen)
+  (cd packages/client && yarn codegen)
+  echo 'Checking for uncommitted changes - if you see changes then run `yarn codegen` and commit updated files.'
+  git diff --exit-code
+fi
+
 (cd packages/main && eslint src/**/*.ts)
 (cd packages/client && eslint src/**/*.{ts,tsx})
 

@@ -44,15 +44,17 @@ export function build({
 }: {
   email: string
   name?: string
-}): Address {
-  const [mailbox, host] = email.split("@", 2)
-  return name
-    ? new Address({
-        name,
-        mailbox,
-        host
-      })
-    : new Address({ mailbox, host })
+}): Address | null {
+  const parsed = addrs.parseOneAddress(email)
+  if (parsed && "local" in parsed && "domain" in parsed) {
+    return new Address({
+      name: name || parsed.name,
+      mailbox: parsed.local,
+      host: parsed.domain
+    })
+  } else {
+    return null
+  }
 }
 
 const specialChar = /[()<>[]:;@\\,."]/
