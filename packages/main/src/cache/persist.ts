@@ -251,10 +251,7 @@ export function persistTokens(syncToken: string, accountId: ID) {
   )
 }
 
-export function persistContact(
-  accountId: ID,
-  contact: { name?: string; mailbox: string; host: string }
-) {
+export function persistContact(accountId: ID, contact: imap.Address) {
   insertInto("google_connections", {
     account_id: accountId,
     ...contact

@@ -18,10 +18,7 @@ export function composeReply({
   const replyToMessage = Seq(conversation.messages).last(undefined)
   const messageId = mkMessageId(account.email)
   const subject = C.getSubject(conversation)
-  const { from, to, cc, replyTo } = C.getReplyParticipants(
-    conversation,
-    account
-  )
+  const { from, to, cc } = C.getReplyParticipants(conversation, account)
 
   return {
     attributes: {
@@ -32,7 +29,7 @@ export function composeReply({
         subject: subject ? `Re: ${subject}` : null,
         from: from || null,
         sender: from || null,
-        replyTo: replyTo || null,
+        replyTo: from || null,
         to: to,
         cc: cc,
         bcc: null,

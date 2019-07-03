@@ -1,8 +1,8 @@
-import imap from "imap"
 import { graphql } from "graphql"
-import Connection from "imap"
+import { default as Connection, default as imap } from "imap"
 import * as cache from "../cache"
 import { testThread } from "../cache/testFixtures"
+import { composeEdit } from "../compose"
 import db from "../db"
 import { Conversation } from "../generated/graphql"
 import ConnectionManager from "../managers/ConnectionManager"
@@ -12,7 +12,6 @@ import schema from "../schema"
 import { sync } from "../sync"
 import { mock } from "../testHelpers"
 import * as promises from "../util/promises"
-import { composeEdit } from "../compose"
 
 jest.mock("imap")
 
@@ -690,14 +689,9 @@ describe("when addressing replies", () => {
                 mailbox
                 host
               }
-              replyTo{
-                name
-                mailbox
-                host
-              }
             }
           }
-        }
+        } 
       `,
       { conversationId: testThread[1].attributes["x-gm-thrid"], accountId }
     )
@@ -725,14 +719,7 @@ describe("when addressing replies", () => {
                 host: "test.com"
               }
             ],
-            cc: [],
-            replyTo: [
-              {
-                name: "Jesse Hallett",
-                mailbox: "jesse",
-                host: "test.com"
-              }
-            ]
+            cc: []
           }
         }
       }
