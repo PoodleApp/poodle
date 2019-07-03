@@ -3,12 +3,12 @@ import { Collection, Range, Seq, Set } from "immutable"
 import * as kefir from "kefir"
 import moment from "moment"
 import * as cache from "./cache"
+import AccountManager from "./managers/AccountManager"
 import ConnectionManager from "./managers/ConnectionManager"
 import { getPartByPartId } from "./models/Message"
 import { publishMessageUpdates } from "./pubsub"
 import * as request from "./request"
 import * as kefirUtil from "./util/kefir"
-import AccountManager from "./managers/AccountManager"
 
 type R<T> = kefir.Observable<T, Error>
 
@@ -25,12 +25,13 @@ const cachePolicy = {
 
 const BATCH_SIZE = 50
 
-export async function sync(accountId: cache.ID, manager: ConnectionManager) {
+async function boxSyncer(accountId: cache.ID, manager: ConnectionManager) {
   for (const specifier of cachePolicy.boxes) {
     const box = await manager
       .request(request.actions.getBox(specifier))
       .toPromise()
     const boxId = cache.persistBoxState(accountId, box)
+
     await new BoxSync({
       accountId,
       box,
@@ -38,10 +39,16 @@ export async function sync(accountId: cache.ID, manager: ConnectionManager) {
       manager
     }).sync()
   }
+}
+
+export async function sync(accountId: cache.ID, manager: ConnectionManager) {
   const contactApiClient = AccountManager.getContactsApiClient(
     String(accountId)
   )
-  contactApiClient && (await contactApiClient.downloadContacts(accountId))
+  const contactSync =
+    contactApiClient && contactApiClient.downloadContacts(accountId)
+
+  await Promise.all([boxSyncer(accountId, manager), contactSync])
 }
 
 class BoxSync {
