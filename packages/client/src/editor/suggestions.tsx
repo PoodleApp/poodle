@@ -1,4 +1,5 @@
-import { EventHook, Plugin } from "slate-react"
+import * as React from "react"
+import { Plugin } from "slate-react"
 import { Value } from "slate"
 
 // const UP_ARROW_KEY = 38
@@ -31,12 +32,15 @@ export function useSuggestionsPlugin({
   //   return next()
   // }
 
-  const onChange: Plugin["onChange"] = change => {
-    const query = getCapturedValue(change.value, capture)
-    onQuery(query)
-  }
+  const plugin = React.useMemo(() => {
+    const onChange: Plugin["onChange"] = change => {
+      const query = getCapturedValue(change.value, capture)
+      onQuery(query)
+    }
+    return { onChange }
+  }, [capture, onQuery])
 
-  return { plugin: { onChange } }
+  return { plugin }
 }
 
 function getCapturedValue(value: Value, capture: RegExp): string | null {

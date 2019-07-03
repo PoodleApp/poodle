@@ -10,6 +10,8 @@ import * as graphql from "../generated/graphql"
 import { schema } from "./schema"
 import { useSuggestionsPlugin } from "./suggestions"
 
+const capture = /(\S+(?:\s+\S+){0,4})/
+
 export default function Editor(props: EditorProps) {
   const [conversationQuery, setConversationQuery] = React.useState<
     string | null
@@ -28,7 +30,7 @@ export default function Editor(props: EditorProps) {
     suggestions
   })
   const { plugin } = useSuggestionsPlugin({
-    capture: /(\S+(?:\s+\S+){0,4})/,
+    capture,
     onQuery: setConversationQuery,
     suggestions
   })

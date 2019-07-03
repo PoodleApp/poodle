@@ -351,7 +351,9 @@ export function searchBySubject(query: string): Thread[] {
     .prepare(
       `
         select distinct x_gm_thrid as thrid from messages
-        where envelope_subject like '%' || ? || '%'
+        join message_subject_index on message_subject_index.rowid = messages.id
+        where message_subject_index match ?
+        order by rank
       `
     )
     .all(query)
