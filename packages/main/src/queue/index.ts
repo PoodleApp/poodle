@@ -242,7 +242,7 @@ if (process.env.NODE_ENV !== "test") {
 
 const queueOptions = {
   maxRetries: 3,
-  maxTimeout: isTest ? 150 : 10000,
+  maxTimeout: isTest ? 150 : Infinity,
   retryDelay: isTest ? 1 : 10000,
   store
 } as const
