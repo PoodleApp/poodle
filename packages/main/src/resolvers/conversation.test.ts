@@ -18,18 +18,23 @@ jest.mock("imap")
 let account: cache.Account
 let accountId: cache.ID
 let connectionManager: ConnectionManager
-let conversation: Conversation
-let conversationId: string
 
-describe("same sync tests", () => {
+beforeEach(async () => {
+  const { lastInsertRowid } = db
+    .prepare("insert into accounts (email) values (?)")
+    .run("jesse@sitr.us")
+  accountId = lastInsertRowid
+
+  connectionManager = mockConnection()
+})
+
+describe("when addressing conversations", () => {
+  let conversation: Conversation
+  let conversationId: string
+
   beforeEach(async () => {
-    const { lastInsertRowid } = db
-      .prepare("insert into accounts (email) values (?)")
-      .run("jesse@sitr.us")
-    accountId = lastInsertRowid
     account = { id: accountId, email: "jesse@sitr.us" }
 
-    connectionManager = mockConnection()
     await sync(accountId, connectionManager)
 
     const result = await request(
@@ -634,18 +639,65 @@ describe("same sync tests", () => {
       }
     })
   })
+
+  async function sendEdit(content: {
+    type: string
+    subtype: string
+    content: string
+  }) {
+    const {
+      resource,
+      revision
+    } = conversation.presentableElements[1].contents[0]
+    const result = await request(
+      `
+      mutation editMessage(
+        $accountId: ID!,
+        $conversationId: ID!,
+        $resource: PartSpecInput!,
+        $revision: PartSpecInput!,
+        $content: ContentInput!
+      ) {
+        conversations {
+          edit(
+            accountId: $accountId,
+            conversationId: $conversationId,
+            resource: $resource,
+            revision: $revision,
+            content: $content
+          ) {
+            from {
+              name
+              mailbox
+              host
+            }
+            presentableElements {
+              contents {
+                type
+                subtype
+                content
+              }
+            }
+            isRead
+            subject
+          }
+        }
+      }
+    `,
+      {
+        accountId,
+        conversationId,
+        resource,
+        revision,
+        content
+      }
+    )
+    expect(result).toMatchObject({ data: expect.anything() })
+    return result
+  }
 })
 
 describe("when addressing replies", () => {
-  beforeEach(async () => {
-    const { lastInsertRowid } = db
-      .prepare("insert into accounts (email) values (?)")
-      .run("jesse@sitr.us")
-    accountId = lastInsertRowid
-
-    connectionManager = mockConnection()
-  })
-
   it("sends to a previous message's replyTo address when one is provided", async () => {
     mock(Connection.prototype.fetch).mockImplementation(
       mockFetchImplementation({
@@ -726,59 +778,6 @@ describe("when addressing replies", () => {
     })
   })
 })
-
-async function sendEdit(content: {
-  type: string
-  subtype: string
-  content: string
-}) {
-  const { resource, revision } = conversation.presentableElements[1].contents[0]
-  const result = await request(
-    `
-      mutation editMessage(
-        $accountId: ID!,
-        $conversationId: ID!,
-        $resource: PartSpecInput!,
-        $revision: PartSpecInput!,
-        $content: ContentInput!
-      ) {
-        conversations {
-          edit(
-            accountId: $accountId,
-            conversationId: $conversationId,
-            resource: $resource,
-            revision: $revision,
-            content: $content
-          ) {
-            from {
-              name
-              mailbox
-              host
-            }
-            presentableElements {
-              contents {
-                type
-                subtype
-                content
-              }
-            }
-            isRead
-            subject
-          }
-        }
-      }
-    `,
-    {
-      accountId,
-      conversationId,
-      resource,
-      revision,
-      content
-    }
-  )
-  expect(result).toMatchObject({ data: expect.anything() })
-  return result
-}
 
 function request(query: string, variables?: Record<string, any>) {
   return graphql(schema, query, null, null, variables)
