@@ -31,6 +31,11 @@ type Conversation {
   subject: String
 }
 
+type ConversationSearchResult {
+  conversation: Conversation!
+  query: String!
+}
+
 type ConversationMutations {
   archive(id: ID!): Conversation!
   edit(
@@ -128,7 +133,7 @@ type Query {
     the query is not specific enough.
     """
     specificityThreshold: Int
-  ): [Conversation!]!
+  ): [ConversationSearchResult!]!
 }
 
 schema {

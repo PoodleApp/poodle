@@ -6,6 +6,7 @@ import { composeEdit, composeNewConversation, composeReply } from "../compose"
 import {
   ConversationResolvers,
   ConversationMutationsResolvers,
+  ConversationSearchResult,
   MutationResolvers,
   QueryResolvers
 } from "../generated/graphql"
@@ -211,18 +212,21 @@ export const queries: Partial<QueryResolvers> = {
     return C.getConversation(id)
   },
 
-  conversations(_parent, { query, specificityThreshold }): C.Conversation[] {
+  conversations(_parent, { query, specificityThreshold }) {
     // The given query string might partially overlap a conversation subject if
     // we are trying to provide suggestions as the user types. This code
     // searches for successively smaller portions of the query until getting
     // down to a single query, or to a point where there are too many results.
-    function go(q: string): C.Conversation[] {
+    function go(q: string): ConversationSearchResult[] {
       const results = cache.searchBySubject(q)
       if (specificityThreshold && results.length > specificityThreshold) {
         return []
       }
       if (results.length > 0) {
-        return results
+        return results.map(conversation => ({
+          conversation,
+          query: q
+        }))
       }
       const nextQ = q.replace(tokenPattern, "")
       return nextQ === q ? [] : go(nextQ)

@@ -619,8 +619,11 @@ describe("searching", () => {
       `
         query searchConversations($query: String!) {
           conversations(query: $query) {
-            messageId
-            subject
+            conversation {
+              messageId
+              subject
+            }
+            query
           }
         }
       `,
@@ -630,9 +633,12 @@ describe("searching", () => {
       data: {
         conversations: [
           {
-            messageId:
-              "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>",
-            subject: "Test thread 2019-02"
+            conversation: {
+              messageId:
+                "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>",
+              subject: "Test thread 2019-02"
+            },
+            query: "test thread"
           }
         ]
       }
@@ -644,8 +650,11 @@ describe("searching", () => {
       `
         query searchConversations($query: String!) {
           conversations(query: $query) {
-            messageId
-            subject
+            conversation {
+              messageId
+              subject
+            }
+            query
           }
         }
       `,
@@ -655,9 +664,12 @@ describe("searching", () => {
       data: {
         conversations: [
           {
-            messageId:
-              "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>",
-            subject: "Test thread 2019-02"
+            conversation: {
+              messageId:
+                "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>",
+              subject: "Test thread 2019-02"
+            },
+            query: "test thread"
           }
         ]
       }

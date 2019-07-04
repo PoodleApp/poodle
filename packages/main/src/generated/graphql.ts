@@ -139,6 +139,12 @@ export type ConversationMutationsSendMessageArgs = {
   message: MessageInput
 }
 
+export type ConversationSearchResult = {
+  __typename?: "ConversationSearchResult"
+  conversation: Conversation
+  query: Scalars["String"]
+}
+
 export type Message = {
   __typename?: "Message"
   id: Scalars["ID"]
@@ -194,7 +200,7 @@ export type Query = {
   accounts: Array<Account>
   addresses: Array<Address>
   conversation?: Maybe<Conversation>
-  conversations: Array<Conversation>
+  conversations: Array<ConversationSearchResult>
 }
 
 export type QueryAccountArgs = {
@@ -298,6 +304,11 @@ export type ResolversTypes = {
   Participants: ResolverTypeWrapper<Participants>
   Message: ResolverTypeWrapper<Message>
   Int: ResolverTypeWrapper<Scalars["Int"]>
+  ConversationSearchResult: ResolverTypeWrapper<
+    Omit<ConversationSearchResult, "conversation"> & {
+      conversation: ResolversTypes["Conversation"]
+    }
+  >
   Mutation: ResolverTypeWrapper<{}>
   AccountMutations: ResolverTypeWrapper<AccountMutations>
   ConversationMutations: ResolverTypeWrapper<ConversationMutations>
@@ -322,6 +333,9 @@ export type ResolversParentTypes = {
   Participants: Participants
   Message: Message
   Int: Scalars["Int"]
+  ConversationSearchResult: Omit<ConversationSearchResult, "conversation"> & {
+    conversation: ResolversTypes["Conversation"]
+  }
   Mutation: {}
   AccountMutations: AccountMutations
   ConversationMutations: ConversationMutations
@@ -462,6 +476,18 @@ export type ConversationMutationsResolvers<
   >
 }
 
+export type ConversationSearchResultResolvers<
+  ContextType = any,
+  ParentType = ResolversParentTypes["ConversationSearchResult"]
+> = {
+  conversation?: Resolver<
+    ResolversTypes["Conversation"],
+    ParentType,
+    ContextType
+  >
+  query?: Resolver<ResolversTypes["String"], ParentType, ContextType>
+}
+
 export type MessageResolvers<
   ContextType = any,
   ParentType = ResolversParentTypes["Message"]
@@ -542,7 +568,7 @@ export type QueryResolvers<
     QueryConversationArgs
   >
   conversations?: Resolver<
-    Array<ResolversTypes["Conversation"]>,
+    Array<ResolversTypes["ConversationSearchResult"]>,
     ParentType,
     ContextType,
     QueryConversationsArgs
@@ -556,6 +582,7 @@ export type Resolvers<ContextType = any> = {
   Content?: ContentResolvers<ContextType>
   Conversation?: ConversationResolvers<ContextType>
   ConversationMutations?: ConversationMutationsResolvers<ContextType>
+  ConversationSearchResult?: ConversationSearchResultResolvers<ContextType>
   Message?: MessageResolvers<ContextType>
   Mutation?: MutationResolvers<ContextType>
   Participants?: ParticipantsResolvers<ContextType>

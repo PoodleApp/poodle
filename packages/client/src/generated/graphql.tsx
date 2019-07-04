@@ -132,6 +132,12 @@ export type ConversationMutationsSendMessageArgs = {
   message: MessageInput
 }
 
+export type ConversationSearchResult = {
+  __typename?: "ConversationSearchResult"
+  conversation: Conversation
+  query: Scalars["String"]
+}
+
 export type Message = {
   __typename?: "Message"
   id: Scalars["ID"]
@@ -187,7 +193,7 @@ export type Query = {
   accounts: Array<Account>
   addresses: Array<Address>
   conversation?: Maybe<Conversation>
-  conversations: Array<Conversation>
+  conversations: Array<ConversationSearchResult>
 }
 
 export type QueryAccountArgs = {
@@ -347,10 +353,15 @@ export type SearchConversationsQueryVariables = {
 
 export type SearchConversationsQuery = { __typename?: "Query" } & {
   conversations: Array<
-    { __typename?: "Conversation" } & Pick<
-      Conversation,
-      "id" | "messageId" | "subject"
-    >
+    { __typename?: "ConversationSearchResult" } & Pick<
+      ConversationSearchResult,
+      "query"
+    > & {
+        conversation: { __typename?: "Conversation" } & Pick<
+          Conversation,
+          "id" | "messageId" | "subject"
+        >
+      }
   >
 }
 
@@ -1467,19 +1478,36 @@ export const SearchConversationsDocument: DocumentNode = {
               selections: [
                 {
                   kind: "Field",
-                  name: { kind: "Name", value: "id" },
+                  name: { kind: "Name", value: "conversation" },
                   arguments: [],
-                  directives: []
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "id" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "messageId" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "subject" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
                 },
                 {
                   kind: "Field",
-                  name: { kind: "Name", value: "messageId" },
-                  arguments: [],
-                  directives: []
-                },
-                {
-                  kind: "Field",
-                  name: { kind: "Name", value: "subject" },
+                  name: { kind: "Name", value: "query" },
                   arguments: [],
                   directives: []
                 }
