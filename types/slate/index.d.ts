@@ -79,6 +79,7 @@ export interface ValueJSON {
 export type Path = Immutable.List<number> | string | number
 
 export class Value extends Immutable.Record({}) {
+  readonly annotations: Immutable.Map<string, Annotation>
   document: Document
   selection: Selection
   data: Data
@@ -605,6 +606,14 @@ export class Range extends BaseRange {
   toJSON(): RangeJSON
 }
 
+export interface AnnotationProperties {
+  key: string
+  type: string
+  data?: Immutable.Map<string, any> | Record<string, any>
+  anchor?: PointProperties
+  focus?: PointProperties
+}
+
 export interface AnnotationJSON {
   key: string
   type: string
@@ -620,16 +629,16 @@ export class Annotation extends Immutable.Record({}) {
   anchor: Point
   focus: Point
 
-  static create(attrs?: Annotation | AnnotationJSON | Range): Annotation
+  static create(attrs?: Annotation | AnnotationProperties | Range): Annotation
   static createMap(
     elements?: Record<string, Annotation> | Map<string, Annotation>
   ): Map<string, Annotation>
-  static createProperties(
-    attrs?: Annotation | Partial<AnnotationJSON>
-  ): Partial<Annotation>
+  static createProperties(attrs?: AnnotationProperties): AnnotationProperties
   static fromJSON(object: AnnotationJSON): Annotation
 
-  setProperties(properties: Annotation | Partial<AnnotationJSON>): Annotation
+  setProperties(
+    properties: Annotation | Partial<AnnotationProperties>
+  ): Annotation
   toJSON(options?: any): AnnotationJSON
 }
 
@@ -1406,6 +1415,9 @@ export class Editor implements Controller {
   replaceNodeByPath(path: Path, newNode: Node): Editor
   removeTextByKey(key: string, offset: number, length: number): Editor
   removeTextByPath(path: Path, offset: number, length: number): Editor
+  setAnnotations(
+    annotations: Immutable.Map<string, Annotation> | Record<string, Annotation>
+  ): Editor
   setDecorations(decorations: Immutable.List<Decoration> | Decoration[]): Editor
   setMarkByKey(
     key: string,

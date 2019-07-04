@@ -2,7 +2,6 @@ import * as React from "react"
 import { Editor as CoreEditor, Value, Operation } from "slate"
 import {
   Editor as SlateEditor,
-  RenderAnnotationProps,
   RenderBlockProps,
   RenderInlineProps,
   EditorProps
@@ -14,8 +13,6 @@ import { useSuggestionsPlugin } from "./suggestions"
 import { List } from "immutable"
 import { makeStyles } from "@material-ui/core"
 import { createPortal } from "react-dom"
-
-const CONTEXT_ANNOTATION_TYPE = "suggestionContext"
 
 const capture = /(\S+(?:\s+\S+){0,4})/
 
@@ -91,7 +88,6 @@ export default function Editor({
         plugins={plugins}
         spellCheck
         ref={editorRef as any}
-        renderAnnotation={renderAnnotation}
         renderBlock={renderBlock}
         renderInline={renderInline}
         schema={schema}
@@ -109,21 +105,6 @@ export default function Editor({
       <DisplayErrors results={[convSearchResult]} />
     </>
   )
-}
-
-function renderAnnotation(
-  { annotation, attributes, children }: RenderAnnotationProps,
-  _editor: CoreEditor,
-  next: () => any
-) {
-  if (annotation.type === CONTEXT_ANNOTATION_TYPE) {
-    return (
-      <span {...attributes} className="mention-context">
-        {children}
-      </span>
-    )
-  }
-  return next()
 }
 
 function renderBlock(
