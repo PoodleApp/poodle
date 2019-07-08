@@ -13,7 +13,7 @@ export const schema: SchemaProperties = {
   },
   blocks: {
     paragraph: {
-      nodes: [{ match: { object: "text" } }]
+      nodes: [{ match: [{ object: "text" }, { type: CONVERSATION_LINK }] }]
     },
     image: {
       isVoid: true,

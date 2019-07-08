@@ -42,8 +42,8 @@ export default function Editor(props: EditorProps) {
     }
     editor.deleteBackward(query.length)
     const selectedRange = editor.value.selection
-    editor.insertText(" ")
     editor
+      .insertText(" ")
       .insertInlineAtRange(
         selectedRange as any,
         {
