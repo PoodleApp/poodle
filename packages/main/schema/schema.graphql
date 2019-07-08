@@ -77,9 +77,10 @@ input AddressInput {
 }
 
 type Participants {
-  from: [Address!]!
+  from: [Address!]
   to: [Address!]!
   cc: [Address!]!
+  replyTo: [Address!]
 }
 
 type Presentable {

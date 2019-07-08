@@ -6,7 +6,7 @@ import { URI, mailtoUri } from "./uri"
 export type Email = string
 
 export default class Address {
-  name: string | undefined
+  name: string | null | undefined
   mailbox: string
   host: string
 
