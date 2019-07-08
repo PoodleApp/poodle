@@ -1,6 +1,7 @@
+import { CardContent } from "@material-ui/core"
 import * as React from "react"
 import Conversation from "./Conversation"
-import { delay, mount } from "./testing"
+import { delay, mount, updates } from "./testing"
 import * as $ from "./testing/fixtures"
 
 it("displays a conversation", async () => {
@@ -28,4 +29,19 @@ it("displays a loading indicator while the conversation is leading", () => {
     }
   )
   expect(app).toIncludeText("Loading...")
+})
+
+it("collapses read messages in a conversation", () => {
+  const app = mount(
+    <Conversation
+      accountId={$.account.id}
+      conversationId={$.conversation.id}
+    />,
+    {
+      mocks: [$.getConversationMock, $.setIsReadMock]
+    }
+  )
+  updates(app)
+
+  expect(app.find(CardContent)).toBeTruthy()
 })

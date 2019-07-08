@@ -199,7 +199,7 @@ function Presentable({
 }) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const [editing, setEditing] = React.useState(false)
-  const [expanded, setExpanded] = React.useState(false)
+  const [expanded, setExpanded] = React.useState(!presentable.isRead || false)
 
   const classes = useStyles()
 
@@ -265,11 +265,7 @@ function Presentable({
           </div>
         }
       />
-      <Collapse
-        in={presentable.isRead ? false || expanded : expanded}
-        timeout="auto"
-        unmountOnExit
-      >
+      <Collapse in={expanded} timeout="auto" unmountOnExit>
         <CardContent>
           {presentable.contents.map((content, i) => {
             if (editing) {

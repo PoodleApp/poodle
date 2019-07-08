@@ -23,7 +23,7 @@ export const conversation: graphql.Conversation = {
   presentableElements: [
     {
       id: "11",
-      isRead: true,
+      isRead: false,
       contents: [
         {
           revision: {

@@ -638,6 +638,116 @@ describe("when addressing conversations", () => {
     })
   })
 
+  it("an edited message will have an isRead field", async () => {
+    const orig = cache.getThreads(accountId)[0]
+    const message = testThread[1].attributes
+
+    expect(cache.getFlags(message.envelope.messageId).includes("//Seen")).toBe(
+      false
+    )
+
+    const part = message.struct![0] as imap.ImapMessagePart
+    const revisedContent = "What I meant to say was, hi."
+    const editMessage = composeEdit({
+      account,
+      content: {
+        type: "text",
+        subtype: "plain",
+        content: revisedContent
+      },
+      conversation: orig,
+      editedMessage: { envelope_messageId: message.envelope.messageId },
+      editedPart: {
+        content_id: part.id
+      },
+      resource: {
+        messageId: message.envelope.messageId,
+        contentId: part.id
+      }
+    })
+    editMessage.attributes.uid = 9000
+    const threadWithEdit = [...testThread, editMessage]
+    mock(Connection.prototype.fetch).mockImplementation(
+      mockFetchImplementation({ thread: threadWithEdit })
+    )
+    await sync(accountId, connectionManager)
+
+    const result = await request(
+      `
+        query getConversation($conversationId: ID!) {
+          conversation(id: $conversationId) {
+            presentableElements {
+              isRead
+              date
+              from {
+                name
+                mailbox
+                host
+              }
+              editedAt
+              editedBy {
+                name
+                mailbox
+                host
+              }
+              contents {
+                type
+                subtype
+                content
+              }
+            }
+          }
+        }
+      `,
+      { conversationId: testThread[0].attributes["x-gm-thrid"] }
+    )
+    expect(result).toMatchObject({
+      data: {
+        conversation: {
+          presentableElements: [
+            {
+              isRead: true,
+              date: "2019-01-31T23:40:04.000Z",
+              from: {
+                name: "Jesse Hallett",
+                mailbox: "hallettj",
+                host: "gmail.com"
+              },
+              contents: [
+                {
+                  type: "text",
+                  subtype: "html",
+                  content: "<p>This is a test.</p>"
+                }
+              ]
+            },
+            {
+              isRead: true,
+              date: "2019-05-01T22:29:31.000Z",
+              from: {
+                name: "Jesse Hallett",
+                mailbox: "jesse",
+                host: "sitr.us"
+              },
+              editedAt: editMessage.attributes.date.toISOString(),
+              editedBy: {
+                mailbox: "jesse",
+                host: "sitr.us"
+              },
+              contents: [
+                {
+                  type: "text",
+                  subtype: "plain",
+                  content: revisedContent
+                }
+              ]
+            }
+          ]
+        }
+      }
+    })
+  })
+
   async function sendEdit(content: {
     type: string
     subtype: string
