@@ -160,9 +160,10 @@ export type Mutation = {
 
 export type Participants = {
   __typename?: "Participants"
-  from: Array<Address>
+  from?: Maybe<Array<Address>>
   to: Array<Address>
   cc: Array<Address>
+  replyTo?: Maybe<Array<Address>>
 }
 
 export type PartSpec = {
@@ -483,9 +484,18 @@ export type ParticipantsResolvers<
   ContextType = any,
   ParentType = ResolversParentTypes["Participants"]
 > = {
-  from?: Resolver<Array<ResolversTypes["Address"]>, ParentType, ContextType>
+  from?: Resolver<
+    Maybe<Array<ResolversTypes["Address"]>>,
+    ParentType,
+    ContextType
+  >
   to?: Resolver<Array<ResolversTypes["Address"]>, ParentType, ContextType>
   cc?: Resolver<Array<ResolversTypes["Address"]>, ParentType, ContextType>
+  replyTo?: Resolver<
+    Maybe<Array<ResolversTypes["Address"]>>,
+    ParentType,
+    ContextType
+  >
 }
 
 export type PartSpecResolvers<

@@ -153,9 +153,10 @@ export type Mutation = {
 
 export type Participants = {
   __typename?: "Participants"
-  from: Array<Address>
+  from?: Maybe<Array<Address>>
   to: Array<Address>
   cc: Array<Address>
+  replyTo?: Maybe<Array<Address>>
 }
 
 export type PartSpec = {
@@ -310,10 +311,12 @@ export type GetConversationQuery = { __typename?: "Query" } & {
             }
         >
         replyRecipients: { __typename?: "Participants" } & {
-          from: Array<
-            { __typename?: "Address" } & Pick<
-              Address,
-              "name" | "mailbox" | "host"
+          from: Maybe<
+            Array<
+              { __typename?: "Address" } & Pick<
+                Address,
+                "name" | "mailbox" | "host"
+              >
             >
           >
           to: Array<

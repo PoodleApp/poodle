@@ -47,7 +47,7 @@ export const Conversation: ConversationResolvers = {
   replyRecipients(conversation: C.Conversation, { fromAccountId }) {
     const account = mustGetAccount(fromAccountId)
     const recipients = C.getReplyParticipants(conversation, account)
-    return mapObject(recipients, rs => rs.toArray())
+    return recipients
   },
 
   snippet(conversation: C.Conversation) {

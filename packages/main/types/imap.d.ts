@@ -127,7 +127,7 @@ declare module "imap" {
     }
 
     export interface Address {
-      name?: string // e.g., person's full name
+      name?: string | null // e.g., person's full name
       mailbox: string // username portion of email address
       host: string // host portion of email address
     }

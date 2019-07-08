@@ -1,8 +1,7 @@
 import { convert } from "encoding"
-import imap from "imap"
 import { Collection, is, List, Seq } from "immutable"
 import * as cache from "../cache"
-import { Content, Presentable } from "../generated/graphql"
+import { Content, Participants, Presentable } from "../generated/graphql"
 import { uniqBy } from "../util/immutable"
 import * as Addr from "./Address"
 import { inlineContentParts } from "./Message"
@@ -11,12 +10,6 @@ import { idFromHeaderValue, parseMidUri } from "./uri"
 export interface Conversation {
   id: string
   messages: cache.Message[]
-}
-
-type Participants = {
-  from: Collection.Indexed<imap.Address>
-  to: Collection.Indexed<imap.Address>
-  cc: Collection.Indexed<imap.Address>
 }
 
 export function getConversation(id: string): Conversation | null {
@@ -41,29 +34,48 @@ export function getReplyParticipants(
   sender: cache.Account
 ): Participants {
   const senderAddress = Addr.build(sender)!
-  const participants = getParticipantMap(conversation)
+  const participants = getParticipants(conversation)
   const to = uniqBy(
     Addr.normalizedEmail,
-    participants.from
-      .concat(participants.to)
-      .filter(p => !Addr.equals(senderAddress, p))
-  ).sortBy(Addr.formatAddress)
-  const cc = uniqBy(
-    Addr.normalizedEmail,
-    participants.cc.filter(
-      p => !Addr.equals(senderAddress, p) && !to.some(p_ => Addr.equals(p, p_))
-    )
-  ).sortBy(Addr.formatAddress)
-  return { to, cc, from: Seq([senderAddress]) }
-}
-
-function getParticipantMap(conversation: Conversation): Participants {
-  const [from, to, cc] = (["from", "to", "cc"] as const).map(type =>
-    Seq(conversation.messages).flatMap(message =>
-      cache.getParticipants(message.id, type)
+    List(
+      (participants.replyTo || [])
+        .concat(participants.to || [])
+        .filter(p => !Addr.equals(senderAddress, p))
     )
   )
-  return { from, to, cc }
+    .sortBy(Addr.formatAddress)
+    .toArray()
+
+  const cc = uniqBy(
+    Addr.normalizedEmail,
+    List(
+      participants.cc.filter(
+        p =>
+          !Addr.equals(senderAddress, p) && !to.some(p_ => Addr.equals(p, p_))
+      )
+    )
+  )
+    .sortBy(Addr.formatAddress)
+    .toArray()
+
+  return { to, cc, from: [senderAddress] }
+}
+
+function getParticipants(conversation: Conversation): Participants {
+  const [to, cc, replyTo] = (["to", "cc", "replyTo"] as const).map(type =>
+    Seq(conversation.messages)
+      .flatMap(message => {
+        if (type === "replyTo") {
+          const replyParts = cache.getParticipants(message.id, type)
+          return replyParts.length !== 0
+            ? replyParts
+            : cache.getParticipants(message.id, "from")
+        }
+        return cache.getParticipants(message.id, type)
+      })
+      .toArray()
+  )
+  return { to, cc, replyTo }
 }
 
 type PartSpec = { messageId: string; contentId: string | null | undefined }
