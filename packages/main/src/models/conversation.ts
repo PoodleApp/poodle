@@ -38,10 +38,9 @@ export function getReplyParticipants(
   const to = uniqBy(
     Addr.normalizedEmail,
     List(
-      participants.replyTo ||
-        []
-          .concat(participants.to || [])
-          .filter(p => !Addr.equals(senderAddress, p))
+      (participants.replyTo || [])
+        .concat(participants.to || [])
+        .filter(p => !Addr.equals(senderAddress, p))
     )
   )
     .sortBy(Addr.formatAddress)
