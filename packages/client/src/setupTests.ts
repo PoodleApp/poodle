@@ -6,6 +6,21 @@ import { act } from "react-dom/test-utils"
 
 configure({ adapter: new Adapter() })
 
+beforeEach(() => {
+  // Create an element to render portals in (created via `React.createPortal`).
+  // If necessary remove the element and recreate it to reset state between
+  // tests.
+  const root = document.getElementById("portalRoot")
+  if (root) {
+    root.remove()
+  }
+  const newRoot = document.createElement("div")
+  newRoot.setAttribute("id", "portalRoot")
+  for (const body of document.getElementsByTagName("body")) {
+    body.appendChild(newRoot)
+  }
+})
+
 // This is necessary because we import Electron using
 // `window.require("electron")`
 window.require = require

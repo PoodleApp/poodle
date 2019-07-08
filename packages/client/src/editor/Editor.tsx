@@ -43,7 +43,6 @@ export default function Editor(props: EditorProps) {
     editor.deleteBackward(query.length)
     const selectedRange = editor.value.selection
     editor
-      .insertText(" ")
       .insertInlineAtRange(
         selectedRange as any,
         {
@@ -60,6 +59,7 @@ export default function Editor(props: EditorProps) {
           type: CONVERSATION_LINK
         } as any
       )
+      .insertText(" ")
       .focus()
   }
 

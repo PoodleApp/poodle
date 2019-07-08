@@ -198,7 +198,7 @@ export function Suggestions<T extends Item>({
       })
     }
   }, [anchor, items])
-  const root = window.document.getElementById("root")!
+  const root = window.document.getElementById("portalRoot")!
 
   return createPortal(
     <SuggestionList style={position}>
