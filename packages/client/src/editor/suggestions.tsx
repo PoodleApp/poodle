@@ -1,4 +1,4 @@
-import { makeStyles } from "@material-ui/core"
+import { makeStyles, MenuItem, Paper } from "@material-ui/core"
 import * as Immutable from "immutable"
 import pick from "object.pick"
 import * as React from "react"
@@ -125,54 +125,11 @@ function setAnnotations(
 
 const useStyles = makeStyles(_theme => ({
   suggestionsList: {
-    background: "#fff",
-    listStyle: "none",
-    margin: 0,
-    padding: 0,
     position: "absolute"
-  },
-  suggestion: {
-    alignItems: "center",
-    borderLeft: "1px solid #ddd",
-    borderRight: "1px solid #ddd",
-    borderTop: "1px solid #ddd",
-    display: "flex",
-    height: "32px",
-    padding: "4px 8px"
   }
 }))
 
 type Item = { id: string; title: string }
-
-const SuggestionList = React.forwardRef(
-  (
-    {
-      children,
-      ...props
-    }: React.DetailedHTMLProps<
-      React.HTMLAttributes<HTMLUListElement>,
-      HTMLUListElement
-    >,
-    ref: React.Ref<HTMLUListElement>
-  ) => {
-    const classes = useStyles()
-    return (
-      <ul {...props} ref={ref} className={classes.suggestionsList}>
-        {children}
-      </ul>
-    )
-  }
-)
-
-function Suggestion(
-  props: React.DetailedHTMLProps<
-    React.LiHTMLAttributes<HTMLLIElement>,
-    HTMLLIElement
-  >
-) {
-  const classes = useStyles()
-  return <li {...props} className={classes.suggestion}></li>
-}
 
 const defaultPosition = { top: -10000, left: -10000 }
 
@@ -185,6 +142,7 @@ export function Suggestions<T extends Item>({
   items: Array<T>
   onSelect: (item: T) => void
 }) {
+  const classes = useStyles()
   const [position, setPosition] = React.useState(defaultPosition)
   React.useEffect(() => {
     const anchorElement = window.document.querySelector(anchor)
@@ -201,13 +159,13 @@ export function Suggestions<T extends Item>({
   const root = window.document.getElementById("portalRoot")!
 
   return createPortal(
-    <SuggestionList style={position}>
+    <Paper className={classes.suggestionsList} style={position}>
       {items.map(item => (
-        <Suggestion key={item.id} onClick={() => onSelect(item)}>
+        <MenuItem key={item.id} onClick={() => onSelect(item)}>
           {item.title}
-        </Suggestion>
+        </MenuItem>
       ))}
-    </SuggestionList>,
+    </Paper>,
     root
   )
 }
