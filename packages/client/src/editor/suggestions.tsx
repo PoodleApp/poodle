@@ -1,6 +1,10 @@
+import { makeStyles } from "@material-ui/core"
+import * as Immutable from "immutable"
+import pick from "lodash/pick"
 import * as React from "react"
+import { createPortal } from "react-dom"
+import { Annotation, Editor, Value } from "slate"
 import { Plugin, RenderAnnotationProps } from "slate-react"
-import { Editor, Value, Annotation } from "slate"
 
 const CONTEXT_ANNOTATION_TYPE = "suggestionContext"
 
@@ -15,6 +19,9 @@ export function useSuggestionsPlugin({ capture }: { capture: RegExp }) {
       }
 
       const newQuery = getCapturedValue(editor.value, capture)
+      if (query === newQuery) {
+        return next()
+      }
 
       // This timeout is necessary to escape a re-render paradox.
       setTimeout(() => setQuery(newQuery), 0)
@@ -43,9 +50,7 @@ export function useSuggestionsPlugin({ capture }: { capture: RegExp }) {
         )
       }
 
-      setTimeout(() => {
-        editor.setAnnotations(annotations)
-      }, 1)
+      setAnnotations(editor, annotations)
       next()
     }
 
@@ -65,7 +70,7 @@ export function useSuggestionsPlugin({ capture }: { capture: RegExp }) {
     }
 
     return { onChange, renderAnnotation }
-  }, [capture, setQuery])
+  }, [capture, query, setQuery])
 
   return { plugin, query }
 }
@@ -98,4 +103,114 @@ let n = 0
 
 function getMentionKey() {
   return `highlight_${n++}`
+}
+
+// Quick monkey-patch, will be unnecessary after
+// https://github.com/ianstormtaylor/slate/pull/2877
+;(Annotation as any).createList = Annotation.createMap
+
+// TODO: `setAnnotations` will be a built-in editor method in the next slate
+// release. See https://github.com/ianstormtaylor/slate/pull/2877
+function setAnnotations(
+  editor: Editor,
+  annotations: Immutable.Map<string, Annotation>
+) {
+  const { value } = editor
+  const newProperties = Value.createProperties({ annotations })
+  const prevProperties = pick(value, Object.keys(newProperties))
+
+  editor.applyOperation({
+    type: "set_value",
+    properties: prevProperties,
+    newProperties
+  })
+}
+
+const useStyles = makeStyles(_theme => ({
+  suggestionsList: {
+    background: "#fff",
+    listStyle: "none",
+    margin: 0,
+    padding: 0,
+    position: "absolute"
+  },
+  suggestion: {
+    alignItems: "center",
+    borderLeft: "1px solid #ddd",
+    borderRight: "1px solid #ddd",
+    borderTop: "1px solid #ddd",
+    display: "flex",
+    height: "32px",
+    padding: "4px 8px"
+  }
+}))
+
+type Item = { id: string; title: string }
+
+const SuggestionList = React.forwardRef(
+  (
+    {
+      children,
+      ...props
+    }: React.DetailedHTMLProps<
+      React.HTMLAttributes<HTMLUListElement>,
+      HTMLUListElement
+    >,
+    ref: React.Ref<HTMLUListElement>
+  ) => {
+    const classes = useStyles()
+    return (
+      <ul {...props} ref={ref} className={classes.suggestionsList}>
+        {children}
+      </ul>
+    )
+  }
+)
+
+function Suggestion(
+  props: React.DetailedHTMLProps<
+    React.LiHTMLAttributes<HTMLLIElement>,
+    HTMLLIElement
+  >
+) {
+  const classes = useStyles()
+  return <li {...props} className={classes.suggestion}></li>
+}
+
+const defaultPosition = { top: -10000, left: -10000 }
+
+export function Suggestions<T extends Item>({
+  anchor,
+  items,
+  onSelect
+}: {
+  anchor: string
+  items: Array<T>
+  onSelect: (item: T) => void
+}) {
+  const [position, setPosition] = React.useState(defaultPosition)
+  React.useEffect(() => {
+    const anchorElement = window.document.querySelector(anchor)
+    if (!anchorElement || items.length < 1) {
+      setPosition(defaultPosition)
+    } else {
+      const anchorRect = anchorElement.getBoundingClientRect()
+      setPosition({
+        top: anchorRect.bottom + window.pageYOffset,
+        left: anchorRect.left + window.pageXOffset
+      })
+    }
+  }, [anchor, items])
+  const root = window.document.getElementById("root")!
+
+  return createPortal(
+    <SuggestionList style={position}>
+      {items.map(item => (
+        <Suggestion key={item.id} onClick={() => onSelect(item)}>
+          {item.title}
+        </Suggestion>
+      ))}
+    </SuggestionList>,
+    root
+  )
 }

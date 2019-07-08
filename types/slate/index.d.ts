@@ -62,6 +62,7 @@ export interface SchemaProperties {
 }
 
 export interface ValueProperties {
+  annotations?: Immutable.Map<string, Annotation>
   document?: Document
   selection?: Selection
   data?: Data
@@ -906,7 +907,7 @@ export interface SetValueOperation {
   type: "set_value"
   properties: ValueProperties
   newProperties: ValueProperties
-  data: Data
+  data?: Data
 }
 
 export interface Operations {
