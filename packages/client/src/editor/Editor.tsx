@@ -107,11 +107,28 @@ function renderInline(
   next: () => any
 ) {
   if (node.type === CONVERSATION_LINK) {
+    const messageId = node.data.get("messageId")
+    const href = messageId ? midUri(messageId) : ""
     return (
-      <a href="TODO" {...attributes}>
+      <a href={href} {...attributes}>
         {node.text}
       </a>
     )
   }
   return next()
+}
+
+// TODO: copied from `main/src/models/uri.ts`
+function midUri(messageId: string, contentId?: string | null): string {
+  const mId = idFromHeaderValue(messageId)
+  const cId = contentId && idFromHeaderValue(contentId)
+  return cId
+    ? `mid:${encodeURIComponent(mId)}/${encodeURIComponent(cId)}`
+    : `mid:${encodeURIComponent(mId)}`
+}
+
+const messageIdPattern = /<(.*)>/
+
+export function idFromHeaderValue(id: string): string {
+  return id.replace(messageIdPattern, (_, id) => id)
 }
