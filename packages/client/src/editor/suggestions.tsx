@@ -1,6 +1,6 @@
 import { makeStyles } from "@material-ui/core"
 import * as Immutable from "immutable"
-import pick from "lodash/pick"
+import pick from "object.pick"
 import * as React from "react"
 import { createPortal } from "react-dom"
 import { Annotation, Editor, Value } from "slate"
@@ -19,9 +19,6 @@ export function useSuggestionsPlugin({ capture }: { capture: RegExp }) {
       }
 
       const newQuery = getCapturedValue(editor.value, capture)
-      if (query === newQuery) {
-        return next()
-      }
 
       // This timeout is necessary to escape a re-render paradox.
       setTimeout(() => setQuery(newQuery), 0)
@@ -70,7 +67,7 @@ export function useSuggestionsPlugin({ capture }: { capture: RegExp }) {
     }
 
     return { onChange, renderAnnotation }
-  }, [capture, query, setQuery])
+  }, [capture, setQuery])
 
   return { plugin, query }
 }
@@ -117,7 +114,7 @@ function setAnnotations(
 ) {
   const { value } = editor
   const newProperties = Value.createProperties({ annotations })
-  const prevProperties = pick(value, Object.keys(newProperties))
+  const prevProperties = pick(value, Object.keys(newProperties) as any)
 
   editor.applyOperation({
     type: "set_value",
