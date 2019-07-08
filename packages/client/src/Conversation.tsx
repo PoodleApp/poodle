@@ -3,6 +3,7 @@ import {
   Card,
   CardContent,
   CardHeader,
+  Collapse,
   CssBaseline,
   IconButton,
   makeStyles,
@@ -13,18 +14,20 @@ import {
 } from "@material-ui/core"
 import ArchiveIcon from "@material-ui/icons/Archive"
 import CloseIcon from "@material-ui/icons/Close"
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore"
 import MoreVertIcon from "@material-ui/icons/MoreVert"
 import { Redirect, RouteComponentProps } from "@reach/router"
+import clsx from "clsx"
 import moment from "moment"
 import * as React from "react"
 import Avatar from "./Avatar"
+import ReplyForm from "./Compose/ReplyForm"
 import DisplayContent from "./DisplayContent"
 import DisplayErrors from "./DisplayErrors"
 import * as graphql from "./generated/graphql"
 import useArchive from "./hooks/useArchive"
 import useSetIsRead from "./hooks/useSetIsRead"
 import { displayParticipant } from "./Participant"
-import ReplyForm from "./Compose/ReplyForm"
 
 type Props = RouteComponentProps & {
   accountId?: string
@@ -65,6 +68,16 @@ const useStyles = makeStyles(theme => ({
   },
   edited: {
     fontStyle: "italic"
+  },
+  expand: {
+    transform: "rotate(0deg)",
+    marginLeft: "auto",
+    transition: theme.transitions.create("transform", {
+      duration: theme.transitions.duration.shortest
+    })
+  },
+  expandOpen: {
+    transform: "rotate(180deg)"
   },
   presentable: {
     marginTop: theme.spacing(1),
@@ -186,6 +199,8 @@ function Presentable({
 }) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const [editing, setEditing] = React.useState(false)
+  const [expanded, setExpanded] = React.useState(false)
+
   const classes = useStyles()
 
   function handleClick(event: React.MouseEvent<HTMLButtonElement>) {
@@ -194,6 +209,10 @@ function Presentable({
 
   function handleClose() {
     setAnchorEl(null)
+  }
+
+  function handleExpandClick() {
+    setExpanded(!expanded)
   }
 
   return (
@@ -216,6 +235,17 @@ function Presentable({
             >
               <MoreVertIcon />
             </IconButton>
+            <IconButton
+              className={clsx(classes.expand, {
+                [classes.expandOpen]: expanded
+              })}
+              onClick={handleExpandClick}
+              aria-expanded={expanded}
+              aria-label="Show more"
+            >
+              <ExpandMoreIcon />
+            </IconButton>
+
             <Menu
               id={`${presentable.id}-menu`}
               anchorEl={anchorEl}
@@ -235,24 +265,29 @@ function Presentable({
           </div>
         }
       />
-      <CardContent>
-        {presentable.contents.map((content, i) => {
-          if (editing) {
-            return (
-              <EditForm
-                accountId={accountId}
-                conversationId={conversationId}
-                contentToEdit={content}
-                onComplete={() => {
-                  setEditing(false)
-                }}
-              />
-            )
-          } else {
+      <Collapse
+        in={presentable.isRead ? false || expanded : expanded}
+        timeout="auto"
+        unmountOnExit
+      >
+        <CardContent>
+          {presentable.contents.map((content, i) => {
+            if (editing) {
+              return (
+                <EditForm
+                  accountId={accountId}
+                  conversationId={conversationId}
+                  contentToEdit={content}
+                  onComplete={() => {
+                    setEditing(false)
+                  }}
+                />
+              )
+            }
             return <DisplayContent key={i} {...content} />
-          }
-        })}
-      </CardContent>
+          })}
+        </CardContent>
+      </Collapse>
     </Card>
   )
 }

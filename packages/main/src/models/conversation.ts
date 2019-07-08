@@ -94,6 +94,9 @@ export function getPresentableElements({
         .last(undefined)
       return {
         id: String(message.id),
+        isRead: cache
+          .getFlags(latestEdit ? latestEdit.revision.message.id : message.id)
+          .includes("\\Seen"),
         contents: resources
           .valueSeq()
           .map(getPresentableContent)
