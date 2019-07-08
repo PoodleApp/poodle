@@ -24,8 +24,8 @@ beforeEach(async () => {
     .prepare("insert into accounts (email) values (?)")
     .run("jesse@sitr.us")
   accountId = lastInsertRowid
-
   connectionManager = mockConnection()
+  account = { id: accountId, email: "jesse@sitr.us" }
 })
 
 describe("when addressing conversations", () => {
@@ -33,8 +33,6 @@ describe("when addressing conversations", () => {
   let conversationId: string
 
   beforeEach(async () => {
-    account = { id: accountId, email: "jesse@sitr.us" }
-
     await sync(accountId, connectionManager)
 
     const result = await request(
