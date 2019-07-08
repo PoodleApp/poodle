@@ -19,6 +19,7 @@ export function composeReply({
   const messageId = mkMessageId(account.email)
   const subject = C.getSubject(conversation)
   const { from, to, cc } = C.getReplyParticipants(conversation, account)
+
   return {
     attributes: {
       flags: ["\\Seen"],
@@ -26,11 +27,11 @@ export function composeReply({
       envelope: {
         date,
         subject: subject ? `Re: ${subject}` : null,
-        from: from.toArray(),
-        sender: from.toArray(),
-        replyTo: from.toArray(),
-        to: to.toArray(),
-        cc: cc.toArray(),
+        from: from || null,
+        sender: from || null,
+        replyTo: from || null,
+        to: to,
+        cc: cc,
         bcc: null,
         inReplyTo: replyToMessage ? replyToMessage.envelope_messageId : null,
         messageId

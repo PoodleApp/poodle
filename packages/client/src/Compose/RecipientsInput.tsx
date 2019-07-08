@@ -157,7 +157,7 @@ export default function RecipientsInput({
   ) {
     return (
       <TextField
-        {...inputProps as any}
+        {...(inputProps as any)}
         {...rest}
         fullWidth
         InputProps={{
