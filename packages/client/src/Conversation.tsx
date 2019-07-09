@@ -199,7 +199,7 @@ function Presentable({
 }) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const [editing, setEditing] = React.useState(false)
-  const [expanded, setExpanded] = React.useState(!presentable.isRead || false)
+  const [expanded, setExpanded] = React.useState(!presentable.isRead)
 
   const classes = useStyles()
 
@@ -209,10 +209,6 @@ function Presentable({
 
   function handleClose() {
     setAnchorEl(null)
-  }
-
-  function handleExpandClick() {
-    setExpanded(!expanded)
   }
 
   return (
@@ -239,9 +235,10 @@ function Presentable({
               className={clsx(classes.expand, {
                 [classes.expandOpen]: expanded
               })}
-              onClick={handleExpandClick}
+              onClick={() => setExpanded(!expanded)}
               aria-expanded={expanded}
               aria-label="Show more"
+              aria-controls="message-card-content"
             >
               <ExpandMoreIcon />
             </IconButton>
@@ -265,8 +262,8 @@ function Presentable({
           </div>
         }
       />
-      <Collapse in={expanded} timeout="auto" unmountOnExit>
-        <CardContent>
+      <Collapse in={expanded} timeout="auto">
+        <CardContent id="message-card-content">
           {presentable.contents.map((content, i) => {
             if (editing) {
               return (

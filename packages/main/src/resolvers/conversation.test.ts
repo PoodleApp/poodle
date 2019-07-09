@@ -638,7 +638,7 @@ describe("when addressing conversations", () => {
     })
   })
 
-  it("an edited message will have an isRead field", async () => {
+  it("marks an edited message as read", async () => {
     const orig = cache.getThreads(accountId)[0]
     const message = testThread[1].attributes
 
@@ -667,6 +667,7 @@ describe("when addressing conversations", () => {
     })
     editMessage.attributes.uid = 9000
     const threadWithEdit = [...testThread, editMessage]
+
     mock(Connection.prototype.fetch).mockImplementation(
       mockFetchImplementation({ thread: threadWithEdit })
     )
@@ -678,23 +679,6 @@ describe("when addressing conversations", () => {
           conversation(id: $conversationId) {
             presentableElements {
               isRead
-              date
-              from {
-                name
-                mailbox
-                host
-              }
-              editedAt
-              editedBy {
-                name
-                mailbox
-                host
-              }
-              contents {
-                type
-                subtype
-                content
-              }
             }
           }
         }
@@ -706,41 +690,10 @@ describe("when addressing conversations", () => {
         conversation: {
           presentableElements: [
             {
-              isRead: true,
-              date: "2019-01-31T23:40:04.000Z",
-              from: {
-                name: "Jesse Hallett",
-                mailbox: "hallettj",
-                host: "gmail.com"
-              },
-              contents: [
-                {
-                  type: "text",
-                  subtype: "html",
-                  content: "<p>This is a test.</p>"
-                }
-              ]
+              isRead: true
             },
             {
-              isRead: true,
-              date: "2019-05-01T22:29:31.000Z",
-              from: {
-                name: "Jesse Hallett",
-                mailbox: "jesse",
-                host: "sitr.us"
-              },
-              editedAt: editMessage.attributes.date.toISOString(),
-              editedBy: {
-                mailbox: "jesse",
-                host: "sitr.us"
-              },
-              contents: [
-                {
-                  type: "text",
-                  subtype: "plain",
-                  content: revisedContent
-                }
-              ]
+              isRead: true
             }
           ]
         }

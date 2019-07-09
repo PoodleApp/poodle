@@ -18,7 +18,7 @@ it("displays a conversation", async () => {
   expect(app).toIncludeText("Hello from test")
 })
 
-it("displays a loading indicator while the conversation is leading", () => {
+it("displays a loading indicator while the conversation is loading", () => {
   const app = mount(
     <Conversation
       accountId={$.account.id}
@@ -31,7 +31,7 @@ it("displays a loading indicator while the conversation is leading", () => {
   expect(app).toIncludeText("Loading...")
 })
 
-it("collapses read messages in a conversation", () => {
+it("collapses read messages in a conversation", async () => {
   const app = mount(
     <Conversation
       accountId={$.account.id}
@@ -41,7 +41,7 @@ it("collapses read messages in a conversation", () => {
       mocks: [$.getConversationMock, $.setIsReadMock]
     }
   )
-  updates(app)
+  await updates(app)
 
-  expect(app.find(CardContent)).toBeTruthy()
+  expect(app.find(CardContent)).toEqual({})
 })
