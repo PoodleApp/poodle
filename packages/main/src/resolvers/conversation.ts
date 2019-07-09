@@ -14,7 +14,6 @@ import { mustGetAccount } from "../models/account"
 import * as C from "../models/conversation"
 import { actions, schedule } from "../queue"
 import { nonNull } from "../util/array"
-import { mapObject } from "../util/object"
 import * as types from "./types"
 
 export const Conversation: ConversationResolvers = {
@@ -231,7 +230,7 @@ export const queries: Partial<QueryResolvers> = {
       const nextQ = q.replace(tokenPattern, "")
       return nextQ === q ? [] : go(nextQ)
     }
-    return go(query.trim())
+    return go(query)
   }
 }
 
