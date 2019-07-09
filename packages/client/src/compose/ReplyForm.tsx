@@ -8,11 +8,11 @@ import {
 import ReplyIcon from "@material-ui/icons/Reply"
 import * as React from "react"
 import { Value } from "slate"
-import { Editor } from "slate-react"
 import DisplayErrors from "../DisplayErrors"
+import Editor from "../editor/Editor"
+import serializer from "../editor/serializer"
 import * as graphql from "../generated/graphql"
 import ParticipantChip from "../ParticipantChip"
-import serializer from "./serializer"
 
 const initialValue = serializer.deserialize("")
 

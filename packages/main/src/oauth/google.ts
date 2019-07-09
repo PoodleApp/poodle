@@ -1,9 +1,8 @@
-import isDev from "electron-is-dev"
 import { google } from "googleapis"
 import Connection from "imap"
-import { stringify } from "querystring"
 import fetch from "node-fetch"
-import { XOAuth2Generator, createXOAuth2Generator } from "xoauth2"
+import { stringify } from "querystring"
+import { createXOAuth2Generator, XOAuth2Generator } from "xoauth2"
 import { SmtpConfig } from "../smtp"
 import { ConnectionFactory } from "../types"
 import { lift1 } from "../util/promises"
@@ -124,7 +123,6 @@ export function initImap(
     host: "imap.gmail.com",
     port: 993,
     tls: true
-    // debug: isDev ? console.log : undefined
   })
   const p: Promise<Connection> = new Promise((resolve, reject) => {
     imap.once("ready", () => resolve(imap))

@@ -1,14 +1,8 @@
 import imap from "imap"
 import { Collection } from "immutable"
 import db from "../db"
-import {
-  Account,
-  Box,
-  ID,
-  Message,
-  MessagePart,
-  SerializedHeaders
-} from "./types"
+import { nonNull } from "../util/array"
+import { Account, Box, ID, Message, MessagePart } from "./types"
 
 export function lastSeenUid({ boxId }: { boxId: ID }): number {
   const result = db
@@ -350,6 +344,22 @@ export function missingMessageIds(accountId: ID): string[] {
     )
     .all(accountId)
     .map(row => row.referenced_id)
+}
+
+export function searchBySubject(query: string): Thread[] {
+  const threadIds = db
+    .prepare(
+      `
+        select x_gm_thrid as thrid from messages
+        join message_subject_index on message_subject_index.rowid = messages.id
+        where message_subject_index match ?
+        group by x_gm_thrid
+        order by rank
+      `
+    )
+    .all(query)
+    .map(row => row.thrid)
+  return threadIds.map(getThread).filter(nonNull)
 }
 
 function toImapMessagePart(part: CachedMessagePart): imap.ImapMessagePart {
