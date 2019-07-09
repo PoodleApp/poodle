@@ -11,7 +11,7 @@ import * as graphql from "../generated/graphql"
 import { CONVERSATION_LINK, schema } from "./schema"
 import { Suggestions, useSuggestionsPlugin } from "./suggestions"
 
-const capture = /(\S+(?:\s+\S+){0,4})$/
+const capture = /(\S+(?:\s+\S+){0,4}\s*)$/
 
 export default function Editor(props: EditorProps) {
   const { plugin, query: conversationQuery } = useSuggestionsPlugin({ capture })
