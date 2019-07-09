@@ -407,21 +407,19 @@ export function addLabels({
   uids: number[]
   labels: string[]
 }) {
-  db.prepare(
-    `
-      insert into message_gmail_labels
-      where
-        message_id in (
-          select messages.id from messages
+  labels.forEach(label => {
+    db.prepare(
+      `
+      insert into message_gmail_labels (id, label, message_id)
+      select @accountId, @label, messages.id from messages
           join boxes on box_id = boxes.id
           where
             messages.account_id = @accountId
             and boxes.name = @boxName
             and uid in (${uids.join(", ")})
-        )
-        and label in (${labels.map(f => `'${f}'`).join(", ")})
     `
-  ).run({ accountId, boxName: box.name })
+    ).run({ accountId, boxName: box.name, label })
+  })
 }
 
 function insertInto(table: string, values: Record<string, unknown>): ID {

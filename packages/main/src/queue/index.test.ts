@@ -230,9 +230,6 @@ it("removes cached message if message cannot be sent", async () => {
 })
 
 it("removes archive state changes from cache on failure", async () => {
-  // const connectionManager = mockConnection()
-  // await sync(accountId, connectionManager)
-
   mock(Connection.prototype.delLabels).mockImplementation(
     (_data, _labels, cb) => {
       cb(new Error("archive failed"))
@@ -251,8 +248,6 @@ it("removes archive state changes from cache on failure", async () => {
     await promise
   } catch (_) {}
 
-  expect(Connection.prototype.addLabels).toHaveBeenCalled()
-
   const label = db
     .prepare(
       `
@@ -264,7 +259,11 @@ it("removes archive state changes from cache on failure", async () => {
     )
     .all({ uid: 7687 })
 
-  expect(label).toContain({ label: "\\Inbox" })
+  expect(label).toEqual([
+    { label: "\\Inbox" },
+    { label: "\\Important" },
+    { label: "\\Sent" }
+  ])
 })
 
 describe("sync", () => {
