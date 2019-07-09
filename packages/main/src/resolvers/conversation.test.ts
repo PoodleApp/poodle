@@ -700,6 +700,31 @@ describe("when addressing conversations", () => {
         }
       })
     })
+
+    it("prevents sqlite from interpreting parts of query as special match expression tokens", async () => {
+      const result = await request(
+        `
+        query searchConversations($query: String!) {
+          conversations(query: $query) {
+            conversation {
+              messageId
+              subject
+            }
+            query
+          }
+        }
+      `,
+        { query: "test AND" }
+      )
+      expect(result).not.toMatchObject({
+        errors: expect.anything()
+      })
+      expect(result).toMatchObject({
+        data: {
+          conversations: []
+        }
+      })
+    })
   })
 
   async function sendEdit(content: {
