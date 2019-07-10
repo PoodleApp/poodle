@@ -82,6 +82,8 @@ export type Conversation = {
   date: Scalars["String"]
   from: Address
   labels?: Maybe<Array<Scalars["String"]>>
+  /** RFC 2822 Message ID of the first message in the conversation, if available. */
+  messageId?: Maybe<Scalars["String"]>
   presentableElements: Array<Presentable>
   isRead: Scalars["Boolean"]
   replyRecipients: Participants
@@ -128,6 +130,12 @@ export type ConversationMutationsSetIsReadArgs = {
 export type ConversationMutationsSendMessageArgs = {
   accountId: Scalars["ID"]
   message: MessageInput
+}
+
+export type ConversationSearchResult = {
+  __typename?: "ConversationSearchResult"
+  conversation: Conversation
+  query: Scalars["String"]
 }
 
 export type Message = {
@@ -187,6 +195,7 @@ export type Query = {
   accounts: Array<Account>
   addresses: Array<Address>
   conversation?: Maybe<Conversation>
+  conversations: Array<ConversationSearchResult>
 }
 
 export type QueryAccountArgs = {
@@ -199,6 +208,11 @@ export type QueryAddressesArgs = {
 
 export type QueryConversationArgs = {
   id: Scalars["ID"]
+}
+
+export type QueryConversationsArgs = {
+  query: Scalars["String"]
+  specificityThreshold?: Maybe<Scalars["Int"]>
 }
 export type GetAllAccountsQueryVariables = {}
 
@@ -332,6 +346,25 @@ export type GetConversationQuery = { __typename?: "Query" } & {
             >
           >
         }
+      }
+  >
+}
+
+export type SearchConversationsQueryVariables = {
+  query: Scalars["String"]
+  specificityThreshold?: Maybe<Scalars["Int"]>
+}
+
+export type SearchConversationsQuery = { __typename?: "Query" } & {
+  conversations: Array<
+    { __typename?: "ConversationSearchResult" } & Pick<
+      ConversationSearchResult,
+      "query"
+    > & {
+        conversation: { __typename?: "Conversation" } & Pick<
+          Conversation,
+          "id" | "messageId" | "subject"
+        >
       }
   >
 }
@@ -1393,6 +1426,120 @@ export function useGetConversationQuery(
     GetConversationQuery,
     GetConversationQueryVariables
   >(GetConversationDocument, baseOptions)
+}
+export const SearchConversationsDocument: DocumentNode = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "searchConversations" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "query" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          },
+          directives: []
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "specificityThreshold" }
+          },
+          type: { kind: "NamedType", name: { kind: "Name", value: "Int" } },
+          directives: []
+        }
+      ],
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "conversations" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "query" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "query" }
+                }
+              },
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "specificityThreshold" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "specificityThreshold" }
+                }
+              }
+            ],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "conversation" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "id" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "messageId" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "subject" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "query" },
+                  arguments: [],
+                  directives: []
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+
+export function useSearchConversationsQuery(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<
+    SearchConversationsQuery,
+    SearchConversationsQueryVariables
+  >
+) {
+  return ReactApolloHooks.useQuery<
+    SearchConversationsQuery,
+    SearchConversationsQueryVariables
+  >(SearchConversationsDocument, baseOptions)
 }
 export const GetMatchingAddressesDocument: DocumentNode = {
   kind: "Document",

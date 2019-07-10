@@ -111,6 +111,17 @@ query getConversation($id: ID!, $accountId: ID!) {
   }
 }
 
+query searchConversations($query: String!, $specificityThreshold: Int) {
+  conversations(query: $query, specificityThreshold: $specificityThreshold) {
+    conversation {
+      id
+      messageId
+      subject
+    }
+    query
+  }
+}
+
 query getMatchingAddresses($inputValue: String!) {
   addresses(inputValue: $inputValue) {
     host
