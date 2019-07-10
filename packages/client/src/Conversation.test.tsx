@@ -1,4 +1,4 @@
-import { CardContent } from "@material-ui/core"
+import { Collapse } from "@material-ui/core"
 import * as React from "react"
 import Conversation from "./Conversation"
 import { delay, mount, updates } from "./testing"
@@ -43,5 +43,35 @@ it("collapses read messages in a conversation", async () => {
   )
   await updates(app)
 
-  expect(app.find(CardContent)).toEqual({})
+  expect(app.find(Collapse)).toHaveProp("in", true)
+
+  const newConvo = {
+    ...$.getConversationMock,
+    result: {
+      data: {
+        conversation: {
+          ...$.conversation,
+          presentableElements: [
+            {
+              ...$.conversation.presentableElements[0],
+              isRead: true
+            }
+          ]
+        }
+      }
+    }
+  }
+
+  const appNext = mount(
+    <Conversation
+      accountId={$.account.id}
+      conversationId={$.conversation.id}
+    />,
+    {
+      mocks: [newConvo, $.setIsReadMock]
+    }
+  )
+  await updates(appNext)
+
+  expect(appNext.find(Collapse)).toHaveProp("in", false)
 })
