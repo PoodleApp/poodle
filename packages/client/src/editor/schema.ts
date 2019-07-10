@@ -79,18 +79,3 @@ export function link({
     type: "link"
   }
 }
-
-// TODO: copied from `main/src/models/uri.ts`
-export function midUri(messageId: string, contentId?: string | null): string {
-  const mId = idFromHeaderValue(messageId)
-  const cId = contentId && idFromHeaderValue(contentId)
-  return cId
-    ? `mid:${encodeURIComponent(mId)}/${encodeURIComponent(cId)}`
-    : `mid:${encodeURIComponent(mId)}`
-}
-
-const messageIdPattern = /<(.*)>/
-
-export function idFromHeaderValue(id: string): string {
-  return id.replace(messageIdPattern, (_, id) => id)
-}

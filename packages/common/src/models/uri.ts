@@ -1,5 +1,3 @@
-/* @flow */
-
 export type URI = string
 
 type Email = string

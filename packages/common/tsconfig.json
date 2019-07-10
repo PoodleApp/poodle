@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
     "target": "esnext",
     "lib": ["esnext", "esnext.asynciterable"],
-    "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
@@ -15,8 +16,5 @@
     "sourceMap": true,
     "incremental": true
   },
-  "references": [
-    { "path": "../common" }
-  ],
-  "include": ["src", "types"]
+  "include": ["src", "../main/types"]
 }

@@ -3,7 +3,7 @@ import { List, Seq } from "immutable"
 import { MessageAttributes } from "../types"
 import * as P from "./MessagePart"
 
-export { parseMidUri } from "./uri"
+export { parseMidUri } from "poodle-common/lib/models/uri"
 
 export type MessageId = string
 
