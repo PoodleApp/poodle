@@ -21,7 +21,7 @@ import clsx from "clsx"
 import moment from "moment"
 import * as React from "react"
 import Avatar from "./Avatar"
-import ReplyForm from "./compose/ReplyForm"
+import ReplyForm from "./Compose/ReplyForm"
 import DisplayContent from "./DisplayContent"
 import DisplayErrors from "./DisplayErrors"
 import * as graphql from "./generated/graphql"
@@ -169,12 +169,13 @@ export default function Conversation({
               </span>
             ))
           : null}
-        {presentableElements.map(presentable => (
+        {presentableElements.map((presentable, i) => (
           <Presentable
             key={presentable.id}
             accountId={accountId}
             conversationId={conversationId}
             presentable={presentable}
+            isLast={presentableElements.length === i + 1}
           />
         ))}
         <ReplyForm
@@ -191,15 +192,20 @@ export default function Conversation({
 function Presentable({
   accountId,
   conversationId,
-  presentable
+  presentable,
+  isLast
 }: {
   accountId: string
   conversationId: string
   presentable: graphql.Presentable
+  isLast: boolean
 }) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const [editing, setEditing] = React.useState(false)
-  const [expanded, setExpanded] = React.useState(!presentable.isRead)
+
+  const [expanded, setExpanded] = React.useState(
+    isLast ? true : !presentable.isRead
+  )
 
   const classes = useStyles()
 

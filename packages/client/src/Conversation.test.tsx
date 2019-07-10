@@ -31,7 +31,7 @@ it("displays a loading indicator while the conversation is loading", () => {
   expect(app).toIncludeText("Loading...")
 })
 
-it("collapses read messages and uncollapses unread messages in a conversation", async () => {
+it("collapses read messages, with the exception of the last message in the conversation", async () => {
   const app = mount(
     <Conversation
       accountId={$.account.id}
@@ -43,9 +43,23 @@ it("collapses read messages and uncollapses unread messages in a conversation", 
   )
   await updates(app)
 
-  expect(app.find(Collapse)).toHaveProp("in", true)
+  expect(
+    app
+      .find("Presentable")
+      .filterWhere(n => n.props().presentable.id === "11")
+      .find(Collapse)
+  ).toHaveProp("in", false)
 
-  const newConvo = {
+  expect(
+    app
+      .find("Presentable")
+      .filterWhere(n => n.props().presentable.id === "12")
+      .find(Collapse)
+  ).toHaveProp("in", true)
+})
+
+it("does not collapse unread messages", async () => {
+  const convo = {
     ...$.getConversationMock,
     result: {
       data: {
@@ -54,7 +68,10 @@ it("collapses read messages and uncollapses unread messages in a conversation", 
           presentableElements: [
             {
               ...$.conversation.presentableElements[0],
-              isRead: true
+              isRead: false
+            },
+            {
+              ...$.conversation.presentableElements[1]
             }
           ]
         }
@@ -62,16 +79,21 @@ it("collapses read messages and uncollapses unread messages in a conversation", 
     }
   }
 
-  const appNext = mount(
+  const app = mount(
     <Conversation
       accountId={$.account.id}
       conversationId={$.conversation.id}
     />,
     {
-      mocks: [newConvo, $.setIsReadMock]
+      mocks: [convo, $.setIsReadMock]
     }
   )
-  await updates(appNext)
+  await updates(app)
 
-  expect(appNext.find(Collapse)).toHaveProp("in", false)
+  expect(
+    app
+      .find("Presentable")
+      .filterWhere(n => n.props().presentable.id === "11")
+      .find(Collapse)
+  ).toHaveProp("in", true)
 })
