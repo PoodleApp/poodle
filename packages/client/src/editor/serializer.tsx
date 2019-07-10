@@ -1,5 +1,6 @@
-import Html, { Rule } from "slate-html-serializer"
 import * as React from "react"
+import Html, { Rule } from "slate-html-serializer"
+import { conversationLink, CONVERSATION_LINK, link, midUri } from "./schema"
 
 const BLOCK_TAGS: Record<string, string> = {
   p: "paragraph",
@@ -42,6 +43,44 @@ const rules: Rule[] = [
                 <code>{children}</code>
               </pre>
             )
+        }
+      }
+    }
+  },
+
+  // rules to handle inlines
+  {
+    deserialize(el, next) {
+      if (el.tagName.toLowerCase() === "a") {
+        const href = el.getAttribute("href")
+        const messageId = el.getAttribute("data-messageid")
+        const subject = el.getAttribute("data-subject")
+        if (messageId) {
+          return conversationLink({
+            messageId,
+            subject: subject || "[unknown subject]",
+            nodes: next(el.childNodes)
+          })
+        } else if (href) {
+          return link({ href, nodes: next(el.childNodes) })
+        }
+      }
+    },
+    serialize(obj, children) {
+      if (obj.object === "inline") {
+        switch (obj.type) {
+          case CONVERSATION_LINK:
+            return (
+              <a
+                data-messageid={obj.data.get("messageId")}
+                data-subject={obj.data.get("subject")}
+                href={midUri(obj.data.get("messageId"))}
+              >
+                {children}
+              </a>
+            )
+          case "link":
+            return <a href={obj.data.get("href")}>{children}</a>
         }
       }
     }
