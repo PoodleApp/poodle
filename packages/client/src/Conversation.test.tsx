@@ -31,7 +31,7 @@ it("displays a loading indicator while the conversation is loading", () => {
   expect(app).toIncludeText("Loading...")
 })
 
-it("collapses read messages in a conversation", async () => {
+it("collapses read messages and uncollapses unread messages in a conversation", async () => {
   const app = mount(
     <Conversation
       accountId={$.account.id}
