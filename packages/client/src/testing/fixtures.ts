@@ -57,13 +57,13 @@ export const conversation: graphql.Conversation = {
         {
           revision: {
             messageId:
-              "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>",
-            contentId: "text"
+              "<CAGM-pNvwffuB_LRE4zP7vaO2noOQ0p0qJ8UmSONP3k8ycyo3HA@mail.gmail.com>",
+            contentId: "replytext"
           },
           resource: {
             messageId:
-              "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>",
-            contentId: "text"
+              "<CAGM-pNvwffuB_LRE4zP7vaO2noOQ0p0qJ8UmSONP3k8ycyo3HA@mail.gmail.com>",
+            contentId: "replytext"
           },
           type: "text",
           subtype: "plain",

@@ -287,7 +287,9 @@ function Presentable({
                 />
               )
             } else {
-              return <DisplayContent key={key} {...content} />
+              return (
+                <DisplayContent key={key} accountId={accountId} {...content} />
+              )
             }
           })}
         </CardContent>
