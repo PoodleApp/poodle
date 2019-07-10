@@ -8,7 +8,13 @@ import {
 } from "slate-react"
 import DisplayErrors from "../DisplayErrors"
 import * as graphql from "../generated/graphql"
-import { conversationLink, CONVERSATION_LINK, midUri, schema } from "./schema"
+import {
+  conversationLink,
+  CONVERSATION_LINK,
+  idFromHeaderValue,
+  midUri,
+  schema
+} from "./schema"
 import { Suggestions, useSuggestionsPlugin } from "./suggestions"
 
 const capture = /(\S+(?:\s+\S+){0,4}\s*)$/
@@ -36,6 +42,10 @@ export default function Editor(props: EditorProps) {
   const editorRef = React.useRef<CoreEditor | null>(null)
 
   function insertMention({ conversation, query }: typeof suggestions[number]) {
+    const { messageId, subject } = conversation
+    if (!messageId || !subject) {
+      return
+    }
     const editor = editorRef.current
     if (!editor) {
       return
@@ -46,9 +56,9 @@ export default function Editor(props: EditorProps) {
       .insertInlineAtRange(
         selectedRange as any,
         conversationLink({
-          messageId: conversation.messageId!,
-          subject: conversation.subject!,
-          nodes: [{ object: "text", text: conversation.subject! }]
+          messageId: idFromHeaderValue(messageId),
+          subject,
+          nodes: [{ object: "text", text: subject }]
         })
       )
       .insertText(" ")

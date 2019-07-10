@@ -91,6 +91,6 @@ export function midUri(messageId: string, contentId?: string | null): string {
 
 const messageIdPattern = /<(.*)>/
 
-function idFromHeaderValue(id: string): string {
+export function idFromHeaderValue(id: string): string {
   return id.replace(messageIdPattern, (_, id) => id)
 }

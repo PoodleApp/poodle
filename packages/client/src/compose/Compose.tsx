@@ -17,9 +17,14 @@ import CloseIcon from "@material-ui/icons/Close"
 import { navigate } from "@reach/router"
 import clsx from "clsx"
 import * as React from "react"
+import { Value } from "slate"
 import DisplayErrors from "../DisplayErrors"
+import { serializer } from "../editor"
+import Editor from "../editor/Editor"
 import * as graphql from "../generated/graphql"
 import RecipientsInput, { Address } from "./RecipientsInput"
+
+const initialValue = serializer.deserialize("")
 
 type Props = {
   accountId?: string
@@ -69,7 +74,8 @@ const useStyles = makeStyles(theme => ({
     marginBottom: theme.spacing(1)
   },
   contentInput: {
-    flexGrow: 1
+    flexGrow: 1,
+    width: "100%"
   }
 }))
 
@@ -77,7 +83,7 @@ export default function Compose({ accountId }: Props) {
   const classes = useStyles()
   const [subject, setSubject] = React.useState("")
   const [recipients, setRecipients] = React.useState<Address[]>([])
-  const [content, setContent] = React.useState("")
+  const [content, setContent] = React.useState(initialValue)
   const [error, setError] = React.useState<Error | null>(null)
   const [sendMessage, sendMessageResult] = graphql.useSendMessageMutation()
 
@@ -87,16 +93,20 @@ export default function Compose({ accountId }: Props) {
       setError(new Error("Could not determine which account to send from."))
       return
     }
+    const message = {
+      content: {
+        type: "text",
+        subtype: "html",
+        content: serializer.serialize(content)
+      },
+      subject,
+      to: recipients.map(r => ({
+        name: r.name,
+        mailbox: r.local,
+        host: r.domain
+      }))
+    }
     try {
-      const message = {
-        content: { type: "text", subtype: "plain", content },
-        subject,
-        to: recipients.map(r => ({
-          name: r.name,
-          mailbox: r.local,
-          host: r.domain
-        }))
-      }
       const response = await sendMessage({
         variables: { accountId, message }
       })
@@ -161,15 +171,11 @@ export default function Compose({ accountId }: Props) {
             onRecipients={setRecipients}
             variant="outlined"
           />
-          <TextField
+          <Editor
             className={clsx(classes.formInput, classes.contentInput)}
-            label="Message"
-            fullWidth={true}
-            multiline={true}
-            name="content"
-            onChange={event => setContent(event.target.value)}
+            onChange={({ value }: { value: Value }) => setContent(value)}
+            placeholder="Write your message here."
             value={content}
-            variant="outlined"
           />
           <Button color="primary" variant="contained" type="submit">
             Send
