@@ -244,7 +244,7 @@ function Presentable({
               onClick={() => setExpanded(!expanded)}
               aria-expanded={expanded}
               aria-label="Show more"
-              aria-controls="message-card-content"
+              aria-controls={`${presentable.id}-card-content`}
             >
               <ExpandMoreIcon />
             </IconButton>
@@ -269,7 +269,7 @@ function Presentable({
         }
       />
       <Collapse in={expanded} timeout="auto">
-        <CardContent id="message-card-content">
+        <CardContent id={`${presentable.id}-card-content`}>
           {presentable.contents.map((content, i) => {
             if (editing) {
               return (

@@ -638,7 +638,7 @@ describe("when addressing conversations", () => {
     })
   })
 
-  it("marks an edited message as read", async () => {
+  it("uses the read status of a message's most recent revision as the read status of the presentable", async () => {
     const orig = cache.getThreads(accountId)[0]
     const message = testThread[1].attributes
 
