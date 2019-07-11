@@ -210,7 +210,7 @@ export class Block extends BaseNode {
 export interface InlineProperties {
   type: string
   key?: string
-  nodes?: Immutable.List<Node>
+  nodes?: Immutable.List<Node> | NodeProperties[]
   data?: Immutable.Map<string, any> | { [key: string]: any }
 }
 

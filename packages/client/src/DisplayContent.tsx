@@ -1,3 +1,5 @@
+import { makeStyles } from "@material-ui/styles"
+import clsx from "clsx"
 import marked from "marked"
 import * as React from "react"
 import repa from "repa"
@@ -5,69 +7,69 @@ import * as graphql from "./generated/graphql"
 
 const { shell } = window.require("electron")
 
-// TODO: temporary
-const spacing = { desktopKeylineIncrement: 30 }
-
-const styles = {
+const useStyles = makeStyles(_theme => ({
   body: {
-    overflowWrap: "break-word",
-    padding: `${spacing.desktopKeylineIncrement * 1}px`,
-    paddingTop: 0
+    overflowWrap: "break-word"
   },
 
   textContent: {
     whiteSpace: "pre-wrap"
   }
-}
+}))
 
-type Props = graphql.Content & { style?: object }
+type Props = graphql.Content & { className?: string }
 
 export default function DisplayContent({
   type,
   subtype,
   content,
-  style
+  className
 }: Props) {
+  const classes = useStyles()
   if (type === "text" && subtype === "html") {
-    return displayHtml(content, style)
+    return displayHtml(content, clsx(className, "html-content", classes.body))
   } else if (type === "text" && subtype === "markdown") {
-    return displayMarkdown(content, style)
+    return displayMarkdown(
+      content,
+      clsx(className, "markdown-content", classes.body)
+    )
   } else if (type === "text") {
-    return displayText(content, style)
+    return displayText(
+      content,
+      clsx(className, "text-content", clsx(classes.body, classes.textContent))
+    )
   } else {
-    return displayUnknown({ type, subtype, content }, style)
+    return displayUnknown(
+      { type, subtype, content },
+      clsx(className, classes.body)
+    )
   }
 }
 
 // TODO: remove quoted replies from HTML content
-function displayHtml(text: string, style?: Object) {
+function displayHtml(text: string, className: string) {
   const out = {
     __html: text
   }
   return (
     <div
-      className="html-content"
+      className={className}
       dangerouslySetInnerHTML={out}
       onClick={handleExternalLink}
-      style={style || styles.body}
     />
   )
 }
 
-function displayText(text: string, style?: Object) {
+function displayText(text: string, className: string) {
   const content = repa(text)
   return (
-    <div
-      className="text-content"
-      onClick={handleExternalLink}
-      style={style || { ...styles.body, ...styles.textContent }}
-    >
+    <div className={className} onClick={handleExternalLink}>
       {content}
     </div>
   )
 }
 
-function displayMarkdown(text: string, style?: Object) {
+function displayMarkdown(text: string, className: string) {
   const content = repa(text)
   const out = {
     // TODO: The type definitions for marked do not specify its sync API.
@@ -75,10 +77,9 @@ function displayMarkdown(text: string, style?: Object) {
   }
   return (
     <div
-      className="markdown-content"
+      className={className}
       dangerouslySetInnerHTML={out}
       onClick={handleExternalLink}
-      style={style || styles.body}
     />
   )
 }
@@ -89,10 +90,10 @@ function displayUnknown(
     subtype,
     content
   }: { type: string; subtype: string; content: string },
-  style?: Object
+  className: string
 ) {
   return content ? (
-    <div style={style || styles.body}>
+    <div className={className}>
       <p>
         <em>
           [unknown content type: {type}/{subtype}]
@@ -100,7 +101,7 @@ function displayUnknown(
       </p>
     </div>
   ) : (
-    <div style={style || styles.body}>
+    <div className={className}>
       <p>
         <em>[no content]</em>
       </p>

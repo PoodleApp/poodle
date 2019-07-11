@@ -8,7 +8,13 @@ import {
 } from "slate-react"
 import DisplayErrors from "../DisplayErrors"
 import * as graphql from "../generated/graphql"
-import { CONVERSATION_LINK, schema } from "./schema"
+import {
+  conversationLink,
+  CONVERSATION_LINK,
+  idFromHeaderValue,
+  midUri,
+  schema
+} from "./schema"
 import { Suggestions, useSuggestionsPlugin } from "./suggestions"
 
 const capture = /(\S+(?:\s+\S+){0,4}\s*)$/
@@ -36,6 +42,10 @@ export default function Editor(props: EditorProps) {
   const editorRef = React.useRef<CoreEditor | null>(null)
 
   function insertMention({ conversation, query }: typeof suggestions[number]) {
+    const { messageId, subject } = conversation
+    if (!messageId || !subject) {
+      return
+    }
     const editor = editorRef.current
     if (!editor) {
       return
@@ -45,19 +55,11 @@ export default function Editor(props: EditorProps) {
     editor
       .insertInlineAtRange(
         selectedRange as any,
-        {
-          data: {
-            messageId: conversation.messageId,
-            subject: conversation.subject
-          },
-          nodes: [
-            {
-              object: "text",
-              text: conversation.subject
-            }
-          ],
-          type: CONVERSATION_LINK
-        } as any
+        conversationLink({
+          messageId: idFromHeaderValue(messageId),
+          subject,
+          nodes: [{ object: "text", text: subject }]
+        })
       )
       .insertText(" ")
       .focus()
@@ -116,19 +118,4 @@ function renderInline(
     )
   }
   return next()
-}
-
-// TODO: copied from `main/src/models/uri.ts`
-function midUri(messageId: string, contentId?: string | null): string {
-  const mId = idFromHeaderValue(messageId)
-  const cId = contentId && idFromHeaderValue(contentId)
-  return cId
-    ? `mid:${encodeURIComponent(mId)}/${encodeURIComponent(cId)}`
-    : `mid:${encodeURIComponent(mId)}`
-}
-
-const messageIdPattern = /<(.*)>/
-
-export function idFromHeaderValue(id: string): string {
-  return id.replace(messageIdPattern, (_, id) => id)
 }
