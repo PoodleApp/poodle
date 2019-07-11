@@ -138,6 +138,10 @@ const handlers = {
           )
           .toPromise()
       )
+    },
+
+    failure(_error, { accountId, box, uids }) {
+      cache.addFlag({ accountId, box, uids, flag: "\\Seen" })
     }
   }),
 
