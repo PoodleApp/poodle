@@ -1,6 +1,7 @@
 import { Button } from "@material-ui/core"
 import * as React from "react"
 import { Value } from "slate"
+import DisplayErrors from "../DisplayErrors"
 import { Editor, serializer } from "../editor"
 import * as graphql from "../generated/graphql"
 
@@ -18,53 +19,45 @@ export default function EditForm({
   const [content, setContent] = React.useState(
     serializer.deserialize(contentToEdit.content)
   )
-  const [loading, setLoading] = React.useState(false)
-  const [error, setError] = React.useState<Error | null>(null)
-  const [sendEdit] = graphql.useEditMutation()
+  const [sendEdit, sendEditResult] = graphql.useEditMutation()
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    setLoading(true)
-    try {
-      await sendEdit({
-        variables: {
-          accountId,
-          conversationId,
-          resource: {
-            messageId: contentToEdit.resource.messageId,
-            contentId: contentToEdit.resource.contentId
-          },
-          revision: {
-            messageId: contentToEdit.revision.messageId,
-            contentId: contentToEdit.revision.contentId
-          },
-          content: {
-            type: contentToEdit.type,
-            subtype: contentToEdit.subtype,
-            content: serializer.serialize(content)
-          }
+    await sendEdit({
+      variables: {
+        accountId,
+        conversationId,
+        resource: {
+          messageId: contentToEdit.resource.messageId,
+          contentId: contentToEdit.resource.contentId
+        },
+        revision: {
+          messageId: contentToEdit.revision.messageId,
+          contentId: contentToEdit.revision.contentId
+        },
+        content: {
+          type: contentToEdit.type,
+          subtype: contentToEdit.subtype,
+          content: serializer.serialize(content)
         }
-      })
-      onComplete()
-    } catch (error) {
-      setError(error)
-    }
-    setLoading(false)
+      }
+    })
+    onComplete()
   }
   return (
     <form onSubmit={onSubmit}>
-      {error ? <pre>{error.message}</pre> : null}
       <Editor
         onChange={({ value }: { value: Value }) => {
           setContent(value)
         }}
         value={content}
       />
-      <Button disabled={loading} onClick={onComplete}>
+      <Button disabled={sendEditResult.loading} onClick={onComplete}>
         Cancel
       </Button>
-      <Button type="submit" disabled={loading}>
+      <Button type="submit" disabled={sendEditResult.loading}>
         Send Edits
       </Button>
+      <DisplayErrors results={[sendEditResult]} />
     </form>
   )
 }

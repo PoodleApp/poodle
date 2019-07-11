@@ -2,11 +2,6 @@ import {
   AppBar,
   Button,
   CssBaseline,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   IconButton,
   makeStyles,
   TextField,
@@ -84,15 +79,10 @@ export default function Compose({ accountId }: Props) {
   const [subject, setSubject] = React.useState("")
   const [recipients, setRecipients] = React.useState<Address[]>([])
   const [content, setContent] = React.useState(initialValue)
-  const [error, setError] = React.useState<Error | null>(null)
   const [sendMessage, sendMessageResult] = graphql.useSendMessageMutation()
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!accountId) {
-      setError(new Error("Could not determine which account to send from."))
-      return
-    }
     const message = {
       content: {
         type: "text",
@@ -108,7 +98,7 @@ export default function Compose({ accountId }: Props) {
     }
     try {
       const response = await sendMessage({
-        variables: { accountId, message }
+        variables: { accountId: accountId!, message }
       })
       if (response && response.data) {
         const conversationId = response.data.conversations.sendMessage.id
@@ -182,24 +172,6 @@ export default function Compose({ accountId }: Props) {
           </Button>
         </form>
       </main>
-      <Dialog
-        open={Boolean(error)}
-        onClose={() => setError(null)}
-        aria-labelledby="error-alert-title"
-        aria-describedby="error-alert-description"
-      >
-        <DialogTitle id="error-alert-title">Could not send message</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="error-alert-description">
-            {error && error.message}
-          </DialogContentText>
-          <DialogActions>
-            <Button onClick={() => setError(null)} color="primary" autoFocus>
-              Ok
-            </Button>
-          </DialogActions>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
