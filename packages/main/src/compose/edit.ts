@@ -104,12 +104,6 @@ export function composeEdit({
               resource: `<${midUri(resource.messageId, resource.contentId)}>`
             }
           }
-        ],
-        [
-          "content-id",
-          {
-            value: editedPart.content_id
-          }
         ]
       ]
     },

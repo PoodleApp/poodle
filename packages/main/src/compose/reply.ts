@@ -53,16 +53,7 @@ export function composeReply({
         conversation.messages.map(m => m.envelope_messageId).filter(nonNull)
       ]
     ],
-    partHeaders: {
-      "1": [
-        [
-          "content-id",
-          {
-            value: ""
-          }
-        ]
-      ]
-    },
+    partHeaders: {},
     bodies: { "1": Buffer.from(content.content, "utf8") }
   }
 }

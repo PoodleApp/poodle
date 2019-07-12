@@ -84,20 +84,12 @@ it("edits a message", () => {
               "<mid:CAGM-pNvwffuB_LRE4zP7vaO2noOQ0p0qJ8UmSONP3k8ycyo3HA%40mail.gmail.com/0337ae7e-c468-437d-b7e1-95dc7d9debb8%40gmail.com>"
           }
         }
-      ],
-      [
-        "content-id",
-        {
-          value: "0337ae7e-c468-437d-b7e1-95dc7d9debb8@gmail.com"
-        }
       ]
     ]
   })
 })
 
-it("guaruntees that edited messages have a Content-ID header", async () => {
-  // connectionManager = mockConnection();
-
+it("has a Content-ID header", async () => {
   const content = {
     type: "text",
     subtype: "plain",
@@ -111,7 +103,7 @@ it("guaruntees that edited messages have a Content-ID header", async () => {
   const editedPart = {
     content_id: testPart.id
   }
-  const { partHeaders } = composeEdit({
+  const { attributes } = composeEdit({
     account,
     content,
     conversation: conversationFrom(testThread),
@@ -123,8 +115,35 @@ it("guaruntees that edited messages have a Content-ID header", async () => {
     }
   })
 
-  expect(partHeaders).toMatchObject({
-    "3": expect.arrayContaining([["content-id", { value: testPart.id }]])
+  expect(attributes).toMatchObject({
+    struct: [
+      {
+        partID: "1",
+        type: "multipart",
+        subtype: "mixed",
+        params: {}
+      },
+      [
+        {
+          partID: "2",
+          type: "text",
+          subtype: "plain",
+          id: expect.any(String),
+          params: { charset: "UTF-8" },
+          disposition: { type: "fallback" }
+        }
+      ],
+      [
+        {
+          partID: "3",
+          type: content.type,
+          subtype: content.subtype,
+          id: expect.any(String),
+          params: { charset: "UTF-8" },
+          disposition: { type: "replacement" }
+        }
+      ]
+    ]
   })
 })
 

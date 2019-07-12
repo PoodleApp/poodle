@@ -9,8 +9,6 @@ let account: cache.Account
 let accountId: cache.ID
 let boxId: cache.ID
 
-jest.mock("imap")
-
 beforeEach(async () => {
   const { lastInsertRowid } = db
     .prepare("insert into accounts (email) values (?)")
@@ -83,6 +81,34 @@ describe("reply recipients", () => {
       to: [{ name: "Jesse Hallett", mailbox: "hallettj", host: "gmail.com" }],
       cc: [{ name: "Eve", mailbox: "eve", host: "test.com" }],
       from: [{ mailbox: "jesse", host: "sitr.us" }]
+    })
+  })
+})
+
+describe("reply", () => {
+  it("has a Content-ID header", async () => {
+    const content = {
+      type: "text",
+      subtype: "plain",
+      content: "What I meant to say was, hello!"
+    }
+
+    const { attributes } = composeReply({
+      account,
+      content,
+      conversation: conversationFrom(testThread)
+    })
+
+    expect(attributes).toMatchObject({
+      struct: [
+        {
+          id: expect.any(String),
+          partID: "1",
+          type: content.type,
+          subtype: content.subtype,
+          params: { charset: "UTF-8" }
+        }
+      ]
     })
   })
 })
