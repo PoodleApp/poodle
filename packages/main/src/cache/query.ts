@@ -357,9 +357,13 @@ export function searchBySubject(query: string): Thread[] {
         order by rank
       `
     )
-    .all(query)
+    .all(ftsEscape(query))
     .map(row => row.thrid)
   return threadIds.map(getThread).filter(nonNull)
+}
+
+function ftsEscape(query: string): string {
+  return `"${query}"`
 }
 
 function toImapMessagePart(part: CachedMessagePart): imap.ImapMessagePart {
