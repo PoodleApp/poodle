@@ -208,6 +208,7 @@ function Presentable({
   )
 
   const classes = useStyles()
+  const cardContentID = `card-content-${presentable.id}`
 
   function handleClick(event: React.MouseEvent<HTMLButtonElement>) {
     setAnchorEl(event.currentTarget)
@@ -244,7 +245,7 @@ function Presentable({
               onClick={() => setExpanded(!expanded)}
               aria-expanded={expanded}
               aria-label="Show more"
-              aria-controls={`${presentable.id}-card-content`}
+              aria-controls={cardContentID}
             >
               <ExpandMoreIcon />
             </IconButton>
@@ -269,7 +270,7 @@ function Presentable({
         }
       />
       <Collapse in={expanded} timeout="auto">
-        <CardContent id={`${presentable.id}-card-content`}>
+        <CardContent id={cardContentID}>
           {presentable.contents.map((content, i) => {
             if (editing) {
               return (
