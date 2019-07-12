@@ -85,6 +85,7 @@ type Participants {
 
 type Presentable {
   id: ID!
+  isRead: Boolean!
   contents: [Content!]!
   date: String!
   from: Address!

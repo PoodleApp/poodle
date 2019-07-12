@@ -181,6 +181,7 @@ export type PartSpecInput = {
 export type Presentable = {
   __typename?: "Presentable"
   id: Scalars["ID"]
+  isRead: Scalars["Boolean"]
   contents: Array<Content>
   date: Scalars["String"]
   from: Address
@@ -294,7 +295,7 @@ export type GetConversationQuery = { __typename?: "Query" } & {
         presentableElements: Array<
           { __typename?: "Presentable" } & Pick<
             Presentable,
-            "id" | "date" | "editedAt"
+            "id" | "isRead" | "date" | "editedAt"
           > & {
               contents: Array<
                 { __typename?: "Content" } & Pick<
@@ -1118,6 +1119,12 @@ export const GetConversationDocument: DocumentNode = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "id" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "isRead" },
                         arguments: [],
                         directives: []
                       },

@@ -3,6 +3,7 @@ import {
   Card,
   CardContent,
   CardHeader,
+  Collapse,
   CssBaseline,
   IconButton,
   makeStyles,
@@ -13,8 +14,10 @@ import {
 } from "@material-ui/core"
 import ArchiveIcon from "@material-ui/icons/Archive"
 import CloseIcon from "@material-ui/icons/Close"
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore"
 import MoreVertIcon from "@material-ui/icons/MoreVert"
 import { Redirect, RouteComponentProps } from "@reach/router"
+import clsx from "clsx"
 import moment from "moment"
 import * as React from "react"
 import Avatar from "./Avatar"
@@ -66,6 +69,16 @@ const useStyles = makeStyles(theme => ({
   },
   edited: {
     fontStyle: "italic"
+  },
+  expand: {
+    transform: "rotate(0deg)",
+    marginLeft: "auto",
+    transition: theme.transitions.create("transform", {
+      duration: theme.transitions.duration.shortest
+    })
+  },
+  expandOpen: {
+    transform: "rotate(180deg)"
   },
   presentable: {
     marginTop: theme.spacing(1),
@@ -157,12 +170,13 @@ export default function Conversation({
               </span>
             ))
           : null}
-        {presentableElements.map(presentable => (
+        {presentableElements.map((presentable, i) => (
           <Presentable
             key={presentable.id}
             accountId={accountId}
             conversationId={conversationId}
             presentable={presentable}
+            isLast={presentableElements.length === i + 1}
           />
         ))}
         <ReplyForm
@@ -179,15 +193,23 @@ export default function Conversation({
 function Presentable({
   accountId,
   conversationId,
-  presentable
+  presentable,
+  isLast
 }: {
   accountId: string
   conversationId: string
   presentable: graphql.Presentable
+  isLast: boolean
 }) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const [editing, setEditing] = React.useState(false)
+
+  const [expanded, setExpanded] = React.useState(
+    isLast ? true : !presentable.isRead
+  )
+
   const classes = useStyles()
+  const cardContentID = `card-content-${presentable.id}`
 
   function handleClick(event: React.MouseEvent<HTMLButtonElement>) {
     setAnchorEl(event.currentTarget)
@@ -217,6 +239,18 @@ function Presentable({
             >
               <MoreVertIcon />
             </IconButton>
+            <IconButton
+              className={clsx(classes.expand, {
+                [classes.expandOpen]: expanded
+              })}
+              onClick={() => setExpanded(!expanded)}
+              aria-expanded={expanded}
+              aria-label="Show more"
+              aria-controls={cardContentID}
+            >
+              <ExpandMoreIcon />
+            </IconButton>
+
             <Menu
               id={`${presentable.id}-menu`}
               anchorEl={anchorEl}
@@ -236,26 +270,28 @@ function Presentable({
           </div>
         }
       />
-      <CardContent>
-        {presentable.contents.map((content, i) => {
-          const key = content.revision.contentId || i
-          if (editing) {
-            return (
-              <EditForm
-                key={key}
-                accountId={accountId}
-                conversationId={conversationId}
-                contentToEdit={content}
-                onComplete={() => {
-                  setEditing(false)
-                }}
-              />
-            )
-          } else {
-            return <DisplayContent key={key} {...content} />
-          }
-        })}
-      </CardContent>
+      <Collapse in={expanded} timeout="auto">
+        <CardContent id={cardContentID}>
+          {presentable.contents.map((content, i) => {
+            const key = content.revision.contentId || i
+            if (editing) {
+              return (
+                <EditForm
+                  key={key}
+                  accountId={accountId}
+                  conversationId={conversationId}
+                  contentToEdit={content}
+                  onComplete={() => {
+                    setEditing(false)
+                  }}
+                />
+              )
+            } else {
+              return <DisplayContent key={key} {...content} />
+            }
+          })}
+        </CardContent>
+      </Collapse>
     </Card>
   )
 }

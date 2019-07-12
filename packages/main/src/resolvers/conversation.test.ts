@@ -638,6 +638,68 @@ describe("when addressing conversations", () => {
     })
   })
 
+  it("uses the read status of a message's most recent revision as the read status of the presentable", async () => {
+    const orig = cache.getThreads(accountId)[0]
+    const message = testThread[1].attributes
+
+    expect(cache.getFlags(message.envelope.messageId).includes("//Seen")).toBe(
+      false
+    )
+
+    const part = message.struct![0] as imap.ImapMessagePart
+    const revisedContent = "What I meant to say was, hi."
+    const editMessage = composeEdit({
+      account,
+      content: {
+        type: "text",
+        subtype: "plain",
+        content: revisedContent
+      },
+      conversation: orig,
+      editedMessage: { envelope_messageId: message.envelope.messageId },
+      editedPart: {
+        content_id: part.id
+      },
+      resource: {
+        messageId: message.envelope.messageId,
+        contentId: part.id
+      }
+    })
+    editMessage.attributes.uid = 9000
+    const threadWithEdit = [...testThread, editMessage]
+
+    mock(Connection.prototype.fetch).mockImplementation(
+      mockFetchImplementation({ thread: threadWithEdit })
+    )
+    await sync(accountId, connectionManager)
+
+    const result = await request(
+      `
+        query getConversation($conversationId: ID!) {
+          conversation(id: $conversationId) {
+            presentableElements {
+              isRead
+            }
+          }
+        }
+      `,
+      { conversationId: testThread[0].attributes["x-gm-thrid"] }
+    )
+    expect(result).toMatchObject({
+      data: {
+        conversation: {
+          presentableElements: [
+            {
+              isRead: true
+            },
+            {
+              isRead: true
+            }
+          ]
+        }
+      }
+    })
+  })
   describe("searching", () => {
     it("lists conversations whose subject matches a given query", async () => {
       const result = await request(

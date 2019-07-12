@@ -188,6 +188,7 @@ export type PartSpecInput = {
 export type Presentable = {
   __typename?: "Presentable"
   id: Scalars["ID"]
+  isRead: Scalars["Boolean"]
   contents: Array<Content>
   date: Scalars["String"]
   from: Address
@@ -547,6 +548,7 @@ export type PresentableResolvers<
   ParentType = ResolversParentTypes["Presentable"]
 > = {
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
+  isRead?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>
   contents?: Resolver<Array<ResolversTypes["Content"]>, ParentType, ContextType>
   date?: Resolver<ResolversTypes["String"], ParentType, ContextType>
   from?: Resolver<ResolversTypes["Address"], ParentType, ContextType>
