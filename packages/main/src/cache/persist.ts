@@ -411,7 +411,7 @@ export function addLabels({
     db.prepare(
       `
       insert into message_gmail_labels (label, message_id)
-      select @accountId, @label, messages.id from messages
+      select @label, messages.id from messages
           join boxes on box_id = boxes.id
           where
             messages.account_id = @accountId

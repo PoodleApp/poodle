@@ -260,9 +260,9 @@ it("removes archive state changes from cache on failure", async () => {
     .all({ uid: 7687 })
 
   expect(label).toEqual([
-    { label: "\\Inbox" },
     { label: "\\Important" },
-    { label: "\\Sent" }
+    { label: "\\Sent" },
+    { label: "\\Inbox" }
   ])
 })
 
