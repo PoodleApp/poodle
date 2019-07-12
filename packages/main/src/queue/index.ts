@@ -232,6 +232,40 @@ const handlers = {
         sync(accountId, connectionManager)
       )
     }
+  }),
+
+  star: handler({
+    priority: LOW_PRIORITY,
+    enqueue(params: { accountId: ID; box: { name: string }; uids: number[] }) {
+      cache.addFlag({ ...params, flag: "\\Flagged" })
+      return params
+    },
+
+    process({
+      accountId,
+      box,
+      uids
+    }: {
+      accountId: ID
+      box: { name: string }
+      uids: number[]
+    }): Promise<void> {
+      return withConnectionManager(accountId, connectionManager =>
+        connectionManager
+          .request(
+            request.actions.addFlags(
+              { name: box.name, readonly: false },
+              uids,
+              ["\\Flagged"]
+            )
+          )
+          .toPromise()
+      )
+    },
+
+    failure(_error, { accountId, box, uids }) {
+      cache.delFlags({ accountId, box, uids, flags: ["\\Flagged"] })
+    }
   })
 }
 
