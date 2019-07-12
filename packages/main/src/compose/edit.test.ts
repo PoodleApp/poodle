@@ -84,8 +84,47 @@ it("edits a message", () => {
               "<mid:CAGM-pNvwffuB_LRE4zP7vaO2noOQ0p0qJ8UmSONP3k8ycyo3HA%40mail.gmail.com/0337ae7e-c468-437d-b7e1-95dc7d9debb8%40gmail.com>"
           }
         }
+      ],
+      [
+        "content-id",
+        {
+          value: "0337ae7e-c468-437d-b7e1-95dc7d9debb8@gmail.com"
+        }
       ]
     ]
+  })
+})
+
+it("guaruntees that edited messages have a Content-ID header", async () => {
+  // connectionManager = mockConnection();
+
+  const content = {
+    type: "text",
+    subtype: "plain",
+    content: "What I meant to say was, hello!"
+  }
+  const testMessage = testThread[1].attributes
+  const testPart = testMessage.struct![0] as imap.ImapMessagePart
+  const editedMessage = {
+    envelope_messageId: testMessage.envelope.messageId
+  }
+  const editedPart = {
+    content_id: testPart.id
+  }
+  const { partHeaders } = composeEdit({
+    account,
+    content,
+    conversation: conversationFrom(testThread),
+    editedMessage,
+    editedPart,
+    resource: {
+      messageId: testMessage.envelope.messageId,
+      contentId: testPart.id
+    }
+  })
+
+  expect(partHeaders).toMatchObject({
+    "3": expect.arrayContaining([["content-id", { value: testPart.id }]])
   })
 })
 
@@ -97,3 +136,7 @@ function conversationFrom(
   }
   return cache.getThreads(accountId)[0]
 }
+
+afterEach(async () => {
+  db.prepare("delete from accounts").run()
+})

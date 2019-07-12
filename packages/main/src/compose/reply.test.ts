@@ -9,6 +9,8 @@ let account: cache.Account
 let accountId: cache.ID
 let boxId: cache.ID
 
+jest.mock("imap")
+
 beforeEach(async () => {
   const { lastInsertRowid } = db
     .prepare("insert into accounts (email) values (?)")
