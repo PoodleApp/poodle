@@ -1,4 +1,5 @@
 import imap from "imap"
+import { idFromHeaderValue } from "poodle-common/lib/models/uri"
 import db from "../db"
 import { MessageAttributes } from "../types"
 import { getPartByPartId } from "./query"
@@ -84,8 +85,8 @@ function persistNewMessage(
     date: attributes.date.toISOString(),
     envelope_date:
       attributes.envelope.date && attributes.envelope.date.toISOString(),
-    envelope_inReplyTo: attributes.envelope.inReplyTo,
-    envelope_messageId: attributes.envelope.messageId,
+    envelope_inReplyTo: idFromHeaderValue(attributes.envelope.inReplyTo),
+    envelope_messageId: idFromHeaderValue(attributes.envelope.messageId),
     envelope_subject: attributes.envelope.subject,
     modseq: attributes.modseq,
     uid: attributes.uid,
@@ -222,7 +223,7 @@ function persistReferences(
     for (const reference of references) {
       insertInto("message_references", {
         message_id: messageId,
-        referenced_id: reference
+        referenced_id: idFromHeaderValue(reference)
       })
     }
   }
