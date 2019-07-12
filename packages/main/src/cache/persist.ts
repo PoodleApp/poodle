@@ -410,7 +410,7 @@ export function addLabels({
   labels.forEach(label => {
     db.prepare(
       `
-      insert into message_gmail_labels (id, label, message_id)
+      insert into message_gmail_labels (label, message_id)
       select @accountId, @label, messages.id from messages
           join boxes on box_id = boxes.id
           where
