@@ -229,6 +229,72 @@ it("removes cached message if message cannot be sent", async () => {
   })
 })
 
+it("removes unread state changes from cache on failure", async () => {
+  mock(Connection.prototype.delFlags).mockImplementation(
+    (_data, _flags, cb) => {
+      cb(new Error("failed to mark message as unread"))
+    }
+  )
+
+  const promise = schedule(
+    actions.unmarkAsRead({
+      accountId: String(accountId),
+      box: allMail,
+      uids: [7687]
+    })
+  )
+
+  try {
+    await promise
+  } catch (_) {}
+
+  const flag = db
+    .prepare(
+      `
+      select flag from message_flags
+      join messages on message_id = messages.id
+      where
+        uid = @uid
+    `
+    )
+    .all({ uid: 7687 })
+
+  expect(flag).toEqual([{ flag: "\\Seen" }])
+})
+
+it("removes read state changes from cache on failure", async () => {
+  mock(Connection.prototype.addFlags).mockImplementation(
+    (_data, _flags, cb) => {
+      cb(new Error("failed to mark message as read"))
+    }
+  )
+
+  const promise = schedule(
+    actions.markAsRead({
+      accountId: String(accountId),
+      box: allMail,
+      uids: [7687]
+    })
+  )
+
+  try {
+    await promise
+  } catch (_) {}
+
+  const flag = db
+    .prepare(
+      `
+      select flag from message_flags
+      join messages on message_id = messages.id
+      where
+        uid = @uid
+    `
+    )
+    .all({ uid: 7687 })
+
+  expect(flag).toEqual([])
+})
+
 describe("sync", () => {
   it.skip("prioritizes uploading state changes before syncing", async () => {
     jest.spyOn(queue as any, "process")
