@@ -21,6 +21,7 @@ import clsx from "clsx"
 import moment from "moment"
 import * as React from "react"
 import Avatar from "./Avatar"
+import EditForm from "./compose/EditForm"
 import ReplyForm from "./compose/ReplyForm"
 import DisplayContent from "./DisplayContent"
 import DisplayErrors from "./DisplayErrors"
@@ -272,9 +273,11 @@ function Presentable({
       <Collapse in={expanded} timeout="auto">
         <CardContent id={cardContentID}>
           {presentable.contents.map((content, i) => {
+            const key = content.revision.contentId || i
             if (editing) {
               return (
                 <EditForm
+                  key={key}
                   accountId={accountId}
                   conversationId={conversationId}
                   contentToEdit={content}
@@ -283,8 +286,9 @@ function Presentable({
                   }}
                 />
               )
+            } else {
+              return <DisplayContent key={key} {...content} />
             }
-            return <DisplayContent key={i} {...content} />
           })}
         </CardContent>
       </Collapse>
@@ -305,62 +309,4 @@ function displayPresentableEdited({
   return `Edited ${moment(editedAt).calendar()} ${
     editorIsntAuthor ? ` by ${displayParticipant(editedBy)} ` : ""
   }`
-}
-
-function EditForm({
-  accountId,
-  conversationId,
-  contentToEdit,
-  onComplete
-}: {
-  accountId: string
-  conversationId: string
-  contentToEdit: graphql.Content
-  onComplete: () => void
-}) {
-  const [content, setContent] = React.useState(contentToEdit.content)
-  const [loading, setLoading] = React.useState(false)
-  const [error, setError] = React.useState<Error | null>(null)
-  const [sendEdit] = graphql.useEditMutation()
-  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    setLoading(true)
-    try {
-      await sendEdit({
-        variables: {
-          accountId,
-          conversationId,
-          resource: {
-            messageId: contentToEdit.resource.messageId,
-            contentId: contentToEdit.resource.contentId
-          },
-          revision: {
-            messageId: contentToEdit.revision.messageId,
-            contentId: contentToEdit.revision.contentId
-          },
-          content: {
-            type: contentToEdit.type,
-            subtype: contentToEdit.subtype,
-            content
-          }
-        }
-      })
-      onComplete()
-    } catch (error) {
-      setError(error)
-    }
-    setLoading(false)
-  }
-  return (
-    <form onSubmit={onSubmit}>
-      {error ? <pre>{error.message}</pre> : null}
-      <textarea onChange={e => setContent(e.target.value)} value={content} />
-      <button disabled={loading} onClick={onComplete}>
-        Cancel
-      </button>
-      <button type="submit" disabled={loading}>
-        Send Edits
-      </button>
-    </form>
-  )
 }
