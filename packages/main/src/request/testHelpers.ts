@@ -1,5 +1,6 @@
 import toStream from "buffer-to-stream"
 import { EventEmitter } from "events"
+import equal from "fast-deep-equal"
 import { default as Connection, default as imap } from "imap"
 import { Range, Seq, Set } from "immutable"
 import { Transporter } from "nodemailer"
@@ -14,9 +15,11 @@ import { mock } from "../testHelpers"
 import { nonNull } from "../util/array"
 
 export function mockConnection({
-  thread = testThread
+  thread = testThread,
+  searchResults = []
 }: {
   thread?: ComposedMessage[]
+  searchResults?: Array<[unknown, number[]]>
 } = {}): ConnectionManager {
   const boxes = {
     INBOX: { attribs: ["\\Inbox"] },
@@ -46,7 +49,14 @@ export function mockConnection({
   )
 
   mock(Connection.prototype.search).mockImplementation((criteria, cb) => {
-    let uids = Set()
+    const match = searchResults.find(([c]) => equal(c, criteria))
+    if (match) {
+      const [, uids] = match
+      cb(null, uids.map(String))
+      return
+    }
+
+    let uids = Set<number>()
     for (const c of criteria) {
       if (c instanceof Array && c[0] === "HEADER" && c[1] === "Message-ID") {
         const messageId = c[2]
@@ -58,10 +68,26 @@ export function mockConnection({
               )
             )
             .map(({ attributes }) => attributes.uid)
+            .filter(nonNull)
+        )
+      }
+      if (
+        c instanceof Array &&
+        c[0] === "X-GM-THRID" &&
+        c[1] === thread[0].attributes["x-gm-thrid"]
+      ) {
+        uids = uids.concat(
+          testThread.map(({ attributes }) => attributes.uid).filter(nonNull)
         )
       }
     }
-    cb(null, uids.valueSeq().toArray())
+    cb(
+      null,
+      uids
+        .valueSeq()
+        .map(String)
+        .toArray()
+    )
   })
 
   mock(Connection.prototype.connect).mockReturnValue(undefined)

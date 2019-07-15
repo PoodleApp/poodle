@@ -18,18 +18,23 @@ export type Account = {
   loggedIn: Scalars["Boolean"]
   conversations: Array<Conversation>
   messages: Array<Message>
+  search: Search
 }
 
 export type AccountConversationsArgs = {
   label?: Maybe<Scalars["String"]>
 }
 
+export type AccountSearchArgs = {
+  query: Scalars["String"]
+}
+
 export type AccountMutations = {
   __typename?: "AccountMutations"
   create: Account
   authenticate: Account
-  sync: Account
   delete: Scalars["Boolean"]
+  sync: Account
 }
 
 export type AccountMutationsCreateArgs = {
@@ -40,11 +45,11 @@ export type AccountMutationsAuthenticateArgs = {
   id: Scalars["ID"]
 }
 
-export type AccountMutationsSyncArgs = {
+export type AccountMutationsDeleteArgs = {
   id: Scalars["ID"]
 }
 
-export type AccountMutationsDeleteArgs = {
+export type AccountMutationsSyncArgs = {
   id: Scalars["ID"]
 }
 
@@ -213,6 +218,13 @@ export type QueryConversationArgs = {
 export type QueryConversationsArgs = {
   query: Scalars["String"]
   specificityThreshold?: Maybe<Scalars["Int"]>
+}
+
+export type Search = {
+  __typename?: "Search"
+  id: Scalars["ID"]
+  conversations: Array<Conversation>
+  query: Scalars["String"]
 }
 export type GetAllAccountsQueryVariables = {}
 

@@ -9,6 +9,7 @@ import { getPartByPartId } from "./models/Message"
 import { publishMessageUpdates } from "./pubsub"
 import * as request from "./request"
 import * as kefirUtil from "./util/kefir"
+import { nonNull } from "./util/array"
 
 type R<T> = kefir.Observable<T, Error>
 
@@ -25,6 +26,29 @@ const cachePolicy = {
 
 const BATCH_SIZE = 50
 
+export async function search(
+  searchRecord: cache.Search,
+  manager: ConnectionManager
+) {
+  const accountId = searchRecord.account_id
+  const boxRecord = cache.getSearchedBox(searchRecord)
+  const box = await manager
+    .request(request.actions.getBox({ name: boxRecord.name }))
+    .toPromise()
+  const boxId = cache.persistBoxState(accountId, box)
+  await new BoxSync({ accountId, box, boxId, manager }).search(searchRecord)
+}
+
+export async function sync(accountId: cache.ID, manager: ConnectionManager) {
+  const contactApiClient = AccountManager.getContactsApiClient(
+    String(accountId)
+  )
+  const contactSync =
+    contactApiClient && contactApiClient.downloadContacts(accountId)
+
+  await Promise.all([boxSyncer(accountId, manager), contactSync])
+}
+
 async function boxSyncer(accountId: cache.ID, manager: ConnectionManager) {
   for (const specifier of cachePolicy.boxes) {
     const box = await manager
@@ -39,16 +63,6 @@ async function boxSyncer(accountId: cache.ID, manager: ConnectionManager) {
       manager
     }).sync()
   }
-}
-
-export async function sync(accountId: cache.ID, manager: ConnectionManager) {
-  const contactApiClient = AccountManager.getContactsApiClient(
-    String(accountId)
-  )
-  const contactSync =
-    contactApiClient && contactApiClient.downloadContacts(accountId)
-
-  await Promise.all([boxSyncer(accountId, manager), contactSync])
 }
 
 class BoxSync {
@@ -69,6 +83,39 @@ class BoxSync {
     this.boxId = opts.boxId
     this.manager = opts.manager
     this.updatedAt = new Date().toISOString()
+  }
+
+  async search(searchRecord: cache.Search) {
+    const uids = Seq(
+      await this.manager
+        .request(
+          request.actions.search(this.box, [["X-GM-RAW", searchRecord.query]])
+        )
+        .toPromise()
+    ).map(uid => parseInt(uid, 10))
+
+    await this.downloadMissingMessages({ uids })
+    cache.addSearchResults({
+      search: searchRecord,
+      uids,
+      updatedAt: this.updatedAt
+    })
+    cache.removeStaleSearchResults(searchRecord, this.updatedAt)
+
+    // Get complete conversations
+    for (const threadId of cache.getThreadIds({ uids })) {
+      const threadUids = Seq(
+        await this.manager
+          .request(request.actions.search(this.box, [["X-GM-THRID", threadId]]))
+          .toPromise()
+      ).map(uid => parseInt(uid, 10))
+      await this.downloadMissingMessages({ uids: threadUids })
+    }
+
+    // Make a record of the point when the search was fresh
+    cache.setSearchUidLastSeen(searchRecord, this.box.uidnext - 1)
+
+    publishMessageUpdates(null)
   }
 
   async sync() {
@@ -94,9 +141,6 @@ class BoxSync {
           bodies: "HEADER",
           envelope: true,
           struct: true
-        },
-        afterEachBatch: async batch => {
-          await this.fetchMissingBodiesAndPartHeaders(batch)
         }
       })
     } else {
@@ -108,7 +152,7 @@ class BoxSync {
             struct: true
           })
         )
-      ).toPromise()
+      )
     }
 
     // Record the fact that we have checked for messages up to UID `uidnext - 1`
@@ -155,11 +199,33 @@ class BoxSync {
     })
   }
 
+  private async downloadMissingMessages({
+    uids
+  }: {
+    uids: Seq.Indexed<number>
+  }) {
+    const filteredUids = uids.filter(
+      uid =>
+        !cache.isUidPresent({
+          accountId: this.accountId,
+          boxId: this.boxId,
+          uid
+        })
+    )
+    return this.downloadMessagesInBatches({
+      uids: filteredUids,
+      fetchOptions: {
+        bodies: "HEADER",
+        envelope: true,
+        struct: true
+      }
+    })
+  }
+
   private async downloadMessagesInBatches({
     uids,
     filter = () => true,
     shouldContinue = async () => true,
-    afterEachBatch,
     fetchOptions
   }: {
     uids: Seq.Indexed<number>
@@ -167,9 +233,8 @@ class BoxSync {
     shouldContinue?: (
       messages: R<imap.ImapMessageAttributes>
     ) => Promise<boolean>
-    afterEachBatch?: (batch: Seq.Indexed<number>) => Promise<void>
     fetchOptions?: imap.FetchOptions
-  }) {
+  }): Promise<void> {
     const batch = uids.take(BATCH_SIZE)
     const rest = uids.skip(BATCH_SIZE)
     if (batch.isEmpty()) {
@@ -184,11 +249,8 @@ class BoxSync {
       fetchResponses.filter(request.isMessage).map(m => m.attributes)
     )
 
-    await this.captureResponses(fetchResponses.filter(filter)).toPromise()
-
-    if (afterEachBatch) {
-      await afterEachBatch(batch)
-    }
+    await this.captureResponses(fetchResponses.filter(filter))
+    await this.fetchMissingBodiesAndPartHeaders(batch)
 
     if (await continueToNextBatch) {
       await this.downloadMessagesInBatches({
@@ -216,66 +278,59 @@ class BoxSync {
               struct: true
             })
           )
-        ).toPromise()
+        )
         publishMessageUpdates(null)
       }
     }
   }
 
-  private captureResponses(responses: R<request.FetchResponse>): R<void> {
+  private captureResponses(
+    responses: R<request.FetchResponse>
+  ): Promise<cache.ID[]> {
     const context = {
       accountId: this.accountId,
       boxId: this.boxId,
       updatedAt: this.updatedAt
     }
-    return (
-      responses
-        .flatMap(event => {
-          try {
-            if (request.isMessage(event)) {
-              cache.persistAttributes(context, event.attributes)
-            }
+    const stream = responses.flatMap(event => {
+      try {
+        if (request.isMessage(event)) {
+          const cacheId = cache.persistAttributes(context, event.attributes)
+          return kefir.constant(cacheId)
+        }
 
-            if (request.isHeaders(event)) {
-              const id = cache.persistAttributes(
-                context,
-                event.messageAttributes
-              )
-              cache.persistHeadersAndReferences(
-                id,
-                event.headers,
-                event.messageAttributes
-              )
-            }
+        if (request.isHeaders(event)) {
+          const id = cache.persistAttributes(context, event.messageAttributes)
+          cache.persistHeadersAndReferences(
+            id,
+            event.headers,
+            event.messageAttributes
+          )
+        }
 
-            if (request.isPartHeaders(event)) {
-              const id = cache.persistAttributes(
-                context,
-                event.messageAttributes
-              )
-              cache.persistPartHeaders(id, { [event.partID]: event.headers })
-            }
+        if (request.isPartHeaders(event)) {
+          const id = cache.persistAttributes(context, event.messageAttributes)
+          cache.persistPartHeaders(id, { [event.partID]: event.headers })
+        }
 
-            if (request.isBody(event)) {
-              const id = cache.persistAttributes(
-                context,
-                event.messageAttributes
-              )
-              const part = getPartByPartId(event.which, event.messageAttributes)
-              if (part) {
-                cache.persistBody(id, part, event.data)
-              }
-            }
-
-            return kefir.constant(undefined)
-          } catch (error) {
-            return kefir.constantError(error)
+        if (request.isBody(event)) {
+          const id = cache.persistAttributes(context, event.messageAttributes)
+          const part = getPartByPartId(event.which, event.messageAttributes)
+          if (part) {
+            cache.persistBody(id, part, event.data)
           }
-        })
-        // Insert a value before the end of the stream so that calling
-        // `.toPromise()` resolves to a value in case the responses stream is empty.
-        .beforeEnd(() => undefined)
-    )
+        }
+
+        return kefir.constant(undefined)
+      } catch (error) {
+        return kefir.constantError(error)
+      }
+    })
+
+    return kefirUtil
+      .takeAll(stream)
+      .map(xs => xs.filter(nonNull))
+      .toPromise()
   }
 }
 

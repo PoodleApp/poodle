@@ -2,6 +2,7 @@ import imap from "imap"
 import { idFromHeaderValue } from "poodle-common/lib/models/uri"
 import db from "../db"
 import { MessageAttributes } from "../types"
+import { insertInto } from "./helpers"
 import { getPartByPartId } from "./query"
 import { ID, SerializedHeaders } from "./types"
 
@@ -421,18 +422,4 @@ export function addLabels({
     `
     ).run({ accountId, boxName: box.name, label })
   })
-}
-
-function insertInto(table: string, values: Record<string, unknown>): ID {
-  const keys = Object.keys(values)
-  const { lastInsertRowid } = db
-    .prepare(
-      `
-        insert into ${table}
-        (${keys.join(", ")}) values
-        (${keys.map(k => `@${k}`).join(", ")})
-      `
-    )
-    .run(values)
-  return lastInsertRowid
 }

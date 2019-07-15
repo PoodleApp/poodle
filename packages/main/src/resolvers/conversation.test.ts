@@ -716,6 +716,7 @@ describe("when querying conversations", () => {
       }
     })
   })
+
   describe("searching", () => {
     it("lists conversations whose subject matches a given query", async () => {
       const result = await request(

@@ -85,7 +85,7 @@ export const conversation: graphql.Conversation = {
   subject: "Test Thread"
 }
 
-export const account: graphql.Account = {
+export const account: Partial<graphql.Account> = {
   id: "1",
   conversations: [conversation],
   email: "jesse@sitr.us",

@@ -75,6 +75,7 @@
     "electron-builder": "^20.39.0",
     "electron-devtools-installer": "^2.2.4",
     "eol": "^0.9.1",
+    "fast-deep-equal": "^2.0.1",
     "jest": "24.7.1",
     "ts-jest": "^24.0.2",
     "typescript": "^3.5.2",
