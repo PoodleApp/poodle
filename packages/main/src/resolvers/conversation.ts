@@ -15,6 +15,7 @@ import * as C from "../models/conversation"
 import { actions, schedule } from "../queue"
 import { nonNull } from "../util/array"
 import * as types from "./types"
+import { idFromHeaderValue } from "poodle-common/lib/models/uri"
 
 export const Conversation: ConversationResolvers = {
   date(conversation: C.Conversation) {
@@ -137,7 +138,7 @@ export const ConversationMutations: ConversationMutationsResolvers = {
   sendMessage(_parent, { accountId, message }) {
     const account = mustGetAccount(accountId)
     const composed = composeNewConversation({ account, message })
-    const messageId = composed.attributes.envelope.messageId
+    const messageId = idFromHeaderValue(composed.attributes.envelope.messageId)
     schedule(
       actions.sendMessage({
         accountId,

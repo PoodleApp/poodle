@@ -6,7 +6,9 @@
   "author": "Jesse Hallett <jesse@sitr.us>",
   "license": "Apache-2.0",
   "scripts": {
+    "prestart": "cd ../common && yarn build",
     "start": "cross-env BROWSER=none react-scripts start",
+    "prebuild": "cd ../common && yarn build",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",

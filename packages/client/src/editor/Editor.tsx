@@ -1,3 +1,4 @@
+import { idFromHeaderValue, midUri } from "poodle-common/lib/models/uri"
 import * as React from "react"
 import { Editor as CoreEditor } from "slate"
 import {
@@ -8,13 +9,7 @@ import {
 } from "slate-react"
 import DisplayErrors from "../DisplayErrors"
 import * as graphql from "../generated/graphql"
-import {
-  conversationLink,
-  CONVERSATION_LINK,
-  idFromHeaderValue,
-  midUri,
-  schema
-} from "./schema"
+import { conversationLink, CONVERSATION_LINK, schema } from "./schema"
 import { Suggestions, useSuggestionsPlugin } from "./suggestions"
 
 const capture = /(\S+(?:\s+\S+){0,4}\s*)$/

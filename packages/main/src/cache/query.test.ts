@@ -1,10 +1,11 @@
+import { idFromHeaderValue } from "poodle-common/lib/models/uri"
 import db from "../db"
 import { getPartByPartId } from "../models/Message"
 import {
-  persistBoxState,
   persistAttributes,
-  persistHeadersAndReferences,
-  persistBody
+  persistBody,
+  persistBoxState,
+  persistHeadersAndReferences
 } from "./persist"
 import * as cache from "./query"
 import { inbox, testThread } from "./testFixtures"
@@ -70,11 +71,19 @@ it("gets messages from the cache", () => {
   expect(
     cache.getMessages(accountId).sort((a, b) => a.uid! - b.uid!)
   ).toMatchObject([
-    { envelope_messageId: testThread[0].attributes.envelope.messageId },
-    { envelope_messageId: testThread[1].attributes.envelope.messageId }
+    {
+      envelope_messageId: idFromHeaderValue(
+        testThread[0].attributes.envelope.messageId
+      )
+    },
+    {
+      envelope_messageId: idFromHeaderValue(
+        testThread[1].attributes.envelope.messageId
+      )
+    }
   ])
   expect(cache.getMessages(otherAccountId)).toMatchObject([
-    { envelope_messageId: "<otherId>" }
+    { envelope_messageId: "otherId" }
   ])
 })
 

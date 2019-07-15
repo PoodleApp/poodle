@@ -43,19 +43,15 @@ it("collapses read messages, with the exception of the last message in the conve
   )
   await updates(app)
 
-  expect(
-    app
-      .find("Presentable")
-      .filterWhere(n => n.props().presentable.id === "11")
-      .find(Collapse)
-  ).toHaveProp("in", false)
+  expect(app.find({ presentable: { id: "11" } }).find(Collapse)).toHaveProp(
+    "in",
+    false
+  )
 
-  expect(
-    app
-      .find("Presentable")
-      .filterWhere(n => n.props().presentable.id === "12")
-      .find(Collapse)
-  ).toHaveProp("in", true)
+  expect(app.find({ presentable: { id: "12" } }).find(Collapse)).toHaveProp(
+    "in",
+    true
+  )
 })
 
 it("does not collapse unread messages", async () => {
@@ -90,10 +86,8 @@ it("does not collapse unread messages", async () => {
   )
   await updates(app)
 
-  expect(
-    app
-      .find("Presentable")
-      .filterWhere(n => n.props().presentable.id === "11")
-      .find(Collapse)
-  ).toHaveProp("in", true)
+  expect(app.find({ presentable: { id: "11" } }).find(Collapse)).toHaveProp(
+    "in",
+    true
+  )
 })

@@ -78,14 +78,15 @@ export function getThread(threadId: string): Thread | null {
       `
         select * from messages
         where id in (
-          select message_id from message_references
-          where referenced_id = ?
+          select id from messages where envelope_messageId = @threadId
+          union all
+          select message_id from message_references where referenced_id = @threadId
         )
         group by envelope_messageId
         order by date
       `
     )
-    .all(threadId)
+    .all({ threadId })
   if (messagesByMessageId.length > 0) {
     return { id: threadId, messages: messagesByMessageId }
   }

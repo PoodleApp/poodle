@@ -1,7 +1,7 @@
 import { Seq } from "immutable"
+import { midUri } from "poodle-common/lib/models/uri"
 import * as cache from "../cache"
 import * as C from "../models/conversation"
-import { midUri } from "../models/uri"
 import { nonNull } from "../util/array"
 import { mkMessageId, mkStruct } from "./helpers"
 import { ComposedMessage } from "./types"

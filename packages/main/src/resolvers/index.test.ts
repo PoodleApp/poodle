@@ -1,9 +1,8 @@
 import { graphql } from "graphql"
-import schema from "../schema"
-import db from "../db"
-import { Base64Encode } from "base64-stream"
 import * as cache from "../cache"
 import { testThread } from "../cache/testFixtures"
+import db from "../db"
+import schema from "../schema"
 
 afterEach(() => {
   jest.clearAllMocks()

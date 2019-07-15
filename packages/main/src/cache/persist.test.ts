@@ -90,7 +90,7 @@ describe("saving a single message", () => {
         envelope_date: "2019-01-31T23:40:04.000Z",
         envelope_inReplyTo: null,
         envelope_messageId:
-          "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>",
+          "CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com",
         envelope_subject: "Test thread 2019-02",
         modseq: "3212743",
         uid: testMessage.attributes.uid,
@@ -116,7 +116,7 @@ describe("saving a single message", () => {
           envelope_date: "2019-01-31T23:40:04.000Z",
           envelope_inReplyTo: null,
           envelope_messageId:
-            "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>",
+            "CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com",
           envelope_subject: "Test thread 2019-02",
           modseq: "3212743",
           uid: testMessage.attributes.uid,
@@ -312,11 +312,11 @@ describe("saving a single message", () => {
       ).toMatchObject([
         {
           referenced_id:
-            "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>"
+            "CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com"
         },
         {
           referenced_id:
-            "<CAGM-pNvwffuB_LRE4zP7vaO2noOQ0p0qJ8UmSONP3k8ycyo3HA@mail.gmail.com>"
+            "CAGM-pNvwffuB_LRE4zP7vaO2noOQ0p0qJ8UmSONP3k8ycyo3HA@mail.gmail.com"
         }
       ])
     })
@@ -349,15 +349,15 @@ describe("saving a single message", () => {
       ).toMatchObject([
         {
           referenced_id:
-            "<CAFN-=ivdbdu0PQjwZuC4SRAxhsAm3C7xiVox17HN5h-t278x=Q@mail.gmail.com>"
+            "CAFN-=ivdbdu0PQjwZuC4SRAxhsAm3C7xiVox17HN5h-t278x=Q@mail.gmail.com"
         },
         {
           referenced_id:
-            "<CAGM-pNvDQ-e-016-x+LeU_AY=AwkRgEvpDBmJNOi3r3KcqwF=A@mail.gmail.com>"
+            "CAGM-pNvDQ-e-016-x+LeU_AY=AwkRgEvpDBmJNOi3r3KcqwF=A@mail.gmail.com"
         },
         {
           referenced_id:
-            "<CAGM-pNvwffuB_LRE4zP7vaO2noOQ0p0qJ8UmSONP3k8ycyo3HA@mail.gmail.com>"
+            "CAGM-pNvwffuB_LRE4zP7vaO2noOQ0p0qJ8UmSONP3k8ycyo3HA@mail.gmail.com"
         }
       ])
     })

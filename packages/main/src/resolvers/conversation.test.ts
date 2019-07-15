@@ -1,5 +1,6 @@
 import { graphql } from "graphql"
 import { default as Connection, default as imap } from "imap"
+import { idFromHeaderValue } from "poodle-common/lib/models/uri"
 import * as cache from "../cache"
 import { testThread } from "../cache/testFixtures"
 import { composeEdit } from "../compose"
@@ -28,7 +29,7 @@ beforeEach(async () => {
   account = { id: accountId, email: "jesse@sitr.us" }
 })
 
-describe("when addressing conversations", () => {
+describe("when querying conversations", () => {
   let conversation: Conversation
   let conversationId: string
 
@@ -137,6 +138,29 @@ describe("when addressing conversations", () => {
       data: {
         account: {
           conversations: []
+        }
+      }
+    })
+  })
+
+  it("gets a conversation by the message ID of its first message", async () => {
+    const messageId = idFromHeaderValue(
+      testThread[0].attributes.envelope.messageId
+    )
+    const result = await request(
+      `
+      query getConversation($conversationId: ID!) {
+        conversation(id: $conversationId) {
+          messageId
+        }
+      }
+    `,
+      { conversationId: messageId }
+    )
+    expect(result).toEqual({
+      data: {
+        conversation: {
+          messageId
         }
       }
     })
@@ -714,7 +738,7 @@ describe("when addressing conversations", () => {
             {
               conversation: {
                 messageId:
-                  "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>",
+                  "CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com",
                 subject: "Test thread 2019-02"
               },
               query: "test thread"
@@ -745,7 +769,7 @@ describe("when addressing conversations", () => {
             {
               conversation: {
                 messageId:
-                  "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>",
+                  "CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com",
                 subject: "Test thread 2019-02"
               },
               query: "test thread"

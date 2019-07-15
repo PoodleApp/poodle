@@ -1,6 +1,8 @@
 import { makeStyles } from "@material-ui/styles"
+import { Location } from "@reach/router"
 import clsx from "clsx"
 import marked from "marked"
+import { parseMidUri } from "poodle-common/lib/models/uri"
 import * as React from "react"
 import repa from "repa"
 import * as graphql from "./generated/graphql"
@@ -17,71 +19,77 @@ const useStyles = makeStyles(_theme => ({
   }
 }))
 
-type Props = graphql.Content & { className?: string }
+type Props = graphql.Content & { accountId: string; className?: string }
 
 export default function DisplayContent({
+  accountId,
   type,
   subtype,
   content,
   className
 }: Props) {
   const classes = useStyles()
-  if (type === "text" && subtype === "html") {
-    return displayHtml(content, clsx(className, "html-content", classes.body))
-  } else if (type === "text" && subtype === "markdown") {
-    return displayMarkdown(
-      content,
-      clsx(className, "markdown-content", classes.body)
-    )
-  } else if (type === "text") {
-    return displayText(
-      content,
-      clsx(className, "text-content", clsx(classes.body, classes.textContent))
-    )
-  } else {
-    return displayUnknown(
-      { type, subtype, content },
-      clsx(className, classes.body)
-    )
-  }
+  return (
+    <Location>
+      {({ navigate }) => {
+        const props: React.DetailedHTMLProps<
+          React.HTMLProps<HTMLDivElement>,
+          HTMLDivElement
+        > = {
+          onClick: event => {
+            handleLink(accountId, navigate, event)
+          }
+        }
+        if (type === "text" && subtype === "html") {
+          return displayHtml(content, {
+            ...props,
+            className: clsx(className, "html-content", classes.body)
+          })
+        } else if (type === "text" && subtype === "markdown") {
+          return displayMarkdown(content, {
+            ...props,
+            className: clsx(className, "markdown-content", classes.body)
+          })
+        } else if (type === "text") {
+          return displayText(content, {
+            ...props,
+            className: clsx(
+              className,
+              "text-content",
+              clsx(classes.body, classes.textContent)
+            )
+          })
+        } else {
+          return displayUnknown(
+            { type, subtype, content },
+            { className: clsx(className, classes.body) }
+          )
+        }
+      }}
+    </Location>
+  )
 }
 
 // TODO: remove quoted replies from HTML content
-function displayHtml(text: string, className: string) {
+function displayHtml(text: string, props: object) {
   const out = {
     __html: text
   }
-  return (
-    <div
-      className={className}
-      dangerouslySetInnerHTML={out}
-      onClick={handleExternalLink}
-    />
-  )
+  return <div {...props} dangerouslySetInnerHTML={out} />
 }
 
-function displayText(text: string, className: string) {
+function displayText(text: string, props: object) {
   const content = repa(text)
-  return (
-    <div className={className} onClick={handleExternalLink}>
-      {content}
-    </div>
-  )
+  return <div {...props}>{content}</div>
 }
 
-function displayMarkdown(text: string, className: string) {
+function displayMarkdown(text: string, props: object) {
   const content = repa(text)
   const out = {
     // TODO: The type definitions for marked do not specify its sync API.
     __html: (marked as any)(content, { sanitized: true })
   }
-  return (
-    <div
-      className={className}
-      dangerouslySetInnerHTML={out}
-      onClick={handleExternalLink}
-    />
-  )
+  return <div {...props} dangerouslySetInnerHTML={out} />
 }
 
 function displayUnknown(
@@ -90,10 +98,10 @@ function displayUnknown(
     subtype,
     content
   }: { type: string; subtype: string; content: string },
-  className: string
+  props: object
 ) {
   return content ? (
-    <div className={className}>
+    <div {...props}>
       <p>
         <em>
           [unknown content type: {type}/{subtype}]
@@ -101,7 +109,7 @@ function displayUnknown(
       </p>
     </div>
   ) : (
-    <div className={className}>
+    <div {...props}>
       <p>
         <em>[no content]</em>
       </p>
@@ -109,10 +117,24 @@ function displayUnknown(
   )
 }
 
-function handleExternalLink(event: React.MouseEvent<HTMLElement, MouseEvent>) {
+function handleLink(
+  accountId: string,
+  navigate: (location: string) => unknown,
+  event: React.MouseEvent<HTMLElement, MouseEvent>
+) {
   const target = event.target
   if (target instanceof HTMLAnchorElement && target.href) {
     event.preventDefault()
+
+    const parsed = parseMidUri(target.href)
+    const messageId = parsed && parsed.messageId
+    if (messageId) {
+      navigate(
+        `/accounts/${accountId}/conversations/${encodeURIComponent(messageId)}`
+      )
+      return
+    }
+
     shell.openExternal(target.href)
   }
 }

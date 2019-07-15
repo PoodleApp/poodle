@@ -139,7 +139,7 @@ class BoxSync {
       const uid = await this.manager
         .request(
           request.actions.search(this.box, [
-            ["HEADER", "Message-ID", messageId]
+            ["HEADER", "Message-ID", `<${messageId}>`]
           ])
         )
         .toPromise()
