@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Make sure that common package is up-to-date
+(cd packages/common && yarn build)
+
 if [[ -n "$CI" ]]; then
   # Check that generated code is up-to-date with GraphQL schema and operations
   # files.

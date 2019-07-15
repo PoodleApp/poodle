@@ -230,7 +230,7 @@ function persistReferences(
   if (attributes.envelope.messageId) {
     insertInto("message_references", {
       message_id: messageId,
-      referenced_id: attributes.envelope.messageId
+      referenced_id: idFromHeaderValue(attributes.envelope.messageId)
     })
   }
 }

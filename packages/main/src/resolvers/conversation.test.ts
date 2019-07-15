@@ -746,7 +746,7 @@ describe("when querying conversations", () => {
             {
               conversation: {
                 messageId:
-                  "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>",
+                  "CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com",
                 subject: "Test thread 2019-02"
               },
               query: "test thread"
@@ -777,7 +777,7 @@ describe("when querying conversations", () => {
             {
               conversation: {
                 messageId:
-                  "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>",
+                  "CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com",
                 subject: "Test thread 2019-02"
               },
               query: "test thread"
