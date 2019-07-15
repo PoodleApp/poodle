@@ -6,6 +6,7 @@ import { composeEdit, composeNewConversation, composeReply } from "../compose"
 import {
   ConversationResolvers,
   ConversationMutationsResolvers,
+  ConversationSearchResult,
   MutationResolvers,
   QueryResolvers
 } from "../generated/graphql"
@@ -13,7 +14,6 @@ import { mustGetAccount } from "../models/account"
 import * as C from "../models/conversation"
 import { actions, schedule } from "../queue"
 import { nonNull } from "../util/array"
-import { mapObject } from "../util/object"
 import * as types from "./types"
 
 export const Conversation: ConversationResolvers = {
@@ -32,6 +32,11 @@ export const Conversation: ConversationResolvers = {
       .toSet()
       .toArray()
       .sort()
+  },
+
+  messageId({ messages }: C.Conversation) {
+    const message = messages.find(msg => Boolean(msg.envelope_messageId))
+    return message ? message.envelope_messageId : null
   },
 
   presentableElements(conversation: C.Conversation) {
@@ -199,9 +204,33 @@ function updateAction(
   }
 }
 
+const tokenPattern = /^\S+\s+/
+
 export const queries: Partial<QueryResolvers> = {
   conversation(_parent, { id }): C.Conversation | null {
     return C.getConversation(id)
+  },
+
+  conversations(_parent, { query, specificityThreshold }) {
+    // The given query string might partially overlap a conversation subject if
+    // we are trying to provide suggestions as the user types. This code
+    // searches for successively smaller portions of the query until getting
+    // down to a single query, or to a point where there are too many results.
+    function go(q: string): ConversationSearchResult[] {
+      const results = cache.searchBySubject(q)
+      if (specificityThreshold && results.length > specificityThreshold) {
+        return []
+      }
+      if (results.length > 0) {
+        return results.map(conversation => ({
+          conversation,
+          query: q
+        }))
+      }
+      const nextQ = q.replace(tokenPattern, "")
+      return nextQ === q ? [] : go(nextQ)
+    }
+    return go(query)
   }
 }
 

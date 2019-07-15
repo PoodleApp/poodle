@@ -18,11 +18,22 @@ type Conversation {
   date: String!
   from: Address!
   labels: [String!]
+
+  """
+  RFC 2822 Message ID of the first message in the conversation, if available.
+  """
+  messageId: String
+
   presentableElements: [Presentable!]!
   isRead: Boolean!
   replyRecipients(fromAccountId: ID!): Participants!
   snippet: String
   subject: String
+}
+
+type ConversationSearchResult {
+  conversation: Conversation!
+  query: String!
 }
 
 type ConversationMutations {
@@ -74,6 +85,7 @@ type Participants {
 
 type Presentable {
   id: ID!
+  isRead: Boolean!
   contents: [Content!]!
   date: String!
   from: Address!
@@ -115,6 +127,15 @@ type Query {
   accounts: [Account!]!
   addresses(inputValue: String!): [Address!]!
   conversation(id: ID!): Conversation
+  conversations(
+    query: String!
+    """
+    Ignore search results if the number of results exceeds
+    `specificityThreshold`. The idea is that if there are too many results then
+    the query is not specific enough.
+    """
+    specificityThreshold: Int
+  ): [ConversationSearchResult!]!
 }
 
 schema {

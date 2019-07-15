@@ -37,20 +37,20 @@ describe("when addressing conversations", () => {
 
     const result = await request(
       `
-        query getConversations($accountId: ID!) {
-          account(id: $accountId) {
-            conversations {
-              id
-              presentableElements {
-                contents {
-                  resource { messageId, contentId }
-                  revision { messageId, contentId }
-                }
+      query getConversations($accountId: ID!) {
+        account(id: $accountId) {
+          conversations {
+            id
+            presentableElements {
+              contents {
+                resource { messageId, contentId }
+                revision { messageId, contentId }
               }
             }
           }
         }
-      `,
+      }
+    `,
       { accountId }
     )
     expect(result).toMatchObject({ data: expect.anything() })
@@ -61,24 +61,24 @@ describe("when addressing conversations", () => {
   it("gets metadata for a conversation from cache", async () => {
     const result = await request(
       `
-        query getConversations($accountId: ID!) {
-          account(id: $accountId) {
-            conversations {
-              id
-              date
-              from {
-                name
-                mailbox
-                host
-              }
-              isRead
-              replyRecipients(fromAccountId: $accountId) { to { name, mailbox, host }}
-              snippet
-              subject
+      query getConversations($accountId: ID!) {
+        account(id: $accountId) {
+          conversations {
+            id
+            date
+            from {
+              name
+              mailbox
+              host
             }
+            isRead
+            replyRecipients(fromAccountId: $accountId) { to { name, mailbox, host }}
+            snippet
+            subject
           }
         }
-      `,
+      }
+    `,
       { accountId }
     )
     expect(result).toMatchObject({
@@ -115,22 +115,22 @@ describe("when addressing conversations", () => {
   it("gets conversations by label", async () => {
     const result = await request(
       `
-        query getConversations($accountId: ID!, $label: String) {
-          account(id: $accountId) {
-            conversations(label: $label) {
-              id
-              date
-              from {
-                name
-                mailbox
-                host
-              }
-              isRead
-              subject
+      query getConversations($accountId: ID!, $label: String) {
+        account(id: $accountId) {
+          conversations(label: $label) {
+            id
+            date
+            from {
+              name
+              mailbox
+              host
             }
+            isRead
+            subject
           }
         }
-      `,
+      }
+    `,
       { accountId, label: "My Label" }
     )
     expect(result).toMatchObject({
@@ -145,26 +145,26 @@ describe("when addressing conversations", () => {
   it("gets a list of presentable elements for a conversation", async () => {
     const result = await request(
       `
-        query getConversation($conversationId: ID!) {
-          conversation(id: $conversationId) {
+      query getConversation($conversationId: ID!) {
+        conversation(id: $conversationId) {
+          id
+          presentableElements {
             id
-            presentableElements {
-              id
-              date
-              from {
-                name
-                mailbox
-                host
-              }
-              contents {
-                type
-                subtype
-                content
-              }
+            date
+            from {
+              name
+              mailbox
+              host
+            }
+            contents {
+              type
+              subtype
+              content
             }
           }
         }
-      `,
+      }
+    `,
       { conversationId: testThread[0].attributes["x-gm-thrid"] }
     )
     expect(result).toEqual({
@@ -227,26 +227,26 @@ describe("when addressing conversations", () => {
 
     const result = await request(
       `
-        query getConversation($conversationId: ID!) {
-          conversation(id: $conversationId) {
+      query getConversation($conversationId: ID!) {
+        conversation(id: $conversationId) {
+          id
+          presentableElements {
             id
-            presentableElements {
-              id
-              date
-              from {
-                name
-                mailbox
-                host
-              }
-              contents {
-                type
-                subtype
-                content
-              }
+            date
+            from {
+              name
+              mailbox
+              host
+            }
+            contents {
+              type
+              subtype
+              content
             }
           }
         }
-      `,
+      }
+    `,
       { conversationId: testThread[0].attributes["x-gm-thrid"] }
     )
     expect(result).toEqual({
@@ -312,15 +312,15 @@ describe("when addressing conversations", () => {
 
     const result = await request(
       `
-        mutation setIsRead($conversationId: ID!, $isRead: Boolean!) {
-          conversations {
-            setIsRead(id: $conversationId, isRead: $isRead) {
-              id
-              isRead
-            }
+      mutation setIsRead($conversationId: ID!, $isRead: Boolean!) {
+        conversations {
+          setIsRead(id: $conversationId, isRead: $isRead) {
+            id
+            isRead
           }
         }
-      `,
+      }
+    `,
       { conversationId, isRead: true }
     )
     expect(result).toEqual({
@@ -338,15 +338,15 @@ describe("when addressing conversations", () => {
   it("marks a conversation as unread", async () => {
     const result = await request(
       `
-        mutation setIsRead($conversationId: ID!, $isRead: Boolean!) {
-          conversations {
-            setIsRead(id: $conversationId, isRead: $isRead) {
-              id
-              isRead
-            }
+      mutation setIsRead($conversationId: ID!, $isRead: Boolean!) {
+        conversations {
+          setIsRead(id: $conversationId, isRead: $isRead) {
+            id
+            isRead
           }
         }
-      `,
+      }
+    `,
       { conversationId, isRead: false }
     )
     expect(result).toEqual({
@@ -364,15 +364,15 @@ describe("when addressing conversations", () => {
   it("archives a conversation", async () => {
     const result = await request(
       `
-        mutation archive($conversationId: ID!) {
-          conversations {
-            archive(id: $conversationId) {
-              id
-              labels
-            }
+      mutation archive($conversationId: ID!) {
+        conversations {
+          archive(id: $conversationId) {
+            id
+            labels
           }
         }
-      `,
+      }
+    `,
       { conversationId }
     )
     expect(result).toEqual({
@@ -390,20 +390,20 @@ describe("when addressing conversations", () => {
   it("accepts a reply to a conversation", async () => {
     const result = await request(
       `
-        mutation reply($accountId: ID!, $conversationId: ID!, $content: ContentInput!) {
-          conversations {
-            reply(accountId: $accountId, id: $conversationId, content: $content) {
-              presentableElements {
-                contents {
-                  type
-                  subtype
-                  content
-                }
+      mutation reply($accountId: ID!, $conversationId: ID!, $content: ContentInput!) {
+        conversations {
+          reply(accountId: $accountId, id: $conversationId, content: $content) {
+            presentableElements {
+              contents {
+                type
+                subtype
+                content
               }
             }
           }
         }
-      `,
+      }
+    `,
       {
         accountId,
         conversationId,
@@ -448,27 +448,27 @@ describe("when addressing conversations", () => {
   it("starts a new conversation", async () => {
     const result = await request(
       `
-        mutation sendMessage($accountId: ID!, $message: MessageInput!) {
-          conversations {
-            sendMessage(accountId: $accountId, message: $message) {
-              from {
-                name
-                mailbox
-                host
-              }
-              presentableElements {
-                contents {
-                  type
-                  subtype
-                  content
-                }
-              }
-              isRead
-              subject
+      mutation sendMessage($accountId: ID!, $message: MessageInput!) {
+        conversations {
+          sendMessage(accountId: $accountId, message: $message) {
+            from {
+              name
+              mailbox
+              host
             }
+            presentableElements {
+              contents {
+                type
+                subtype
+                content
+              }
+            }
+            isRead
+            subject
           }
         }
-      `,
+      }
+    `,
       {
         accountId,
         message: {
@@ -567,30 +567,30 @@ describe("when addressing conversations", () => {
 
     const result = await request(
       `
-        query getConversation($conversationId: ID!) {
-          conversation(id: $conversationId) {
-            presentableElements {
-              date
-              from {
-                name
-                mailbox
-                host
-              }
-              editedAt
-              editedBy {
-                name
-                mailbox
-                host
-              }
-              contents {
-                type
-                subtype
-                content
-              }
+      query getConversation($conversationId: ID!) {
+        conversation(id: $conversationId) {
+          presentableElements {
+            date
+            from {
+              name
+              mailbox
+              host
+            }
+            editedAt
+            editedBy {
+              name
+              mailbox
+              host
+            }
+            contents {
+              type
+              subtype
+              content
             }
           }
         }
-      `,
+      }
+    `,
       { conversationId: testThread[0].attributes["x-gm-thrid"] }
     )
     expect(result).toMatchObject({
@@ -635,6 +635,157 @@ describe("when addressing conversations", () => {
           ]
         }
       }
+    })
+  })
+
+  it("uses the read status of a message's most recent revision as the read status of the presentable", async () => {
+    const orig = cache.getThreads(accountId)[0]
+    const message = testThread[1].attributes
+
+    expect(cache.getFlags(message.envelope.messageId).includes("//Seen")).toBe(
+      false
+    )
+
+    const part = message.struct![0] as imap.ImapMessagePart
+    const revisedContent = "What I meant to say was, hi."
+    const editMessage = composeEdit({
+      account,
+      content: {
+        type: "text",
+        subtype: "plain",
+        content: revisedContent
+      },
+      conversation: orig,
+      editedMessage: { envelope_messageId: message.envelope.messageId },
+      editedPart: {
+        content_id: part.id
+      },
+      resource: {
+        messageId: message.envelope.messageId,
+        contentId: part.id
+      }
+    })
+    editMessage.attributes.uid = 9000
+    const threadWithEdit = [...testThread, editMessage]
+
+    mock(Connection.prototype.fetch).mockImplementation(
+      mockFetchImplementation({ thread: threadWithEdit })
+    )
+    await sync(accountId, connectionManager)
+
+    const result = await request(
+      `
+        query getConversation($conversationId: ID!) {
+          conversation(id: $conversationId) {
+            presentableElements {
+              isRead
+            }
+          }
+        }
+      `,
+      { conversationId: testThread[0].attributes["x-gm-thrid"] }
+    )
+    expect(result).toMatchObject({
+      data: {
+        conversation: {
+          presentableElements: [
+            {
+              isRead: true
+            },
+            {
+              isRead: true
+            }
+          ]
+        }
+      }
+    })
+  })
+  describe("searching", () => {
+    it("lists conversations whose subject matches a given query", async () => {
+      const result = await request(
+        `
+        query searchConversations($query: String!) {
+          conversations(query: $query) {
+            conversation {
+              messageId
+              subject
+            }
+            query
+          }
+        }
+      `,
+        { query: "test thread" }
+      )
+      expect(result).toMatchObject({
+        data: {
+          conversations: [
+            {
+              conversation: {
+                messageId:
+                  "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>",
+                subject: "Test thread 2019-02"
+              },
+              query: "test thread"
+            }
+          ]
+        }
+      })
+    })
+
+    it("list conversations whose subject partially overlaps with a given query", async () => {
+      const result = await request(
+        `
+        query searchConversations($query: String!) {
+          conversations(query: $query) {
+            conversation {
+              messageId
+              subject
+            }
+            query
+          }
+        }
+      `,
+        { query: "refer to the test thread" }
+      )
+      expect(result).toMatchObject({
+        data: {
+          conversations: [
+            {
+              conversation: {
+                messageId:
+                  "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>",
+                subject: "Test thread 2019-02"
+              },
+              query: "test thread"
+            }
+          ]
+        }
+      })
+    })
+
+    it("prevents sqlite from interpreting parts of query as special match expression tokens", async () => {
+      const result = await request(
+        `
+        query searchConversations($query: String!) {
+          conversations(query: $query) {
+            conversation {
+              messageId
+              subject
+            }
+            query
+          }
+        }
+      `,
+        { query: "test AND" }
+      )
+      expect(result).not.toMatchObject({
+        errors: expect.anything()
+      })
+      expect(result).toMatchObject({
+        data: {
+          conversations: []
+        }
+      })
     })
   })
 

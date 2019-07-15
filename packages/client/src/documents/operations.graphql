@@ -60,6 +60,7 @@ query getConversation($id: ID!, $accountId: ID!) {
     id
     presentableElements {
       id
+      isRead
       contents {
         revision {
           messageId
@@ -107,6 +108,17 @@ query getConversation($id: ID!, $accountId: ID!) {
     }
     snippet
     subject
+  }
+}
+
+query searchConversations($query: String!, $specificityThreshold: Int) {
+  conversations(query: $query, specificityThreshold: $specificityThreshold) {
+    conversation {
+      id
+      messageId
+      subject
+    }
+    query
   }
 }
 

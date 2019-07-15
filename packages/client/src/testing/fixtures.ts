@@ -23,6 +23,7 @@ export const conversation: graphql.Conversation = {
   presentableElements: [
     {
       id: "11",
+      isRead: true,
       contents: [
         {
           revision: {
@@ -48,9 +49,38 @@ export const conversation: graphql.Conversation = {
       },
       editedAt: null,
       editedBy: null
+    },
+    {
+      id: "12",
+      isRead: true,
+      contents: [
+        {
+          revision: {
+            messageId:
+              "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>",
+            contentId: "text"
+          },
+          resource: {
+            messageId:
+              "<CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com>",
+            contentId: "text"
+          },
+          type: "text",
+          subtype: "plain",
+          content: "Hello from next test"
+        }
+      ],
+      date: "2019-07-17T17:20:20.806Z",
+      from: {
+        name: null,
+        mailbox: "ben",
+        host: "test.us"
+      },
+      editedAt: null,
+      editedBy: null
     }
   ],
-  isRead: false,
+  isRead: true,
   snippet: "Hello from test",
   subject: "Test Thread"
 }

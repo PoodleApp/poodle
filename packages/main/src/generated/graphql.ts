@@ -89,6 +89,8 @@ export type Conversation = {
   date: Scalars["String"]
   from: Address
   labels?: Maybe<Array<Scalars["String"]>>
+  /** RFC 2822 Message ID of the first message in the conversation, if available. */
+  messageId?: Maybe<Scalars["String"]>
   presentableElements: Array<Presentable>
   isRead: Scalars["Boolean"]
   replyRecipients: Participants
@@ -137,6 +139,12 @@ export type ConversationMutationsSendMessageArgs = {
   message: MessageInput
 }
 
+export type ConversationSearchResult = {
+  __typename?: "ConversationSearchResult"
+  conversation: Conversation
+  query: Scalars["String"]
+}
+
 export type Message = {
   __typename?: "Message"
   id: Scalars["ID"]
@@ -180,6 +188,7 @@ export type PartSpecInput = {
 export type Presentable = {
   __typename?: "Presentable"
   id: Scalars["ID"]
+  isRead: Scalars["Boolean"]
   contents: Array<Content>
   date: Scalars["String"]
   from: Address
@@ -193,6 +202,7 @@ export type Query = {
   accounts: Array<Account>
   addresses: Array<Address>
   conversation?: Maybe<Conversation>
+  conversations: Array<ConversationSearchResult>
 }
 
 export type QueryAccountArgs = {
@@ -205,6 +215,11 @@ export type QueryAddressesArgs = {
 
 export type QueryConversationArgs = {
   id: Scalars["ID"]
+}
+
+export type QueryConversationsArgs = {
+  query: Scalars["String"]
+  specificityThreshold?: Maybe<Scalars["Int"]>
 }
 
 export type ResolverTypeWrapper<T> = Promise<T> | T
@@ -290,6 +305,12 @@ export type ResolversTypes = {
   PartSpec: ResolverTypeWrapper<PartSpec>
   Participants: ResolverTypeWrapper<Participants>
   Message: ResolverTypeWrapper<Message>
+  Int: ResolverTypeWrapper<Scalars["Int"]>
+  ConversationSearchResult: ResolverTypeWrapper<
+    Omit<ConversationSearchResult, "conversation"> & {
+      conversation: ResolversTypes["Conversation"]
+    }
+  >
   Mutation: ResolverTypeWrapper<{}>
   AccountMutations: ResolverTypeWrapper<AccountMutations>
   ConversationMutations: ResolverTypeWrapper<ConversationMutations>
@@ -313,6 +334,10 @@ export type ResolversParentTypes = {
   PartSpec: PartSpec
   Participants: Participants
   Message: Message
+  Int: Scalars["Int"]
+  ConversationSearchResult: Omit<ConversationSearchResult, "conversation"> & {
+    conversation: ResolversTypes["Conversation"]
+  }
   Mutation: {}
   AccountMutations: AccountMutations
   ConversationMutations: ConversationMutations
@@ -400,6 +425,7 @@ export type ConversationResolvers<
     ParentType,
     ContextType
   >
+  messageId?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
   presentableElements?: Resolver<
     Array<ResolversTypes["Presentable"]>,
     ParentType,
@@ -450,6 +476,18 @@ export type ConversationMutationsResolvers<
     ContextType,
     ConversationMutationsSendMessageArgs
   >
+}
+
+export type ConversationSearchResultResolvers<
+  ContextType = any,
+  ParentType = ResolversParentTypes["ConversationSearchResult"]
+> = {
+  conversation?: Resolver<
+    ResolversTypes["Conversation"],
+    ParentType,
+    ContextType
+  >
+  query?: Resolver<ResolversTypes["String"], ParentType, ContextType>
 }
 
 export type MessageResolvers<
@@ -510,6 +548,7 @@ export type PresentableResolvers<
   ParentType = ResolversParentTypes["Presentable"]
 > = {
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
+  isRead?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>
   contents?: Resolver<Array<ResolversTypes["Content"]>, ParentType, ContextType>
   date?: Resolver<ResolversTypes["String"], ParentType, ContextType>
   from?: Resolver<ResolversTypes["Address"], ParentType, ContextType>
@@ -540,6 +579,12 @@ export type QueryResolvers<
     ContextType,
     QueryConversationArgs
   >
+  conversations?: Resolver<
+    Array<ResolversTypes["ConversationSearchResult"]>,
+    ParentType,
+    ContextType,
+    QueryConversationsArgs
+  >
 }
 
 export type Resolvers<ContextType = any> = {
@@ -549,6 +594,7 @@ export type Resolvers<ContextType = any> = {
   Content?: ContentResolvers<ContextType>
   Conversation?: ConversationResolvers<ContextType>
   ConversationMutations?: ConversationMutationsResolvers<ContextType>
+  ConversationSearchResult?: ConversationSearchResultResolvers<ContextType>
   Message?: MessageResolvers<ContextType>
   Mutation?: MutationResolvers<ContextType>
   Participants?: ParticipantsResolvers<ContextType>
