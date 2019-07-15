@@ -80,6 +80,20 @@ const handlers = {
           )
           .toPromise()
       )
+    },
+    failure(
+      _error,
+      {
+        accountId,
+        box,
+        uids
+      }: {
+        accountId: ID
+        box: { name: string }
+        uids: number[]
+      }
+    ) {
+      cache.addLabels({ accountId, box, uids, labels: ["\\Inbox"] })
     }
   }),
 
