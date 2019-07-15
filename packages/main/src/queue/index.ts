@@ -248,8 +248,7 @@ const handlers = {
     }
   }),
 
-  star: handler({
-    priority: LOW_PRIORITY,
+  flag: handler({
     enqueue(params: { accountId: ID; box: { name: string }; uids: number[] }) {
       cache.addFlag({ ...params, flag: "\\Flagged" })
       return params
@@ -279,6 +278,39 @@ const handlers = {
 
     failure(_error, { accountId, box, uids }) {
       cache.delFlags({ accountId, box, uids, flags: ["\\Flagged"] })
+    }
+  }),
+
+  unFlag: handler({
+    enqueue(params: { accountId: ID; box: { name: string }; uids: number[] }) {
+      cache.delFlags({ ...params, flags: ["\\Flagged"] })
+      return params
+    },
+
+    process({
+      accountId,
+      box,
+      uids
+    }: {
+      accountId: ID
+      box: { name: string }
+      uids: number[]
+    }): Promise<void> {
+      return withConnectionManager(accountId, connectionManager =>
+        connectionManager
+          .request(
+            request.actions.delFlags(
+              { name: box.name, readonly: false },
+              uids,
+              ["\\Flagged"]
+            )
+          )
+          .toPromise()
+      )
+    },
+
+    failure(_error, { accountId, box, uids }) {
+      cache.addFlag({ accountId, box, uids, flag: "\\Flagged" })
     }
   })
 }

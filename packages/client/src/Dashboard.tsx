@@ -20,6 +20,7 @@ import CheckIcon from "@material-ui/icons/Check"
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft"
 import MenuIcon from "@material-ui/icons/Menu"
 import RefreshIcon from "@material-ui/icons/Refresh"
+import StarIcon from "@material-ui/icons/Star"
 import { Redirect, RouteComponentProps } from "@reach/router"
 import clsx from "clsx"
 import moment from "moment"
@@ -112,6 +113,13 @@ export default function Dashboard({ accountId, navigate }: Props) {
   const conversations = data && data.account && data.account.conversations
   const [selected, dispatch] = Sel.useSelectedConversations(conversations)
 
+  let isStarred = false
+  conversations &&
+    conversations.forEach(conversation => {
+      if (conversation.isStarred) {
+        isStarred = true
+      }
+    })
   // TODO: is there a way to guarantee that `accountId` is available?
   if (!accountId) {
     return <Redirect to="/accounts" />
@@ -128,7 +136,11 @@ export default function Dashboard({ accountId, navigate }: Props) {
     <div className={classes.root}>
       <CssBaseline />
       {selected.length > 0 ? (
-        <SelectedActionsBar accountId={accountId} selected={selected} />
+        <SelectedActionsBar
+          accountId={accountId}
+          selected={selected}
+          isStarred={isStarred}
+        />
       ) : (
         <MainBar accountId={accountId} open={open} setOpen={setOpen} />
       )}
@@ -219,18 +231,36 @@ function MainBar({
 
 function SelectedActionsBar({
   accountId,
-  selected
+  selected,
+  isStarred
 }: {
   accountId: string
   selected: string[]
+  isStarred: boolean
 }) {
   const classes = useStyles()
   const [archive, archiveResult] = useArchive({ accountId })
+  const [flag, flagResult] = graphql.useFlagMutation()
+  const [unFlag, unFlagResult] = graphql.useUnFlagMutation()
+
   function onArchive() {
     for (const conversationId of selected) {
       archive({ variables: { conversationId } })
     }
   }
+
+  function onFlag() {
+    console.log(selected)
+    for (const conversationId of selected) {
+      if (isStarred) {
+        unFlag({ variables: { conversationId } })
+      } else {
+        const result = flag({ variables: { conversationId } })
+        console.log(result)
+      }
+    }
+  }
+
   return (
     <>
       <AppBar
@@ -243,9 +273,12 @@ function SelectedActionsBar({
           <IconButton aria-label="archive" onClick={onArchive}>
             <ArchiveIcon />
           </IconButton>
+          <IconButton aria-label="star" onClick={onFlag}>
+            <StarIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
-      <DisplayErrors results={[archiveResult]} />
+      <DisplayErrors results={[archiveResult, flagResult, unFlagResult]} />
     </>
   )
 }
@@ -291,6 +324,7 @@ function Conversations({
   navigate: RouteComponentProps["navigate"]
 }) {
   const classes = useConversationRowStyles()
+
   return (
     <Paper>
       <List className={classes.root}>
@@ -324,7 +358,8 @@ function ConversationRow({
   dispatch: (action: Sel.Action) => void
   navigate: RouteComponentProps["navigate"]
 }) {
-  const { from, date, id, isRead, snippet, subject } = conversation
+  const { from, date, id, isRead, snippet, subject, isStarred } = conversation
+
   const classes = useConversationRowStyles()
   const isSelected = selected.some(i => i === id)
   const rowId = "conversation-row-" + id
@@ -362,9 +397,14 @@ function ConversationRow({
           />
         )}
       </ListItemAvatar>
+
       <ListItemText
         id={rowId}
-        primary={subject || "[no subject]"}
+        primary={
+          isStarred
+            ? "★ " + subject || "[no subject]"
+            : subject || "[no subject]"
+        }
         secondary={
           <>
             <Typography

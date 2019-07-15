@@ -387,6 +387,58 @@ describe("when addressing conversations", () => {
     })
   })
 
+  it("stars a conversation", async () => {
+    const result = await request(
+      `
+      mutation flag($conversationId: ID!) {
+        conversations {
+          flag(id: $conversationId) {
+            id
+            isStarred
+          }
+        }
+      }
+      `,
+      { conversationId }
+    )
+    expect(result).toEqual({
+      data: {
+        conversations: {
+          flag: {
+            id: conversationId,
+            isStarred: true
+          }
+        }
+      }
+    })
+  })
+
+  it("un-stars a conversation", async () => {
+    const result = await request(
+      `
+      mutation unFlag($conversationId: ID!) {
+        conversations {
+          unFlag(id: $conversationId) {
+            id
+            isStarred
+          }
+        }
+      }
+      `,
+      { conversationId }
+    )
+    expect(result).toEqual({
+      data: {
+        conversations: {
+          unFlag: {
+            id: conversationId,
+            isStarred: false
+          }
+        }
+      }
+    })
+  })
+
   it("accepts a reply to a conversation", async () => {
     const result = await request(
       `

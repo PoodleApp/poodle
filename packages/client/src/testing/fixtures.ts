@@ -24,6 +24,7 @@ export const conversation: graphql.Conversation = {
     {
       id: "11",
       isRead: true,
+      isStarred: false,
       contents: [
         {
           revision: {
@@ -53,6 +54,7 @@ export const conversation: graphql.Conversation = {
     {
       id: "12",
       isRead: true,
+      isStarred: false,
       contents: [
         {
           revision: {
@@ -80,6 +82,7 @@ export const conversation: graphql.Conversation = {
       editedBy: null
     }
   ],
+  isStarred: false,
   isRead: true,
   snippet: "Hello from test",
   subject: "Test Thread"

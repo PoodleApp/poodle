@@ -4,8 +4,8 @@ import replyParser from "node-email-reply-parser"
 import * as cache from "../cache"
 import { composeEdit, composeNewConversation, composeReply } from "../compose"
 import {
-  ConversationResolvers,
   ConversationMutationsResolvers,
+  ConversationResolvers,
   ConversationSearchResult,
   MutationResolvers,
   QueryResolvers
@@ -49,6 +49,12 @@ export const Conversation: ConversationResolvers = {
     )
   },
 
+  isStarred({ messages }: C.Conversation) {
+    return messages.some(message =>
+      cache.getFlags(message.id).includes("\\Flagged")
+    )
+  },
+
   replyRecipients(conversation: C.Conversation, { fromAccountId }) {
     const account = mustGetAccount(fromAccountId)
     const recipients = C.getReplyParticipants(conversation, account)
@@ -88,6 +94,34 @@ export const ConversationMutations: ConversationMutationsResolvers = {
       )
     })
     return thread
+  },
+
+  async flag(_parent, { id }) {
+    const thread = C.mustGetConversation(id)
+    updateAction(thread.messages, (accountId, box, uids) => {
+      schedule(
+        actions.flag({
+          accountId: String(accountId),
+          box,
+          uids
+        })
+      )
+    })
+    return C.mustGetConversation(id)
+  },
+
+  async unFlag(_parent, { id }) {
+    const thread = C.mustGetConversation(id)
+    updateAction(thread.messages, (accountId, box, uids) => {
+      schedule(
+        actions.unFlag({
+          accountId: String(accountId),
+          box,
+          uids
+        })
+      )
+    })
+    return C.mustGetConversation(id)
   },
 
   async edit(

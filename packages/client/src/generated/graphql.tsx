@@ -86,6 +86,7 @@ export type Conversation = {
   messageId?: Maybe<Scalars["String"]>
   presentableElements: Array<Presentable>
   isRead: Scalars["Boolean"]
+  isStarred: Scalars["Boolean"]
   replyRecipients: Participants
   snippet?: Maybe<Scalars["String"]>
   subject?: Maybe<Scalars["String"]>
@@ -98,6 +99,8 @@ export type ConversationReplyRecipientsArgs = {
 export type ConversationMutations = {
   __typename?: "ConversationMutations"
   archive: Conversation
+  flag: Conversation
+  unFlag: Conversation
   edit: Conversation
   reply: Conversation
   setIsRead: Conversation
@@ -105,6 +108,14 @@ export type ConversationMutations = {
 }
 
 export type ConversationMutationsArchiveArgs = {
+  id: Scalars["ID"]
+}
+
+export type ConversationMutationsFlagArgs = {
+  id: Scalars["ID"]
+}
+
+export type ConversationMutationsUnFlagArgs = {
   id: Scalars["ID"]
 }
 
@@ -182,6 +193,7 @@ export type Presentable = {
   __typename?: "Presentable"
   id: Scalars["ID"]
   isRead: Scalars["Boolean"]
+  isStarred: Scalars["Boolean"]
   contents: Array<Content>
   date: Scalars["String"]
   from: Address
@@ -232,7 +244,13 @@ export type GetAccountQuery = { __typename?: "Query" } & {
         conversations: Array<
           { __typename?: "Conversation" } & Pick<
             Conversation,
-            "id" | "date" | "isRead" | "labels" | "snippet" | "subject"
+            | "id"
+            | "date"
+            | "isRead"
+            | "isStarred"
+            | "labels"
+            | "snippet"
+            | "subject"
           > & {
               from: { __typename?: "Address" } & Pick<
                 Address,
@@ -290,12 +308,12 @@ export type GetConversationQuery = { __typename?: "Query" } & {
   conversation: Maybe<
     { __typename?: "Conversation" } & Pick<
       Conversation,
-      "id" | "isRead" | "labels" | "snippet" | "subject"
+      "id" | "isRead" | "isStarred" | "labels" | "snippet" | "subject"
     > & {
         presentableElements: Array<
           { __typename?: "Presentable" } & Pick<
             Presentable,
-            "id" | "isRead" | "date" | "editedAt"
+            "id" | "isRead" | "isStarred" | "date" | "editedAt"
           > & {
               contents: Array<
                 { __typename?: "Content" } & Pick<
@@ -432,6 +450,42 @@ export type ArchiveMutation = { __typename?: "Mutation" } & {
     archive: { __typename?: "Conversation" } & Pick<
       Conversation,
       "id" | "date" | "isRead" | "labels" | "snippet" | "subject"
+    > & {
+        from: { __typename?: "Address" } & Pick<
+          Address,
+          "host" | "mailbox" | "name"
+        >
+      }
+  }
+}
+
+export type FlagMutationVariables = {
+  conversationId: Scalars["ID"]
+}
+
+export type FlagMutation = { __typename?: "Mutation" } & {
+  conversations: { __typename?: "ConversationMutations" } & {
+    flag: { __typename?: "Conversation" } & Pick<
+      Conversation,
+      "id" | "date" | "isRead" | "isStarred" | "labels" | "snippet" | "subject"
+    > & {
+        from: { __typename?: "Address" } & Pick<
+          Address,
+          "host" | "mailbox" | "name"
+        >
+      }
+  }
+}
+
+export type UnFlagMutationVariables = {
+  conversationId: Scalars["ID"]
+}
+
+export type UnFlagMutation = { __typename?: "Mutation" } & {
+  conversations: { __typename?: "ConversationMutations" } & {
+    unFlag: { __typename?: "Conversation" } & Pick<
+      Conversation,
+      "id" | "date" | "isRead" | "isStarred" | "labels" | "snippet" | "subject"
     > & {
         from: { __typename?: "Address" } & Pick<
           Address,
@@ -766,6 +820,12 @@ export const GetAccountDocument: DocumentNode = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "isRead" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "isStarred" },
                         arguments: [],
                         directives: []
                       },
@@ -1130,6 +1190,12 @@ export const GetConversationDocument: DocumentNode = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "isStarred" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "contents" },
                         arguments: [],
                         directives: [],
@@ -1279,6 +1345,12 @@ export const GetConversationDocument: DocumentNode = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "isRead" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "isStarred" },
                   arguments: [],
                   directives: []
                 },
@@ -2086,6 +2158,294 @@ export function useArchiveMutation(
     ArchiveMutation,
     ArchiveMutationVariables
   >(ArchiveDocument, baseOptions)
+}
+export const FlagDocument: DocumentNode = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "flag" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "conversationId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } }
+          },
+          directives: []
+        }
+      ],
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "conversations" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "flag" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "id" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "conversationId" }
+                      }
+                    }
+                  ],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "id" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "date" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "from" },
+                        arguments: [],
+                        directives: [],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "host" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "mailbox" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "name" },
+                              arguments: [],
+                              directives: []
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "isRead" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "isStarred" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "labels" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "snippet" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "subject" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+
+export function useFlagMutation(
+  baseOptions?: ReactApolloHooks.MutationHookOptions<
+    FlagMutation,
+    FlagMutationVariables
+  >
+) {
+  return ReactApolloHooks.useMutation<FlagMutation, FlagMutationVariables>(
+    FlagDocument,
+    baseOptions
+  )
+}
+export const UnFlagDocument: DocumentNode = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "unFlag" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "conversationId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } }
+          },
+          directives: []
+        }
+      ],
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "conversations" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "unFlag" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "id" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "conversationId" }
+                      }
+                    }
+                  ],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "id" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "date" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "from" },
+                        arguments: [],
+                        directives: [],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "host" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "mailbox" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "name" },
+                              arguments: [],
+                              directives: []
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "isRead" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "isStarred" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "labels" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "snippet" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "subject" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+
+export function useUnFlagMutation(
+  baseOptions?: ReactApolloHooks.MutationHookOptions<
+    UnFlagMutation,
+    UnFlagMutationVariables
+  >
+) {
+  return ReactApolloHooks.useMutation<UnFlagMutation, UnFlagMutationVariables>(
+    UnFlagDocument,
+    baseOptions
+  )
 }
 export const SendMessageDocument: DocumentNode = {
   kind: "Document",

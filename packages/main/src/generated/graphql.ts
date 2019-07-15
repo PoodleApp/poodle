@@ -93,6 +93,7 @@ export type Conversation = {
   messageId?: Maybe<Scalars["String"]>
   presentableElements: Array<Presentable>
   isRead: Scalars["Boolean"]
+  isStarred: Scalars["Boolean"]
   replyRecipients: Participants
   snippet?: Maybe<Scalars["String"]>
   subject?: Maybe<Scalars["String"]>
@@ -105,6 +106,8 @@ export type ConversationReplyRecipientsArgs = {
 export type ConversationMutations = {
   __typename?: "ConversationMutations"
   archive: Conversation
+  flag: Conversation
+  unFlag: Conversation
   edit: Conversation
   reply: Conversation
   setIsRead: Conversation
@@ -112,6 +115,14 @@ export type ConversationMutations = {
 }
 
 export type ConversationMutationsArchiveArgs = {
+  id: Scalars["ID"]
+}
+
+export type ConversationMutationsFlagArgs = {
+  id: Scalars["ID"]
+}
+
+export type ConversationMutationsUnFlagArgs = {
   id: Scalars["ID"]
 }
 
@@ -189,6 +200,7 @@ export type Presentable = {
   __typename?: "Presentable"
   id: Scalars["ID"]
   isRead: Scalars["Boolean"]
+  isStarred: Scalars["Boolean"]
   contents: Array<Content>
   date: Scalars["String"]
   from: Address
@@ -432,6 +444,7 @@ export type ConversationResolvers<
     ContextType
   >
   isRead?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>
+  isStarred?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>
   replyRecipients?: Resolver<
     ResolversTypes["Participants"],
     ParentType,
@@ -451,6 +464,18 @@ export type ConversationMutationsResolvers<
     ParentType,
     ContextType,
     ConversationMutationsArchiveArgs
+  >
+  flag?: Resolver<
+    ResolversTypes["Conversation"],
+    ParentType,
+    ContextType,
+    ConversationMutationsFlagArgs
+  >
+  unFlag?: Resolver<
+    ResolversTypes["Conversation"],
+    ParentType,
+    ContextType,
+    ConversationMutationsUnFlagArgs
   >
   edit?: Resolver<
     ResolversTypes["Conversation"],
@@ -549,6 +574,7 @@ export type PresentableResolvers<
 > = {
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
   isRead?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>
+  isStarred?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>
   contents?: Resolver<Array<ResolversTypes["Content"]>, ParentType, ContextType>
   date?: Resolver<ResolversTypes["String"], ParentType, ContextType>
   from?: Resolver<ResolversTypes["Address"], ParentType, ContextType>
