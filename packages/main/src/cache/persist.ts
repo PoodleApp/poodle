@@ -171,7 +171,7 @@ function persistStruct(
     message_id: messageId,
     lft,
     rgt,
-    content_id: part.id,
+    content_id: idFromHeaderValue(part.id),
     description: part.description,
     disposition_filename: disp_params && disp_params.filename,
     disposition_name: disp_params && disp_params.name,
