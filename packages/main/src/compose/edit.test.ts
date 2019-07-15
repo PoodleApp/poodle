@@ -38,11 +38,7 @@ it("edits a message", () => {
     content,
     conversation: conversationFrom(testThread),
     editedMessage,
-    editedPart,
-    resource: {
-      messageId: testMessage.envelope.messageId,
-      contentId: testPart.id
-    }
+    editedPart
   })
   expect(attributes).toMatchObject({
     struct: [
@@ -78,11 +74,7 @@ it("edits a message", () => {
         "replaces",
         {
           value:
-            "<mid:CAGM-pNvwffuB_LRE4zP7vaO2noOQ0p0qJ8UmSONP3k8ycyo3HA%40mail.gmail.com/0337ae7e-c468-437d-b7e1-95dc7d9debb8%40gmail.com>",
-          params: {
-            resource:
-              "<mid:CAGM-pNvwffuB_LRE4zP7vaO2noOQ0p0qJ8UmSONP3k8ycyo3HA%40mail.gmail.com/0337ae7e-c468-437d-b7e1-95dc7d9debb8%40gmail.com>"
-          }
+            "<mid:CAGM-pNvwffuB_LRE4zP7vaO2noOQ0p0qJ8UmSONP3k8ycyo3HA%40mail.gmail.com/0337ae7e-c468-437d-b7e1-95dc7d9debb8%40gmail.com>"
         }
       ]
     ]

@@ -109,8 +109,7 @@ export const ConversationMutations: ConversationMutationsResolvers = {
           content,
           conversation,
           editedMessage,
-          editedPart,
-          resource
+          editedPart
         })
       })
     )

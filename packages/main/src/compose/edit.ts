@@ -11,15 +11,13 @@ export function composeEdit({
   content,
   conversation,
   editedMessage,
-  editedPart,
-  resource
+  editedPart
 }: {
   account: cache.Account
   content: { type: string; subtype: string; content: string }
   conversation: { id: string; messages: cache.Message[] }
   editedMessage: { envelope_messageId: string }
   editedPart: { content_id?: string | null }
-  resource: { messageId: string; contentId?: string | null }
 }): ComposedMessage {
   if (!editedPart.content_id) {
     throw new Error(
@@ -95,17 +93,7 @@ export function composeEdit({
       ]
     ],
     partHeaders: {
-      "3": [
-        [
-          "replaces",
-          {
-            value: `<${editedUri}>`,
-            params: {
-              resource: `<${midUri(resource.messageId, resource.contentId)}>`
-            }
-          }
-        ]
-      ]
+      "3": [["replaces", { value: `<${editedUri}>` }]]
     },
     bodies: {
       "2": Buffer.from("Edited message:", "utf8"),
