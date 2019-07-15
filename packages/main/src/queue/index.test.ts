@@ -229,13 +229,47 @@ it("removes cached message if message cannot be sent", async () => {
   })
 })
 
+it("removes archive state changes from cache on failure", async () => {
+  mock(Connection.prototype.delLabels).mockImplementation(
+    (_data, _labels, cb) => {
+      cb(new Error("archive failed"))
+    }
+  )
+  const promise = schedule(
+    actions.archive({
+      accountId: String(accountId),
+      box: allMail,
+      uids: [7687]
+    })
+  )
+  try {
+    await promise
+  } catch (_) {}
+
+  const label = db
+    .prepare(
+      `
+      select label from message_gmail_labels
+      join messages on message_id = messages.id
+      where
+        uid = @uid
+    `
+    )
+    .all({ uid: 7687 })
+
+  expect(label).toEqual([
+    { label: "\\Important" },
+    { label: "\\Sent" },
+    { label: "\\Inbox" }
+  ])
+})
+
 it("removes unread state changes from cache on failure", async () => {
   mock(Connection.prototype.delFlags).mockImplementation(
     (_data, _flags, cb) => {
       cb(new Error("failed to mark message as unread"))
     }
   )
-
   const promise = schedule(
     actions.unmarkAsRead({
       accountId: String(accountId),
@@ -243,7 +277,6 @@ it("removes unread state changes from cache on failure", async () => {
       uids: [7687]
     })
   )
-
   try {
     await promise
   } catch (_) {}

@@ -396,6 +396,32 @@ export function delLabels({
   ).run({ accountId, boxName: box.name })
 }
 
+export function addLabels({
+  accountId,
+  box,
+  uids,
+  labels
+}: {
+  accountId: ID
+  box: { name: string }
+  uids: number[]
+  labels: string[]
+}) {
+  labels.forEach(label => {
+    db.prepare(
+      `
+      insert into message_gmail_labels (label, message_id)
+      select @label, messages.id from messages
+          join boxes on box_id = boxes.id
+          where
+            messages.account_id = @accountId
+            and boxes.name = @boxName
+            and uid in (${uids.join(", ")})
+    `
+    ).run({ accountId, boxName: box.name, label })
+  })
+}
+
 function insertInto(table: string, values: Record<string, unknown>): ID {
   const keys = Object.keys(values)
   const { lastInsertRowid } = db
