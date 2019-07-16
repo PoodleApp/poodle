@@ -114,12 +114,18 @@ export default function Dashboard({ accountId, navigate }: Props) {
   const [selected, dispatch] = Sel.useSelectedConversations(conversations)
 
   let isStarred = false
-  conversations &&
-    conversations.forEach(conversation => {
-      if (conversation.isStarred) {
-        isStarred = true
-      }
-    })
+
+  selected.forEach(select => {
+    conversations &&
+      conversations.forEach(conversation => {
+        if (conversation.id === select) {
+          if (conversation.isStarred) {
+            isStarred = true
+          }
+        }
+      })
+  })
+
   // TODO: is there a way to guarantee that `accountId` is available?
   if (!accountId) {
     return <Redirect to="/accounts" />
@@ -250,14 +256,10 @@ function SelectedActionsBar({
   }
 
   function onFlag() {
-    console.log(selected)
     for (const conversationId of selected) {
-      if (isStarred) {
-        unFlag({ variables: { conversationId } })
-      } else {
-        const result = flag({ variables: { conversationId } })
-        console.log(result)
-      }
+      isStarred
+        ? unFlag({ variables: { conversationId } })
+        : flag({ variables: { conversationId } })
     }
   }
 
