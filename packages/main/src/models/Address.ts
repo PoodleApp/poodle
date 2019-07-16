@@ -1,7 +1,7 @@
 import * as addrs from "email-addresses"
 import imap from "imap"
 import { Seq } from "immutable"
-import { URI, mailtoUri } from "./uri"
+import { mailtoUri, URI } from "poodle-common/lib/models/uri"
 
 export type Email = string
 

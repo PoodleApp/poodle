@@ -79,11 +79,7 @@ it("serializes a multipart message", async () => {
     content: { type: "text", subtype: "plain", content: "er, Hello" },
     conversation: conversationFrom(testThread),
     editedMessage,
-    editedPart,
-    resource: {
-      messageId: testMessage.envelope.messageId,
-      contentId: testPart.id
-    }
+    editedPart
   })
   attributes.date = new Date("2019-05-21T18:51Z")
   const message = serialize({

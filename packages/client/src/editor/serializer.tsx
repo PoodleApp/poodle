@@ -1,6 +1,7 @@
+import { midUri } from "poodle-common/lib/models/uri"
 import * as React from "react"
 import Html, { Rule } from "slate-html-serializer"
-import { conversationLink, CONVERSATION_LINK, link, midUri } from "./schema"
+import { conversationLink, CONVERSATION_LINK, link } from "./schema"
 
 const BLOCK_TAGS: Record<string, string> = {
   p: "paragraph",
