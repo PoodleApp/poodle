@@ -118,29 +118,21 @@ it("has a Content-ID header", async () => {
   expect(attributes).toMatchObject({
     struct: [
       {
-        partID: "1",
         type: "multipart",
-        subtype: "mixed",
-        params: {}
+        subtype: "mixed"
       },
       [
         {
-          partID: "2",
           type: "text",
           subtype: "plain",
-          id: expect.any(String),
-          params: { charset: "UTF-8" },
-          disposition: { type: "fallback" }
+          id: expect.any(String)
         }
       ],
       [
         {
-          partID: "3",
           type: content.type,
           subtype: content.subtype,
-          id: expect.any(String),
-          params: { charset: "UTF-8" },
-          disposition: { type: "replacement" }
+          id: expect.any(String)
         }
       ]
     ]
