@@ -144,6 +144,18 @@ export const flagMock = {
   }
 }
 
+export const unFlagMock = {
+  request: {
+    query: graphql.UnFlagDocument,
+    variables: { conversationId: conversation.id }
+  },
+  result: {
+    data: {
+      conversations: { unFlag: conversation }
+    }
+  }
+}
+
 export function replyMock(content: string) {
   return {
     request: {

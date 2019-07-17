@@ -16,6 +16,8 @@ import ArchiveIcon from "@material-ui/icons/Archive"
 import CloseIcon from "@material-ui/icons/Close"
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore"
 import MoreVertIcon from "@material-ui/icons/MoreVert"
+import StarIcon from "@material-ui/icons/Star"
+import StarBorder from "@material-ui/icons/StarBorder"
 import { Redirect, RouteComponentProps } from "@reach/router"
 import clsx from "clsx"
 import moment from "moment"
@@ -102,6 +104,10 @@ export default function Conversation({
     accountId: accountId!,
     conversationId: conversationId!
   })
+
+  const [flag, flagResult] = graphql.useFlagMutation()
+  const [unFlag, unFlagResult] = graphql.useUnFlagMutation()
+
   const setIsReadResult = useSetIsRead(data && data.conversation)
 
   // TODO: is there a way to guarantee that `accountId` and `conversationId` are available?
@@ -125,11 +131,18 @@ export default function Conversation({
     navigate!(`/accounts/${accountId}/dashboard`)
   }
 
+  async function onFlag() {
+    isStarred
+      ? conversationId && unFlag({ variables: { conversationId } })
+      : conversationId && flag({ variables: { conversationId } })
+  }
+
   const {
     labels,
     presentableElements,
     replyRecipients,
-    subject
+    subject,
+    isStarred
   } = data.conversation
 
   return (
@@ -157,12 +170,17 @@ export default function Conversation({
           <IconButton color="inherit" aria-label="archive" onClick={onArchive}>
             <ArchiveIcon />
           </IconButton>
+          <IconButton color="inherit" aria-label="star" onClick={onFlag}>
+            {isStarred ? <StarBorder /> : <StarIcon />}
+          </IconButton>
         </Toolbar>
       </AppBar>
       <CssBaseline />
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        <DisplayErrors results={[archiveResult, setIsReadResult]} />
+        <DisplayErrors
+          results={[archiveResult, setIsReadResult, flagResult, unFlagResult]}
+        />
         {labels
           ? labels.map(label => (
               <span className="label" key={label}>

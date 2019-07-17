@@ -1,6 +1,7 @@
 import * as htmlToText from "html-to-text"
 import { List, Seq } from "immutable"
 import replyParser from "node-email-reply-parser"
+import { idFromHeaderValue } from "poodle-common/lib/models/uri"
 import * as cache from "../cache"
 import { composeEdit, composeNewConversation, composeReply } from "../compose"
 import {
@@ -15,7 +16,6 @@ import * as C from "../models/conversation"
 import { actions, schedule } from "../queue"
 import { nonNull } from "../util/array"
 import * as types from "./types"
-import { idFromHeaderValue } from "poodle-common/lib/models/uri"
 
 export const Conversation: ConversationResolvers = {
   date(conversation: C.Conversation) {
@@ -108,7 +108,7 @@ export const ConversationMutations: ConversationMutationsResolvers = {
         })
       )
     })
-    return C.mustGetConversation(id)
+    return thread
   },
 
   async unFlag(_parent, { id }) {
@@ -122,7 +122,7 @@ export const ConversationMutations: ConversationMutationsResolvers = {
         })
       )
     })
-    return C.mustGetConversation(id)
+    return thread
   },
 
   async edit(
