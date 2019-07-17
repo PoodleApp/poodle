@@ -6,6 +6,7 @@ import {
   Divider,
   Drawer,
   IconButton,
+  InputBase,
   List,
   ListItem,
   ListItemAvatar,
@@ -18,8 +19,10 @@ import { makeStyles } from "@material-ui/core/styles"
 import ArchiveIcon from "@material-ui/icons/Archive"
 import CheckIcon from "@material-ui/icons/Check"
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft"
+import CloseIcon from "@material-ui/icons/Close"
 import MenuIcon from "@material-ui/icons/Menu"
 import RefreshIcon from "@material-ui/icons/Refresh"
+import SearchIcon from "@material-ui/icons/Search"
 import { Redirect, RouteComponentProps } from "@reach/router"
 import clsx from "clsx"
 import moment from "moment"
@@ -72,6 +75,10 @@ const useStyles = makeStyles(theme => ({
   menuButtonHidden: {
     display: "none"
   },
+  searchInput: {
+    fontSize: "24px",
+    flexGrow: 1
+  },
   title: {
     flexGrow: 1
   },
@@ -106,6 +113,7 @@ const useStyles = makeStyles(theme => ({
 export default function Dashboard({ accountId, navigate }: Props) {
   const classes = useStyles()
   const [open, setOpen] = React.useState(false)
+  const [isSearching, setIsSearching] = React.useState(false)
   const { data, error, loading } = graphql.useGetAccountQuery({
     variables: { accountId: accountId! }
   })
@@ -129,8 +137,21 @@ export default function Dashboard({ accountId, navigate }: Props) {
       <CssBaseline />
       {selected.length > 0 ? (
         <SelectedActionsBar accountId={accountId} selected={selected} />
+      ) : isSearching ? (
+        <SearchBar
+          onClose={() => {
+            setIsSearching(false)
+          }}
+        />
       ) : (
-        <MainBar accountId={accountId} open={open} setOpen={setOpen} />
+        <MainBar
+          accountId={accountId}
+          onSearch={() => {
+            setIsSearching(true)
+          }}
+          open={open}
+          setOpen={setOpen}
+        />
       )}
       <Drawer
         variant="permanent"
@@ -163,10 +184,12 @@ export default function Dashboard({ accountId, navigate }: Props) {
 
 function MainBar({
   accountId,
+  onSearch,
   open,
   setOpen
 }: {
   accountId: string
+  onSearch: () => void
   open: boolean
   setOpen: (isOpen: boolean) => void
 }) {
@@ -204,16 +227,37 @@ function MainBar({
           </Typography>
           <AccountSwitcher accountId={accountId} color="inherit" />
           <IconButton
+            aria-label="refresh"
             color="inherit"
             onClick={() => sync().catch(noop)}
             disabled={syncResult.loading}
           >
             <RefreshIcon />
           </IconButton>
+          <IconButton aria-label="search" color="inherit" onClick={onSearch}>
+            <SearchIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
       <DisplayErrors results={[syncResult]} />
     </>
+  )
+}
+
+function SearchBar({ onClose }: { onClose: () => void }) {
+  const classes = useStyles()
+  return (
+    <AppBar position="absolute" color="default" className={classes.appBar}>
+      <Toolbar>
+        <InputBase
+          className={classes.searchInput}
+          inputProps={{ placeholder: "Search" }}
+        />
+        <IconButton aria-label="cancel search" onClick={onClose}>
+          <CloseIcon />
+        </IconButton>
+      </Toolbar>
+    </AppBar>
   )
 }
 
