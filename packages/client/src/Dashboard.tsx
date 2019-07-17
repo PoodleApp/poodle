@@ -324,7 +324,8 @@ function ConversationRow({
   dispatch: (action: Sel.Action) => void
   navigate: RouteComponentProps["navigate"]
 }) {
-  const { from, date, id, isRead, snippet, subject } = conversation
+  const { from, date, id, isRead, snippet, subject, labels } = conversation
+
   const classes = useConversationRowStyles()
   const isSelected = selected.some(i => i === id)
   const rowId = "conversation-row-" + id
@@ -364,7 +365,10 @@ function ConversationRow({
       </ListItemAvatar>
       <ListItemText
         id={rowId}
-        primary={subject || "[no subject]"}
+        primary={
+          (labels && labels.indexOf("Important") > -1 ? "❗" : "") +
+          (subject || "[no subject]")
+        }
         secondary={
           <>
             <Typography
