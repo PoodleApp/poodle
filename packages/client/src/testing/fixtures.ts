@@ -132,6 +132,18 @@ export const archiveMock = {
   }
 }
 
+export const flagMock = {
+  request: {
+    query: graphql.FlagDocument,
+    variables: { conversationId: conversation.id }
+  },
+  result: {
+    data: {
+      conversations: { flag: { ...conversation, isStarred: true } }
+    }
+  }
+}
+
 export function replyMock(content: string) {
   return {
     request: {

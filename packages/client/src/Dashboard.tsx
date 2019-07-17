@@ -21,6 +21,7 @@ import ChevronLeftIcon from "@material-ui/icons/ChevronLeft"
 import MenuIcon from "@material-ui/icons/Menu"
 import RefreshIcon from "@material-ui/icons/Refresh"
 import StarIcon from "@material-ui/icons/Star"
+import StarBorder from "@material-ui/icons/StarBorder"
 import { Redirect, RouteComponentProps } from "@reach/router"
 import clsx from "clsx"
 import moment from "moment"
@@ -110,6 +111,9 @@ export default function Dashboard({ accountId, navigate }: Props) {
   const { data, error, loading } = graphql.useGetAccountQuery({
     variables: { accountId: accountId! }
   })
+
+  console.log(data && data.account && data.account.conversations)
+
   const conversations = data && data.account && data.account.conversations
   const [selected, dispatch] = Sel.useSelectedConversations(conversations)
 
@@ -276,7 +280,7 @@ function SelectedActionsBar({
             <ArchiveIcon />
           </IconButton>
           <IconButton aria-label="star" onClick={onFlag}>
-            <StarIcon />
+            {isStarred ? <StarBorder /> : <StarIcon />}
           </IconButton>
         </Toolbar>
       </AppBar>
