@@ -100,11 +100,7 @@ it("has a Content-ID header", async () => {
     content,
     conversation: conversationFrom(testThread),
     editedMessage,
-    editedPart,
-    resource: {
-      messageId: testMessage.envelope.messageId,
-      contentId: testPart.id
-    }
+    editedPart
   })
 
   expect(attributes).toMatchObject({
