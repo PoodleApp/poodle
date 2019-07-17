@@ -1,4 +1,5 @@
 import imap from "imap"
+import { idFromHeaderValue } from "poodle-common/lib/models/uri"
 import db from "../db"
 import { MessageAttributes } from "../types"
 import { getPartByPartId } from "./query"
@@ -84,8 +85,8 @@ function persistNewMessage(
     date: attributes.date.toISOString(),
     envelope_date:
       attributes.envelope.date && attributes.envelope.date.toISOString(),
-    envelope_inReplyTo: attributes.envelope.inReplyTo,
-    envelope_messageId: attributes.envelope.messageId,
+    envelope_inReplyTo: idFromHeaderValue(attributes.envelope.inReplyTo),
+    envelope_messageId: idFromHeaderValue(attributes.envelope.messageId),
     envelope_subject: attributes.envelope.subject,
     modseq: attributes.modseq,
     uid: attributes.uid,
@@ -170,7 +171,7 @@ function persistStruct(
     message_id: messageId,
     lft,
     rgt,
-    content_id: part.id,
+    content_id: idFromHeaderValue(part.id),
     description: part.description,
     disposition_filename: disp_params && disp_params.filename,
     disposition_name: disp_params && disp_params.name,
@@ -222,14 +223,14 @@ function persistReferences(
     for (const reference of references) {
       insertInto("message_references", {
         message_id: messageId,
-        referenced_id: reference
+        referenced_id: idFromHeaderValue(reference)
       })
     }
   }
   if (attributes.envelope.messageId) {
     insertInto("message_references", {
       message_id: messageId,
-      referenced_id: attributes.envelope.messageId
+      referenced_id: idFromHeaderValue(attributes.envelope.messageId)
     })
   }
 }
@@ -394,6 +395,32 @@ export function delLabels({
         and label in (${labels.map(f => `'${f}'`).join(", ")})
     `
   ).run({ accountId, boxName: box.name })
+}
+
+export function addLabels({
+  accountId,
+  box,
+  uids,
+  labels
+}: {
+  accountId: ID
+  box: { name: string }
+  uids: number[]
+  labels: string[]
+}) {
+  labels.forEach(label => {
+    db.prepare(
+      `
+      insert into message_gmail_labels (label, message_id)
+      select @label, messages.id from messages
+          join boxes on box_id = boxes.id
+          where
+            messages.account_id = @accountId
+            and boxes.name = @boxName
+            and uid in (${uids.join(", ")})
+    `
+    ).run({ accountId, boxName: box.name, label })
+  })
 }
 
 function insertInto(table: string, values: Record<string, unknown>): ID {

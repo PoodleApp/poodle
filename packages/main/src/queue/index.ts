@@ -80,6 +80,20 @@ const handlers = {
           )
           .toPromise()
       )
+    },
+    failure(
+      _error,
+      {
+        accountId,
+        box,
+        uids
+      }: {
+        accountId: ID
+        box: { name: string }
+        uids: number[]
+      }
+    ) {
+      cache.addLabels({ accountId, box, uids, labels: ["\\Inbox"] })
     }
   }),
 
@@ -109,6 +123,9 @@ const handlers = {
           )
           .toPromise()
       )
+    },
+    failure(_error, { accountId, box, uids }) {
+      cache.delFlags({ accountId, box, uids, flags: ["\\Seen"] })
     }
   }),
 
@@ -138,6 +155,10 @@ const handlers = {
           )
           .toPromise()
       )
+    },
+
+    failure(_error, { accountId, box, uids }) {
+      cache.addFlag({ accountId, box, uids, flag: "\\Seen" })
     }
   }),
 

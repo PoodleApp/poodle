@@ -64,6 +64,65 @@ it("archives a conversation from the conversation view", async () => {
   expect(findConversationRow(app, $.conversation)).not.toExist()
 })
 
+it("opens another conversation when a link is clicked", async () => {
+  const history = createHistory(
+    createMemorySource(
+      `accounts/${$.account.id}/conversations/${$.conversation.id}`
+    )
+  )
+  const getConversationMock = {
+    ...$.getConversationMock,
+    result: {
+      data: {
+        conversation: {
+          ...$.conversation,
+          presentableElements: [
+            $.conversation.presentableElements[0],
+            {
+              ...$.conversation.presentableElements[1],
+              contents: [
+                {
+                  ...$.conversation.presentableElements[1].contents[0],
+                  type: "text",
+                  subtype: "html",
+                  content: `
+                    Link to <a
+                      href="mid:f0c0ffc0-ca85-489e-9661-8e65041fc592%40sitr.us"
+                      data-messageid="f0c0ffc0-ca85-489e-9661-8e65041fc592@sitr.us"
+                      data-subject="another conversation"
+                    >another conversation</a>
+                  `
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  }
+  const app = mount(<App />, {
+    history,
+    mocks: [getConversationMock, $.setIsReadMock]
+  })
+  await updates(app)
+  const content = app.find("DisplayContent .html-content")
+
+  // Enzyme does not actually render content set with `dangerouslySetInnerHTML`,
+  // so we have to provide fake information about a click event on the link that
+  // would have been rendered.
+  const link = document.createElement("a")
+  link.setAttribute(
+    "href",
+    "mid:f0c0ffc0-ca85-489e-9661-8e65041fc592%40sitr.us"
+  )
+  content.simulate("click", { target: link })
+
+  await updates(app)
+  expect(history.location).toMatchObject({
+    pathname: `/accounts/${$.account.id}/conversations/f0c0ffc0-ca85-489e-9661-8e65041fc592%40sitr.us`
+  })
+})
+
 function findConversationRow(
   app: ReactWrapper,
   conversation: { id: string }

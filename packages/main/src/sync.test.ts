@@ -257,10 +257,6 @@ it("downloads message part headers", async () => {
     editedMessage: { envelope_messageId: message.envelope.messageId },
     editedPart: {
       content_id: part.id
-    },
-    resource: {
-      messageId: message.envelope.messageId,
-      contentId: part.id
     }
   })
   editMessage.attributes.uid = 9000

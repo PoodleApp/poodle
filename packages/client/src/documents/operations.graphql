@@ -60,6 +60,7 @@ query getConversation($id: ID!, $accountId: ID!) {
     id
     presentableElements {
       id
+      isRead
       contents {
         revision {
           messageId

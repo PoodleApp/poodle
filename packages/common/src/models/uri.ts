@@ -1,5 +1,3 @@
-/* @flow */
-
 export type URI = string
 
 type Email = string
@@ -53,6 +51,10 @@ export function sameEmail(x: Email | undefined, y: Email | undefined): boolean {
 // Use a regular expression to trim angle brackets off
 const messageIdPattern = /<(.*)>/
 
-export function idFromHeaderValue(id: string): string {
-  return id.replace(messageIdPattern, (_, id) => id)
+export function idFromHeaderValue(id: string): string
+export function idFromHeaderValue(
+  id: string | null | undefined
+): string | null | undefined
+export function idFromHeaderValue(id: string | null | undefined) {
+  return id && id.replace(messageIdPattern, (_, id) => id)
 }

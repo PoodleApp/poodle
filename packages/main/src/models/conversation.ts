@@ -1,11 +1,11 @@
 import { convert } from "encoding"
 import { Collection, is, List, Seq } from "immutable"
+import { idFromHeaderValue, parseMidUri } from "poodle-common/lib/models/uri"
 import * as cache from "../cache"
 import { Content, Participants, Presentable } from "../generated/graphql"
 import { uniqBy } from "../util/immutable"
 import * as Addr from "./Address"
 import { inlineContentParts } from "./Message"
-import { idFromHeaderValue, parseMidUri } from "./uri"
 
 export interface Conversation {
   id: string
@@ -106,6 +106,9 @@ export function getPresentableElements({
         .last(undefined)
       return {
         id: String(message.id),
+        isRead: cache
+          .getFlags(latestEdit ? latestEdit.revision.message.id : message.id)
+          .includes("\\Seen"),
         contents: resources
           .valueSeq()
           .map(getPresentableContent)

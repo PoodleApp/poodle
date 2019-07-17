@@ -1,5 +1,6 @@
+import { List } from "immutable"
 import isUrl from "is-url"
-import { SchemaProperties } from "slate"
+import { NodeJSON, SchemaProperties } from "slate"
 
 export const CONVERSATION_LINK = "conversationLink"
 
@@ -13,7 +14,15 @@ export const schema: SchemaProperties = {
   },
   blocks: {
     paragraph: {
-      nodes: [{ match: [{ object: "text" }, { type: CONVERSATION_LINK }] }]
+      nodes: [
+        {
+          match: [
+            { object: "text" },
+            { type: "link" },
+            { type: CONVERSATION_LINK }
+          ]
+        }
+      ]
     },
     image: {
       isVoid: true,
@@ -23,9 +32,50 @@ export const schema: SchemaProperties = {
     }
   },
   inlines: {
+    link: {
+      data: {
+        href: v => v && isUrl(v)
+      },
+      nodes: [{ match: [{ object: "text" }] }]
+    },
     [CONVERSATION_LINK]: {
       // Mark links as void nodes so that users can't edit the text of the node.
       isVoid: true
     }
+  }
+}
+
+export function conversationLink({
+  messageId,
+  subject,
+  nodes
+}: {
+  messageId: string
+  subject: string
+  nodes: List<Node> | NodeJSON[]
+}) {
+  return {
+    data: {
+      messageId,
+      subject
+    },
+    nodes,
+    object: "inline",
+    type: CONVERSATION_LINK
+  } as any
+}
+
+export function link({
+  href,
+  nodes
+}: {
+  href: string
+  nodes: List<Node> | NodeJSON[]
+}) {
+  return {
+    data: { href },
+    nodes,
+    object: "inline",
+    type: "link"
   }
 }

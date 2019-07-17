@@ -3,6 +3,7 @@ import * as cache from "../cache"
 import { inbox, testThread } from "../cache/testFixtures"
 import db from "../db"
 import schema from "../schema"
+import { idFromHeaderValue } from "poodle-common/lib/models/uri"
 
 let accountId: cache.ID
 
@@ -47,7 +48,9 @@ it("gets messages from cache", async () => {
         messages: [
           {
             date: testThread[0].attributes.date.toISOString(),
-            messageId: testThread[0].attributes.envelope.messageId,
+            messageId: idFromHeaderValue(
+              testThread[0].attributes.envelope.messageId
+            ),
             subject: "Test thread 2019-02",
             from: [
               { name: "Jesse Hallett", mailbox: "hallettj", host: "gmail.com" }
@@ -55,7 +58,9 @@ it("gets messages from cache", async () => {
           },
           {
             date: testThread[1].attributes.date.toISOString(),
-            messageId: testThread[1].attributes.envelope.messageId,
+            messageId: idFromHeaderValue(
+              testThread[1].attributes.envelope.messageId
+            ),
             subject: "Re: Test thread 2019-02",
             from: [{ name: "Jesse Hallett", mailbox: "jesse", host: "sitr.us" }]
           }
