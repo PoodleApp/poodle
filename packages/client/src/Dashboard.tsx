@@ -403,7 +403,7 @@ function ConversationRow({
         id={rowId}
         primary={
           isStarred
-            ? "★ " + subject || "[no subject]"
+            ? "⭐ " + subject || "[no subject]"
             : subject || "[no subject]"
         }
         secondary={
