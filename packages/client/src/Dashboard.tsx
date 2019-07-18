@@ -326,12 +326,9 @@ function ConversationRow({
 }) {
   const { from, date, id, isRead, snippet, subject, labels } = conversation
   let newLabels = labels
-  newLabels =
+  const isImportant =
     newLabels &&
-    newLabels.map(label => {
-      console.log(label.slice(1))
-      return label.slice(1)
-    })
+    newLabels.map(label => label.slice(1)).indexOf("Important") > -1
   console.log(newLabels)
   console.log(newLabels && newLabels.indexOf("Important"))
   const classes = useConversationRowStyles()
@@ -373,10 +370,7 @@ function ConversationRow({
       </ListItemAvatar>
       <ListItemText
         id={rowId}
-        primary={
-          (newLabels && newLabels.indexOf("Important") > -1 ? "❗" : "") +
-          (subject || "[no subject]")
-        }
+        primary={(isImportant ? "❗" : "") + (subject || "[no subject]")}
         secondary={
           <>
             <Typography
