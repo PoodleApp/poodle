@@ -100,7 +100,6 @@ export const ConversationMutations: ConversationMutationsResolvers = {
   async flag(_parent, { ids, isFlagged }) {
     let threads: C.Conversation[] = []
     ids.forEach(id => {
-      console.log(id)
       const thread = C.mustGetConversation(id)
       updateAction(thread.messages, (accountId, box, uids) => {
         schedule(
