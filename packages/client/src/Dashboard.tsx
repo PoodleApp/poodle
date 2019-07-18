@@ -24,6 +24,7 @@ import { Redirect, RouteComponentProps } from "@reach/router"
 import clsx from "clsx"
 import moment from "moment"
 import * as React from "react"
+import stringHash from "string-hash"
 import AccountSwitcher from "./AccountSwitcher"
 import Avatar from "./Avatar"
 import ComposeButton from "./ComposeButton"
@@ -325,12 +326,10 @@ function ConversationRow({
   navigate: RouteComponentProps["navigate"]
 }) {
   const { from, date, id, isRead, snippet, subject, labels } = conversation
+
   let newLabels = labels
-  const isImportant =
-    newLabels &&
-    newLabels.map(label => label.slice(1)).indexOf("Important") > -1
-  console.log(newLabels)
-  console.log(newLabels && newLabels.indexOf("Important"))
+  newLabels = newLabels && newLabels.map(label => label.slice(1))
+
   const classes = useConversationRowStyles()
   const isSelected = selected.some(i => i === id)
   const rowId = "conversation-row-" + id
@@ -370,7 +369,7 @@ function ConversationRow({
       </ListItemAvatar>
       <ListItemText
         id={rowId}
-        primary={(isImportant ? "❗" : "") + (subject || "[no subject]")}
+        primary={subject || "[no subject]"}
         secondary={
           <>
             <Typography
@@ -393,7 +392,58 @@ function ConversationRow({
           secondary: classes.snippetText
         }}
       />
+      {newLabels && newLabels.map(label => <DisplayLabel label={label} />)}
     </ListItem>
+  )
+}
+
+function DisplayLabel({ label }: { label: string }) {
+  const important = {
+    color: "maroon",
+    backgroundColor: "crimson",
+    borderRadius: "15px",
+    padding: "4px"
+  }
+
+  function extract(shade: string) {
+    return (color: any) => {
+      const result = color[shade]
+      return result ? [result] : []
+    }
+  }
+
+  const colorMaps = Array.from(Object.values(colors))
+  const primaryColors = colorMaps.flatMap(extract("500"))
+  const accentColors = colorMaps.flatMap(extract("A100"))
+  const primaryCount = primaryColors.length
+  const accentCount = accentColors.length
+
+  function getColors(id: string): [string, string] {
+    const f = stringHash("fg" + id)
+    const b = stringHash("bg" + id)
+    return [accentColors[f % accentCount], primaryColors[b % primaryCount]]
+  }
+
+  const [color, backgroundColor] = getColors(label)
+  return (
+    <div>
+      {label !== "Inbox" && label !== "Sent" ? (
+        label === "Important" ? (
+          <span style={important}>{label}</span>
+        ) : (
+          <span
+            style={{
+              color,
+              backgroundColor,
+              borderRadius: "15px",
+              padding: "3px"
+            }}
+          >
+            {label}
+          </span>
+        )
+      ) : null}
+    </div>
   )
 }
 
