@@ -2,29 +2,15 @@
 
 query getAllAccounts {
   accounts {
-    id
-    email
-    loggedIn
+    ...AccountFields
   }
 }
 
 query getAccount($accountId: ID!) {
   account(id: $accountId) {
-    id
-    email
-    loggedIn
+    ...AccountFields
     conversations(label: "\\Inbox") {
-      id
-      date
-      from {
-        host
-        mailbox
-        name
-      }
-      isRead
-      labels
-      snippet
-      subject
+      ...ConversationFieldsForListView
     }
   }
 }
@@ -38,9 +24,7 @@ mutation deleteAccount($id: ID!) {
 mutation addAccount($email: String!) {
   accounts {
     create(email: $email) {
-      id
-      email
-      loggedIn
+      ...AccountFields
     }
   }
 }
@@ -48,66 +32,14 @@ mutation addAccount($email: String!) {
 mutation authenticate($id: ID!) {
   accounts {
     authenticate(id: $id) {
-      id
-      email
-      loggedIn
+      ...AccountFields
     }
   }
 }
 
 query getConversation($id: ID!, $accountId: ID!) {
   conversation(id: $id) {
-    id
-    presentableElements {
-      id
-      isRead
-      contents {
-        revision {
-          messageId
-          contentId
-        }
-        resource {
-          messageId
-          contentId
-        }
-        type
-        subtype
-        content
-      }
-      date
-      from {
-        name
-        mailbox
-        host
-      }
-      editedAt
-      editedBy {
-        name
-        mailbox
-        host
-      }
-    }
-    isRead
-    labels
-    replyRecipients(fromAccountId: $accountId) {
-      from {
-        name
-        mailbox
-        host
-      }
-      to {
-        name
-        mailbox
-        host
-      }
-      cc {
-        name
-        mailbox
-        host
-      }
-    }
-    snippet
-    subject
+    ...ConversationFieldsForConversationView
   }
 }
 
@@ -133,21 +65,9 @@ query getMatchingAddresses($inputValue: String!) {
 mutation sync($accountId: ID!) {
   accounts {
     sync(id: $accountId) {
-      id
-      email
-      loggedIn
+      ...AccountFields
       conversations {
-        id
-        date
-        from {
-          host
-          mailbox
-          name
-        }
-        isRead
-        labels
-        snippet
-        subject
+        ...ConversationFieldsForListView
       }
     }
   }
@@ -157,16 +77,7 @@ mutation setIsRead($conversationId: ID!, $isRead: Boolean!) {
   conversations {
     setIsRead(id: $conversationId, isRead: $isRead) {
       id
-      date
-      from {
-        host
-        mailbox
-        name
-      }
       isRead
-      labels
-      snippet
-      subject
     }
   }
 }
@@ -174,17 +85,7 @@ mutation setIsRead($conversationId: ID!, $isRead: Boolean!) {
 mutation archive($conversationId: ID!) {
   conversations {
     archive(id: $conversationId) {
-      id
-      date
-      from {
-        host
-        mailbox
-        name
-      }
-      isRead
-      labels
-      snippet
-      subject
+      ...ConversationFieldsForListView
     }
   }
 }
@@ -192,39 +93,7 @@ mutation archive($conversationId: ID!) {
 mutation sendMessage($accountId: ID!, $message: MessageInput!) {
   conversations {
     sendMessage(accountId: $accountId, message: $message) {
-      id
-      presentableElements {
-        id
-        contents {
-          revision {
-            messageId
-            contentId
-          }
-          resource {
-            messageId
-            contentId
-          }
-          type
-          subtype
-          content
-        }
-        date
-        from {
-          name
-          mailbox
-          host
-        }
-        editedAt
-        editedBy {
-          name
-          mailbox
-          host
-        }
-      }
-      isRead
-      labels
-      snippet
-      subject
+      ...ConversationFieldsForConversationView
     }
   }
 }
@@ -244,39 +113,7 @@ mutation edit(
       revision: $revision
       content: $content
     ) {
-      id
-      presentableElements {
-        id
-        contents {
-          revision {
-            messageId
-            contentId
-          }
-          resource {
-            messageId
-            contentId
-          }
-          type
-          subtype
-          content
-        }
-        date
-        from {
-          name
-          mailbox
-          host
-        }
-        editedAt
-        editedBy {
-          name
-          mailbox
-          host
-        }
-      }
-      isRead
-      labels
-      snippet
-      subject
+      ...ConversationFieldsForConversationView
     }
   }
 }
@@ -284,39 +121,77 @@ mutation edit(
 mutation reply($accountId: ID!, $conversationId: ID!, $content: ContentInput!) {
   conversations {
     reply(accountId: $accountId, id: $conversationId, content: $content) {
-      id
-      presentableElements {
-        id
-        contents {
-          revision {
-            messageId
-            contentId
-          }
-          resource {
-            messageId
-            contentId
-          }
-          type
-          subtype
-          content
-        }
-        date
-        from {
-          name
-          mailbox
-          host
-        }
-        editedAt
-        editedBy {
-          name
-          mailbox
-          host
-        }
+      ...ConversationFieldsForConversationView
+    }
+  }
+}
+
+fragment AccountFields on Account {
+  id
+  email
+  loggedIn
+}
+
+fragment ConversationFieldsForListView on Conversation {
+  id
+  date
+  from {
+    host
+    mailbox
+    name
+  }
+  isRead
+  labels
+  snippet
+  subject
+}
+
+fragment ConversationFieldsForConversationView on Conversation {
+  ...ConversationFieldsForListView
+  presentableElements {
+    id
+    isRead
+    contents {
+      revision {
+        messageId
+        contentId
       }
-      isRead
-      labels
-      snippet
-      subject
+      resource {
+        messageId
+        contentId
+      }
+      type
+      subtype
+      content
+    }
+    date
+    from {
+      name
+      mailbox
+      host
+    }
+    editedAt
+    editedBy {
+      name
+      mailbox
+      host
+    }
+  }
+  replyRecipients(fromAccountId: $accountId) {
+    from {
+      name
+      mailbox
+      host
+    }
+    to {
+      name
+      mailbox
+      host
+    }
+    cc {
+      name
+      mailbox
+      host
     }
   }
 }
