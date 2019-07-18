@@ -325,7 +325,15 @@ function ConversationRow({
   navigate: RouteComponentProps["navigate"]
 }) {
   const { from, date, id, isRead, snippet, subject, labels } = conversation
-
+  let newLabels = labels
+  newLabels =
+    newLabels &&
+    newLabels.map(label => {
+      console.log(label.slice(1))
+      return label.slice(1)
+    })
+  console.log(newLabels)
+  console.log(newLabels && newLabels.indexOf("Important"))
   const classes = useConversationRowStyles()
   const isSelected = selected.some(i => i === id)
   const rowId = "conversation-row-" + id
@@ -366,7 +374,7 @@ function ConversationRow({
       <ListItemText
         id={rowId}
         primary={
-          (labels && labels.indexOf("Important") > -1 ? "❗" : "") +
+          (newLabels && newLabels.indexOf("Important") > -1 ? "❗" : "") +
           (subject || "[no subject]")
         }
         secondary={
