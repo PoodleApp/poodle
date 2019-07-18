@@ -43,7 +43,18 @@ query getConversation($id: ID!, $accountId: ID!) {
   }
 }
 
-query searchConversations($query: String!, $specificityThreshold: Int) {
+query searchConversations($accountId: ID!, $query: String!) {
+  account(id: $accountId) {
+    search(query: $query) {
+      conversations {
+        ...ConversationFieldsForListView
+      }
+      query
+    }
+  }
+}
+
+query searchCachedConversations($query: String!, $specificityThreshold: Int) {
   conversations(query: $query, specificityThreshold: $specificityThreshold) {
     conversation {
       id

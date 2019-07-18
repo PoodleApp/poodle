@@ -291,11 +291,30 @@ export type GetConversationQuery = { __typename?: "Query" } & {
 }
 
 export type SearchConversationsQueryVariables = {
+  accountId: Scalars["ID"]
+  query: Scalars["String"]
+}
+
+export type SearchConversationsQuery = { __typename?: "Query" } & {
+  account: Maybe<
+    { __typename?: "Account" } & {
+      search: { __typename?: "Search" } & Pick<Search, "query"> & {
+          conversations: Array<
+            {
+              __typename?: "Conversation"
+            } & ConversationFieldsForListViewFragment
+          >
+        }
+    }
+  >
+}
+
+export type SearchCachedConversationsQueryVariables = {
   query: Scalars["String"]
   specificityThreshold?: Maybe<Scalars["Int"]>
 }
 
-export type SearchConversationsQuery = { __typename?: "Query" } & {
+export type SearchCachedConversationsQuery = { __typename?: "Query" } & {
   conversations: Array<
     { __typename?: "ConversationSearchResult" } & Pick<
       ConversationSearchResult,
@@ -1931,6 +1950,207 @@ export const SearchConversationsDocument: DocumentNode = {
           kind: "VariableDefinition",
           variable: {
             kind: "Variable",
+            name: { kind: "Name", value: "accountId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } }
+          },
+          directives: []
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "query" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          },
+          directives: []
+        }
+      ],
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "account" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "id" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "accountId" }
+                }
+              }
+            ],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "search" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "query" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "query" }
+                      }
+                    }
+                  ],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "conversations" },
+                        arguments: [],
+                        directives: [],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: {
+                                kind: "Name",
+                                value: "ConversationFieldsForListView"
+                              },
+                              directives: []
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "query" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ConversationFieldsForListView" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Conversation" }
+      },
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "id" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "date" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "from" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "host" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "mailbox" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "name" },
+                  arguments: [],
+                  directives: []
+                }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isRead" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "labels" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "snippet" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "subject" },
+            arguments: [],
+            directives: []
+          }
+        ]
+      }
+    }
+  ]
+}
+
+export function useSearchConversationsQuery(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<
+    SearchConversationsQuery,
+    SearchConversationsQueryVariables
+  >
+) {
+  return ReactApolloHooks.useQuery<
+    SearchConversationsQuery,
+    SearchConversationsQueryVariables
+  >(SearchConversationsDocument, baseOptions)
+}
+export type SearchConversationsQueryHookResult = ReturnType<
+  typeof useSearchConversationsQuery
+>
+export const SearchCachedConversationsDocument: DocumentNode = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "searchCachedConversations" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
             name: { kind: "Name", value: "query" }
           },
           type: {
@@ -2022,19 +2242,19 @@ export const SearchConversationsDocument: DocumentNode = {
   ]
 }
 
-export function useSearchConversationsQuery(
+export function useSearchCachedConversationsQuery(
   baseOptions?: ReactApolloHooks.QueryHookOptions<
-    SearchConversationsQuery,
-    SearchConversationsQueryVariables
+    SearchCachedConversationsQuery,
+    SearchCachedConversationsQueryVariables
   >
 ) {
   return ReactApolloHooks.useQuery<
-    SearchConversationsQuery,
-    SearchConversationsQueryVariables
-  >(SearchConversationsDocument, baseOptions)
+    SearchCachedConversationsQuery,
+    SearchCachedConversationsQueryVariables
+  >(SearchCachedConversationsDocument, baseOptions)
 }
-export type SearchConversationsQueryHookResult = ReturnType<
-  typeof useSearchConversationsQuery
+export type SearchCachedConversationsQueryHookResult = ReturnType<
+  typeof useSearchCachedConversationsQuery
 >
 export const GetMatchingAddressesDocument: DocumentNode = {
   kind: "Document",
