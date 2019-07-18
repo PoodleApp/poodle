@@ -10,29 +10,13 @@ import * as $ from "./testing/fixtures"
 
 it("stars a conversation in list view", async () => {
   const app = mount(<Dashboard accountId={$.account.id} />, {
-    mocks: [
-      $.getAccountMock,
-      $.flagMock,
-      {
-        ...$.getAccountMock,
-        result: {
-          data: {
-            account: {
-              ...$.account,
-              conversations: [{ ...$.conversation, isStarred: true }]
-            }
-          }
-        }
-      }
-    ]
+    mocks: [$.getAccountMock, $.flagMock]
   })
 
   await updates(app)
   app.find(Avatar).simulate("click")
   app.find('button[aria-label="star"]').simulate("click")
   await updates(app, 10)
-
-  console.log(app.find("SelectedActionsBar").props())
 
   expect(app.find(ListItemText)).toIncludeText("★ ")
 })
@@ -51,8 +35,13 @@ it("un-stars a conversation in list view", async () => {
           }
         }
       },
-      $.unFlagMock,
-      $.getAccountMock
+      {
+        ...$.flagMock,
+        request: {
+          ...$.flagMock.request,
+          variables: { ...$.flagMock.request.variables, isFlagged: true }
+        }
+      }
     ]
   })
 
@@ -60,8 +49,6 @@ it("un-stars a conversation in list view", async () => {
   app.find(Avatar).simulate("click")
   app.find('button[aria-label="star"]').simulate("click")
   await updates(app, 10)
-
-  // console.log(app.find("SelectedActionsBar").props())
 
   expect(app.find(ListItemText)).not.toIncludeText("★ ")
 })
@@ -73,21 +60,7 @@ it("stars a conversation in conversation view", async () => {
       conversationId={$.conversation.id}
     />,
     {
-      mocks: [
-        $.getConversationMock,
-        $.flagMock,
-        {
-          ...$.getConversationMock,
-          result: {
-            data: {
-              conversation: {
-                ...$.conversation,
-                isStarred: true
-              }
-            }
-          }
-        }
-      ]
+      mocks: [$.getConversationMock, $.flagMock]
     }
   )
 
@@ -112,8 +85,13 @@ it("un-stars a conversation in conversation view", async () => {
             data: { conversation: { ...$.conversation, isStarred: true } }
           }
         },
-        $.unFlagMock,
-        $.getConversationMock
+        {
+          ...$.flagMock,
+          request: {
+            ...$.flagMock.request,
+            variables: { ...$.flagMock.request.variables, isFlagged: true }
+          }
+        }
       ]
     }
   )

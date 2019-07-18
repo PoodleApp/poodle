@@ -153,28 +153,13 @@ export const archiveMock = {
 export const flagMock = {
   request: {
     query: graphql.FlagDocument,
-    variables: { conversationId: conversation.id }
+    variables: { conversationIDs: [conversation.id], isFlagged: false }
   },
   result: {
     data: {
       conversations: {
         __typename: "ConversationMutations",
         flag: { ...conversation, isStarred: true }
-      }
-    }
-  }
-}
-
-export const unFlagMock = {
-  request: {
-    query: graphql.UnFlagDocument,
-    variables: { conversationId: conversation.id }
-  },
-  result: {
-    data: {
-      conversations: {
-        __typename: "ConversationMutations",
-        unFlag: conversation
       }
     }
   }

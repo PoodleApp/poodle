@@ -97,32 +97,29 @@ export const ConversationMutations: ConversationMutationsResolvers = {
     return thread
   },
 
-  async flag(_parent, { id }) {
-    const thread = C.mustGetConversation(id)
-    updateAction(thread.messages, (accountId, box, uids) => {
-      schedule(
-        actions.flag({
-          accountId: String(accountId),
-          box,
-          uids
-        })
-      )
+  async flag(_parent, { ids, isFlagged }) {
+    let threads: C.Conversation[] = []
+    ids.forEach(id => {
+      console.log(id)
+      const thread = C.mustGetConversation(id)
+      updateAction(thread.messages, (accountId, box, uids) => {
+        schedule(
+          isFlagged
+            ? actions.unFlag({
+                accountId: String(accountId),
+                box,
+                uids
+              })
+            : actions.flag({
+                accountId: String(accountId),
+                box,
+                uids
+              })
+        )
+      })
+      threads.push(C.mustGetConversation(id))
     })
-    return thread
-  },
-
-  async unFlag(_parent, { id }) {
-    const thread = C.mustGetConversation(id)
-    updateAction(thread.messages, (accountId, box, uids) => {
-      schedule(
-        actions.unFlag({
-          accountId: String(accountId),
-          box,
-          uids
-        })
-      )
-    })
-    return thread
+    return threads
   },
 
   async edit(

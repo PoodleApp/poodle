@@ -106,8 +106,7 @@ export type ConversationReplyRecipientsArgs = {
 export type ConversationMutations = {
   __typename?: "ConversationMutations"
   archive: Conversation
-  flag: Conversation
-  unFlag: Conversation
+  flag: Array<Conversation>
   edit: Conversation
   reply: Conversation
   setIsRead: Conversation
@@ -119,11 +118,8 @@ export type ConversationMutationsArchiveArgs = {
 }
 
 export type ConversationMutationsFlagArgs = {
-  id: Scalars["ID"]
-}
-
-export type ConversationMutationsUnFlagArgs = {
-  id: Scalars["ID"]
+  ids: Array<Scalars["ID"]>
+  isFlagged: Scalars["Boolean"]
 }
 
 export type ConversationMutationsEditArgs = {
@@ -466,16 +462,10 @@ export type ConversationMutationsResolvers<
     ConversationMutationsArchiveArgs
   >
   flag?: Resolver<
-    ResolversTypes["Conversation"],
+    Array<ResolversTypes["Conversation"]>,
     ParentType,
     ContextType,
     ConversationMutationsFlagArgs
-  >
-  unFlag?: Resolver<
-    ResolversTypes["Conversation"],
-    ParentType,
-    ContextType,
-    ConversationMutationsUnFlagArgs
   >
   edit?: Resolver<
     ResolversTypes["Conversation"],

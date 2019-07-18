@@ -106,7 +106,6 @@ export default function Conversation({
   })
 
   const [flag, flagResult] = graphql.useFlagMutation()
-  const [unFlag, unFlagResult] = graphql.useUnFlagMutation()
 
   const setIsReadResult = useSetIsRead(data && data.conversation)
 
@@ -132,9 +131,10 @@ export default function Conversation({
   }
 
   async function onFlag() {
-    isStarred
-      ? conversationId && unFlag({ variables: { conversationId } })
-      : conversationId && flag({ variables: { conversationId } })
+    ;(await conversationId) &&
+      flag({
+        variables: { conversationIDs: [conversationId!], isFlagged: isStarred }
+      })
   }
 
   const {
@@ -178,9 +178,7 @@ export default function Conversation({
       <CssBaseline />
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        <DisplayErrors
-          results={[archiveResult, setIsReadResult, flagResult, unFlagResult]}
-        />
+        <DisplayErrors results={[archiveResult, setIsReadResult, flagResult]} />
         {labels
           ? labels.map(label => (
               <span className="label" key={label}>

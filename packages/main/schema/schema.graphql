@@ -39,8 +39,7 @@ type ConversationSearchResult {
 
 type ConversationMutations {
   archive(id: ID!): Conversation!
-  flag(id: ID!): Conversation!
-  unFlag(id: ID!): Conversation!
+  flag(ids: [ID!]!, isFlagged: Boolean!): [Conversation!]!
   edit(
     accountId: ID!
     conversationId: ID!

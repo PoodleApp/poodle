@@ -99,8 +99,7 @@ export type ConversationReplyRecipientsArgs = {
 export type ConversationMutations = {
   __typename?: "ConversationMutations"
   archive: Conversation
-  flag: Conversation
-  unFlag: Conversation
+  flag: Array<Conversation>
   edit: Conversation
   reply: Conversation
   setIsRead: Conversation
@@ -112,11 +111,8 @@ export type ConversationMutationsArchiveArgs = {
 }
 
 export type ConversationMutationsFlagArgs = {
-  id: Scalars["ID"]
-}
-
-export type ConversationMutationsUnFlagArgs = {
-  id: Scalars["ID"]
+  ids: Array<Scalars["ID"]>
+  isFlagged: Scalars["Boolean"]
 }
 
 export type ConversationMutationsEditArgs = {
@@ -460,38 +456,29 @@ export type ArchiveMutation = { __typename?: "Mutation" } & {
 }
 
 export type FlagMutationVariables = {
-  conversationId: Scalars["ID"]
+  conversationIDs: Array<Scalars["ID"]>
+  isFlagged: Scalars["Boolean"]
 }
 
 export type FlagMutation = { __typename?: "Mutation" } & {
   conversations: { __typename?: "ConversationMutations" } & {
-    flag: { __typename?: "Conversation" } & Pick<
-      Conversation,
-      "id" | "date" | "isRead" | "isStarred" | "labels" | "snippet" | "subject"
-    > & {
-        from: { __typename?: "Address" } & Pick<
-          Address,
-          "host" | "mailbox" | "name"
-        >
-      }
-  }
-}
-
-export type UnFlagMutationVariables = {
-  conversationId: Scalars["ID"]
-}
-
-export type UnFlagMutation = { __typename?: "Mutation" } & {
-  conversations: { __typename?: "ConversationMutations" } & {
-    unFlag: { __typename?: "Conversation" } & Pick<
-      Conversation,
-      "id" | "date" | "isRead" | "isStarred" | "labels" | "snippet" | "subject"
-    > & {
-        from: { __typename?: "Address" } & Pick<
-          Address,
-          "host" | "mailbox" | "name"
-        >
-      }
+    flag: Array<
+      { __typename?: "Conversation" } & Pick<
+        Conversation,
+        | "id"
+        | "date"
+        | "isRead"
+        | "isStarred"
+        | "labels"
+        | "snippet"
+        | "subject"
+      > & {
+          from: { __typename?: "Address" } & Pick<
+            Address,
+            "host" | "mailbox" | "name"
+          >
+        }
+    >
   }
 }
 
@@ -2171,11 +2158,32 @@ export const FlagDocument: DocumentNode = {
           kind: "VariableDefinition",
           variable: {
             kind: "Variable",
-            name: { kind: "Name", value: "conversationId" }
+            name: { kind: "Name", value: "conversationIDs" }
           },
           type: {
             kind: "NonNullType",
-            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } }
+            type: {
+              kind: "ListType",
+              type: {
+                kind: "NonNullType",
+                type: { kind: "NamedType", name: { kind: "Name", value: "ID" } }
+              }
+            }
+          },
+          directives: []
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "isFlagged" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "Boolean" }
+            }
           },
           directives: []
         }
@@ -2198,10 +2206,18 @@ export const FlagDocument: DocumentNode = {
                   arguments: [
                     {
                       kind: "Argument",
-                      name: { kind: "Name", value: "id" },
+                      name: { kind: "Name", value: "ids" },
                       value: {
                         kind: "Variable",
-                        name: { kind: "Name", value: "conversationId" }
+                        name: { kind: "Name", value: "conversationIDs" }
+                      }
+                    },
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "isFlagged" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "isFlagged" }
                       }
                     }
                   ],
@@ -2300,150 +2316,6 @@ export function useFlagMutation(
 ) {
   return ReactApolloHooks.useMutation<FlagMutation, FlagMutationVariables>(
     FlagDocument,
-    baseOptions
-  )
-}
-export const UnFlagDocument: DocumentNode = {
-  kind: "Document",
-  definitions: [
-    {
-      kind: "OperationDefinition",
-      operation: "mutation",
-      name: { kind: "Name", value: "unFlag" },
-      variableDefinitions: [
-        {
-          kind: "VariableDefinition",
-          variable: {
-            kind: "Variable",
-            name: { kind: "Name", value: "conversationId" }
-          },
-          type: {
-            kind: "NonNullType",
-            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } }
-          },
-          directives: []
-        }
-      ],
-      directives: [],
-      selectionSet: {
-        kind: "SelectionSet",
-        selections: [
-          {
-            kind: "Field",
-            name: { kind: "Name", value: "conversations" },
-            arguments: [],
-            directives: [],
-            selectionSet: {
-              kind: "SelectionSet",
-              selections: [
-                {
-                  kind: "Field",
-                  name: { kind: "Name", value: "unFlag" },
-                  arguments: [
-                    {
-                      kind: "Argument",
-                      name: { kind: "Name", value: "id" },
-                      value: {
-                        kind: "Variable",
-                        name: { kind: "Name", value: "conversationId" }
-                      }
-                    }
-                  ],
-                  directives: [],
-                  selectionSet: {
-                    kind: "SelectionSet",
-                    selections: [
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "id" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "date" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "from" },
-                        arguments: [],
-                        directives: [],
-                        selectionSet: {
-                          kind: "SelectionSet",
-                          selections: [
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "host" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "mailbox" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "name" },
-                              arguments: [],
-                              directives: []
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "isRead" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "isStarred" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "labels" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "snippet" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "subject" },
-                        arguments: [],
-                        directives: []
-                      }
-                    ]
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    }
-  ]
-}
-
-export function useUnFlagMutation(
-  baseOptions?: ReactApolloHooks.MutationHookOptions<
-    UnFlagMutation,
-    UnFlagMutationVariables
-  >
-) {
-  return ReactApolloHooks.useMutation<UnFlagMutation, UnFlagMutationVariables>(
-    UnFlagDocument,
     baseOptions
   )
 }

@@ -192,28 +192,9 @@ mutation archive($conversationId: ID!) {
   }
 }
 
-mutation flag($conversationId: ID!) {
+mutation flag($conversationIDs: [ID!]!, $isFlagged: Boolean!) {
   conversations {
-    flag(id: $conversationId) {
-      id
-      date
-      from {
-        host
-        mailbox
-        name
-      }
-      isRead
-      isStarred
-      labels
-      snippet
-      subject
-    }
-  }
-}
-
-mutation unFlag($conversationId: ID!) {
-  conversations {
-    unFlag(id: $conversationId) {
+    flag(ids: $conversationIDs, isFlagged: $isFlagged) {
       id
       date
       from {

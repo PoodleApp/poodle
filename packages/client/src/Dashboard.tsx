@@ -112,8 +112,6 @@ export default function Dashboard({ accountId, navigate }: Props) {
     variables: { accountId: accountId! }
   })
 
-  console.log(data && data.account && data.account.conversations)
-
   const conversations = data && data.account && data.account.conversations
   const [selected, dispatch] = Sel.useSelectedConversations(conversations)
 
@@ -251,7 +249,6 @@ function SelectedActionsBar({
   const classes = useStyles()
   const [archive, archiveResult] = useArchive({ accountId })
   const [flag, flagResult] = graphql.useFlagMutation()
-  const [unFlag, unFlagResult] = graphql.useUnFlagMutation()
 
   function onArchive() {
     for (const conversationId of selected) {
@@ -259,12 +256,10 @@ function SelectedActionsBar({
     }
   }
 
-  function onFlag() {
-    for (const conversationId of selected) {
-      isStarred
-        ? unFlag({ variables: { conversationId } })
-        : flag({ variables: { conversationId } })
-    }
+  async function onFlag() {
+    await flag({
+      variables: { conversationIDs: selected, isFlagged: isStarred }
+    })
   }
 
   return (
@@ -284,7 +279,7 @@ function SelectedActionsBar({
           </IconButton>
         </Toolbar>
       </AppBar>
-      <DisplayErrors results={[archiveResult, flagResult, unFlagResult]} />
+      <DisplayErrors results={[archiveResult, flagResult]} />
     </>
   )
 }
