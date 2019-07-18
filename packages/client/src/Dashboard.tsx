@@ -401,11 +401,7 @@ function ConversationRow({
 
       <ListItemText
         id={rowId}
-        primary={
-          isStarred
-            ? "⭐ " + subject || "[no subject]"
-            : subject || "[no subject]"
-        }
+        primary={(isStarred ? "⭐ " : "") + (subject || "[no subject]")}
         secondary={
           <>
             <Typography
