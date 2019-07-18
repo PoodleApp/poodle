@@ -18,7 +18,7 @@ it("stars a conversation in list view", async () => {
   app.find('button[aria-label="star"]').simulate("click")
   await updates(app, 10)
 
-  expect(app.find(ListItemText)).toIncludeText("★ ")
+  expect(app.find(ListItemText)).toIncludeText("⭐ ")
 })
 
 it("un-stars a conversation in list view", async () => {
@@ -40,6 +40,14 @@ it("un-stars a conversation in list view", async () => {
         request: {
           ...$.flagMock.request,
           variables: { ...$.flagMock.request.variables, isFlagged: true }
+        },
+        result: {
+          data: {
+            conversations: {
+              ...$.flagMock.result.data.conversations,
+              flag: { ...$.conversation, isStarred: false }
+            }
+          }
         }
       }
     ]
@@ -50,7 +58,7 @@ it("un-stars a conversation in list view", async () => {
   app.find('button[aria-label="star"]').simulate("click")
   await updates(app, 10)
 
-  expect(app.find(ListItemText)).not.toIncludeText("★ ")
+  expect(app.find(ListItemText)).not.toIncludeText("⭐ ")
 })
 
 it("stars a conversation in conversation view", async () => {
@@ -90,6 +98,14 @@ it("un-stars a conversation in conversation view", async () => {
           request: {
             ...$.flagMock.request,
             variables: { ...$.flagMock.request.variables, isFlagged: true }
+          },
+          result: {
+            data: {
+              conversations: {
+                ...$.flagMock.result.data.conversations,
+                flag: { ...$.conversation, isStarred: false }
+              }
+            }
           }
         }
       ]
