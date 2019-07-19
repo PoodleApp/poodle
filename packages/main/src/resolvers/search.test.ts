@@ -38,6 +38,9 @@ it("searches for conversations", async () => {
         search(query: $query) {
           conversations {
             presentableElements {
+              contents {
+                content
+              }
               from {
                 mailbox
                 host
@@ -58,8 +61,14 @@ it("searches for conversations", async () => {
           conversations: [
             {
               presentableElements: [
-                { from: { mailbox: "hallettj", host: "gmail.com" } },
-                { from: { mailbox: "jesse", host: "sitr.us" } }
+                {
+                  from: { mailbox: "hallettj", host: "gmail.com" },
+                  contents: [{ content: "<p>This is a test.</p>" }]
+                },
+                {
+                  from: { mailbox: "jesse", host: "sitr.us" },
+                  contents: [{ content: "A reply appears." }]
+                }
               ],
               subject: "Test thread 2019-02"
             }

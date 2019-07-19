@@ -1,5 +1,5 @@
 import imap from "imap"
-import { Collection, Range, Seq, Set } from "immutable"
+import { Range, Seq, Set } from "immutable"
 import * as kefir from "kefir"
 import moment from "moment"
 import * as cache from "./cache"
@@ -8,8 +8,8 @@ import ConnectionManager from "./managers/ConnectionManager"
 import { getPartByPartId } from "./models/Message"
 import { publishMessageUpdates } from "./pubsub"
 import * as request from "./request"
-import * as kefirUtil from "./util/kefir"
 import { nonNull } from "./util/array"
+import * as kefirUtil from "./util/kefir"
 
 type R<T> = kefir.Observable<T, Error>
 
@@ -253,7 +253,7 @@ class BoxSync {
     )
 
     await this.captureResponses(fetchResponses.filter(filter))
-    await this.fetchMissingBodiesAndPartHeaders(batch)
+    await this.fetchMissingBodiesAndPartHeaders()
 
     if (await continueToNextBatch) {
       await this.downloadMessagesInBatches({
@@ -265,13 +265,10 @@ class BoxSync {
     }
   }
 
-  private async fetchMissingBodiesAndPartHeaders(
-    uids?: Collection.Indexed<number>
-  ) {
+  private async fetchMissingBodiesAndPartHeaders() {
     for (const { uid, part } of cache.partsMissingBodies({
       accountId: this.accountId,
-      boxId: this.boxId,
-      uids
+      boxId: this.boxId
     })) {
       if (part.partID) {
         await this.captureResponses(

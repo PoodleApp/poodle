@@ -294,6 +294,7 @@ export function searchMock({ query }: { query: string }) {
       data: {
         account: {
           __typename: "Account",
+          id: account.id,
           search: {
             __typename: "Search",
             id: 1,

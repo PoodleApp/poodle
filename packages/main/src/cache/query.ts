@@ -330,12 +330,10 @@ export function isUidPresent(params: {
 
 export function partsMissingBodies({
   accountId,
-  boxId,
-  uids
+  boxId
 }: {
   accountId: ID
   boxId: ID
-  uids?: Collection.Indexed<number>
 }): Array<{ uid: number; boxName: string; part: imap.ImapMessagePart }> {
   return db
     .prepare(
@@ -353,7 +351,6 @@ export function partsMissingBodies({
           and messages.account_id = @accountId
           and (bodies.content is null or headers.key is null)
           and structs.rgt = structs.lft + 1
-          ${uids ? `and messages.uid in (${uids.join(", ")})` : ""}
       `
     )
     .all({ accountId, boxId })
