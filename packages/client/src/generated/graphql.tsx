@@ -298,7 +298,7 @@ export type SearchConversationsQueryVariables = {
 export type SearchConversationsQuery = { __typename?: "Query" } & {
   account: Maybe<
     { __typename?: "Account" } & {
-      search: { __typename?: "Search" } & Pick<Search, "query"> & {
+      search: { __typename?: "Search" } & Pick<Search, "id" | "query"> & {
           conversations: Array<
             {
               __typename?: "Conversation"
@@ -2009,6 +2009,12 @@ export const SearchConversationsDocument: DocumentNode = {
                   selectionSet: {
                     kind: "SelectionSet",
                     selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "id" },
+                        arguments: [],
+                        directives: []
+                      },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "conversations" },

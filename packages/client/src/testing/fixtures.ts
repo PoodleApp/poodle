@@ -85,6 +85,89 @@ export const conversation: graphql.Conversation = {
   subject: "Test Thread"
 }
 
+export const conversation2: graphql.Conversation = {
+  id: "2",
+  date: "2019-07-19T12:03:11.114Z",
+  from: {
+    name: null,
+    mailbox: "jesse",
+    host: "sitr.us"
+  },
+  labels: [],
+  replyRecipients: {
+    to: [
+      {
+        name: null,
+        mailbox: "jesse",
+        host: "sitr.us"
+      }
+    ],
+    from: [],
+    cc: []
+  },
+  presentableElements: [
+    {
+      id: "11",
+      isRead: true,
+      contents: [
+        {
+          revision: {
+            messageId:
+              "CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-sthaorcheuano@mail.gmail.com",
+            contentId: "anotherconvotext"
+          },
+          resource: {
+            messageId:
+              "CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-sthaorcheuano@mail.gmail.com",
+            contentId: "anotherconvotext"
+          },
+          type: "text",
+          subtype: "plain",
+          content: "It's another conversation"
+        }
+      ],
+      date: "2019-07-19T12:03:11.114Z",
+      from: {
+        name: null,
+        mailbox: "jesse",
+        host: "sitr.us"
+      },
+      editedAt: null,
+      editedBy: null
+    },
+    {
+      id: "12",
+      isRead: true,
+      contents: [
+        {
+          revision: {
+            messageId: "sacoehuracoheuntahoestam.cmanachtoeu@mail.gmail.com",
+            contentId: "anotherreplytext"
+          },
+          resource: {
+            messageId: "sacoehuracoheuntahoestam.cmanachtoeu@mail.gmail.com",
+            contentId: "anotherreplytext"
+          },
+          type: "text",
+          subtype: "plain",
+          content: "What, again?"
+        }
+      ],
+      date: "2019-07-19T12:21:00.002Z",
+      from: {
+        name: null,
+        mailbox: "ben",
+        host: "test.us"
+      },
+      editedAt: null,
+      editedBy: null
+    }
+  ],
+  isRead: true,
+  snippet: "What, again?",
+  subject: "Another conversation"
+}
+
 export const account: Omit<graphql.Account, "search"> = {
   id: "1",
   conversations: [conversation],
@@ -161,6 +244,28 @@ export const setIsReadMock = {
   result: {
     data: {
       conversations: { setIsRead: { ...conversation, isRead: true } }
+    }
+  }
+}
+
+export function searchMock({ query }: { query: string }) {
+  return {
+    request: {
+      query: graphql.SearchConversationsDocument,
+      variables: { accountId: account.id, query }
+    },
+    result: {
+      data: {
+        account: {
+          __typename: "Account",
+          search: {
+            __typename: "Search",
+            id: 1,
+            conversations: [conversation2],
+            query: query
+          }
+        }
+      }
     }
   }
 }

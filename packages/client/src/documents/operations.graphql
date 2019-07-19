@@ -46,6 +46,7 @@ query getConversation($id: ID!, $accountId: ID!) {
 query searchConversations($accountId: ID!, $query: String!) {
   account(id: $accountId) {
     search(query: $query) {
+      id
       conversations {
         ...ConversationFieldsForListView
       }
