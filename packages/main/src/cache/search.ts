@@ -117,7 +117,7 @@ export function removeStaleSearchResults(search: Search, updatedAt: string) {
   db.prepare(
     `
       delete from messages_searches
-      where search_id <> @searchId and updated_at <> @updatedAt
+      where search_id = @searchId and updated_at <> @updatedAt
     `
   ).run({ searchId: search.id, updatedAt })
 }
