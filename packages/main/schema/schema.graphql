@@ -62,7 +62,6 @@ input MessageInput {
   subject: String
   to: [AddressInput!]!
   content: ContentInput!
-  anotherField: Boolean
 }
 
 type Address {

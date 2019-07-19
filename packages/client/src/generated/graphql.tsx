@@ -151,7 +151,6 @@ export type MessageInput = {
   subject?: Maybe<Scalars["String"]>
   to: Array<AddressInput>
   content: ContentInput
-  anotherField?: Maybe<Scalars["Boolean"]>
 }
 
 export type Mutation = {
@@ -645,9 +644,6 @@ export function useGetAllAccountsQuery(
     GetAllAccountsQueryVariables
   >(GetAllAccountsDocument, baseOptions)
 }
-export type GetAllAccountsQueryHookResult = ReturnType<
-  typeof useGetAllAccountsQuery
->
 export const GetAccountDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -814,7 +810,6 @@ export function useGetAccountQuery(
     baseOptions
   )
 }
-export type GetAccountQueryHookResult = ReturnType<typeof useGetAccountQuery>
 export const DeleteAccountDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -880,9 +875,6 @@ export function useDeleteAccountMutation(
     DeleteAccountMutationVariables
   >(DeleteAccountDocument, baseOptions)
 }
-export type DeleteAccountMutationHookResult = ReturnType<
-  typeof useDeleteAccountMutation
->
 export const AddAccountDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -974,9 +966,6 @@ export function useAddAccountMutation(
     AddAccountMutationVariables
   >(AddAccountDocument, baseOptions)
 }
-export type AddAccountMutationHookResult = ReturnType<
-  typeof useAddAccountMutation
->
 export const AuthenticateDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -1065,9 +1054,6 @@ export function useAuthenticateMutation(
     AuthenticateMutationVariables
   >(AuthenticateDocument, baseOptions)
 }
-export type AuthenticateMutationHookResult = ReturnType<
-  typeof useAuthenticateMutation
->
 export const GetConversationDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -1441,9 +1427,6 @@ export function useGetConversationQuery(
     GetConversationQueryVariables
   >(GetConversationDocument, baseOptions)
 }
-export type GetConversationQueryHookResult = ReturnType<
-  typeof useGetConversationQuery
->
 export const SearchConversationsDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -1558,9 +1541,6 @@ export function useSearchConversationsQuery(
     SearchConversationsQueryVariables
   >(SearchConversationsDocument, baseOptions)
 }
-export type SearchConversationsQueryHookResult = ReturnType<
-  typeof useSearchConversationsQuery
->
 export const GetMatchingAddressesDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -1641,9 +1621,6 @@ export function useGetMatchingAddressesQuery(
     GetMatchingAddressesQueryVariables
   >(GetMatchingAddressesDocument, baseOptions)
 }
-export type GetMatchingAddressesQueryHookResult = ReturnType<
-  typeof useGetMatchingAddressesQuery
->
 export const SyncDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -1811,7 +1788,6 @@ export function useSyncMutation(
     baseOptions
   )
 }
-export type SyncMutationHookResult = ReturnType<typeof useSyncMutation>
 export const SetIsReadDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -1973,9 +1949,6 @@ export function useSetIsReadMutation(
     SetIsReadMutationVariables
   >(SetIsReadDocument, baseOptions)
 }
-export type SetIsReadMutationHookResult = ReturnType<
-  typeof useSetIsReadMutation
->
 export const ArchiveDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -2114,7 +2087,6 @@ export function useArchiveMutation(
     ArchiveMutationVariables
   >(ArchiveDocument, baseOptions)
 }
-export type ArchiveMutationHookResult = ReturnType<typeof useArchiveMutation>
 export const SendMessageDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -2415,9 +2387,6 @@ export function useSendMessageMutation(
     SendMessageMutationVariables
   >(SendMessageDocument, baseOptions)
 }
-export type SendMessageMutationHookResult = ReturnType<
-  typeof useSendMessageMutation
->
 export const EditDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -2784,7 +2753,6 @@ export function useEditMutation(
     baseOptions
   )
 }
-export type EditMutationHookResult = ReturnType<typeof useEditMutation>
 export const ReplyDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -3105,4 +3073,3 @@ export function useReplyMutation(
     baseOptions
   )
 }
-export type ReplyMutationHookResult = ReturnType<typeof useReplyMutation>

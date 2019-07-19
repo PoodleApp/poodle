@@ -158,7 +158,6 @@ export type MessageInput = {
   subject?: Maybe<Scalars["String"]>
   to: Array<AddressInput>
   content: ContentInput
-  anotherField?: Maybe<Scalars["Boolean"]>
 }
 
 export type Mutation = {
