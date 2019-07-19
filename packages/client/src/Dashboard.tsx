@@ -330,6 +330,7 @@ function ConversationRow({
 
   let newLabels = labels
   newLabels = newLabels && newLabels.map(label => label.slice(1))
+  newLabels && newLabels.push("Social")
 
   const classes = useConversationRowStyles()
   const isSelected = selected.some(i => i === id)
