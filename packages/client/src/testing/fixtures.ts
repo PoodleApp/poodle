@@ -153,7 +153,10 @@ export const archiveMock = {
 export const flagMock = {
   request: {
     query: graphql.FlagDocument,
-    variables: { conversationIDs: [conversation.id], isFlagged: false }
+    variables: {
+      conversationIDs: [conversation.id],
+      isFlagged: conversation.isStarred
+    }
   },
   result: {
     data: {

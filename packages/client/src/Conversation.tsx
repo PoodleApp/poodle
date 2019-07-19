@@ -10,6 +10,7 @@ import {
   Menu,
   MenuItem,
   Toolbar,
+  Tooltip,
   Typography
 } from "@material-ui/core"
 import ArchiveIcon from "@material-ui/icons/Archive"
@@ -131,10 +132,10 @@ export default function Conversation({
   }
 
   async function onFlag() {
-    ;(await conversationId) &&
+    await (conversationId &&
       flag({
         variables: { conversationIDs: [conversationId!], isFlagged: isStarred }
-      })
+      }))
   }
 
   const {
@@ -167,12 +168,32 @@ export default function Conversation({
           >
             {subject}
           </Typography>
-          <IconButton color="inherit" aria-label="archive" onClick={onArchive}>
-            <ArchiveIcon />
-          </IconButton>
-          <IconButton color="inherit" aria-label="star" onClick={onFlag}>
-            {isStarred ? <StarBorder /> : <StarIcon />}
-          </IconButton>
+          <Tooltip
+            title="Archive Conversation"
+            enterDelay={500}
+            leaveDelay={200}
+          >
+            <IconButton
+              color="inherit"
+              aria-label="archive"
+              onClick={onArchive}
+            >
+              <ArchiveIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip
+            title={(isStarred ? "Unstar " : "Star ") + "Conversation"}
+            enterDelay={500}
+            leaveDelay={200}
+          >
+            <IconButton
+              color="inherit"
+              aria-label={isStarred ? "unstar" : "star"}
+              onClick={onFlag}
+            >
+              {isStarred ? <StarBorder /> : <StarIcon />}
+            </IconButton>
+          </Tooltip>
         </Toolbar>
       </AppBar>
       <CssBaseline />

@@ -99,25 +99,20 @@ export const ConversationMutations: ConversationMutationsResolvers = {
 
   async flag(_parent, { ids, isFlagged }) {
     let threads: C.Conversation[] = []
-    ids.forEach(id => {
+    for (const id of ids) {
       const thread = C.mustGetConversation(id)
       updateAction(thread.messages, (accountId, box, uids) => {
         schedule(
-          isFlagged
-            ? actions.unFlag({
-                accountId: String(accountId),
-                box,
-                uids
-              })
-            : actions.flag({
-                accountId: String(accountId),
-                box,
-                uids
-              })
+          actions.setFlagged({
+            accountId: String(accountId),
+            box,
+            uids,
+            isFlagged
+          })
         )
       })
       threads.push(C.mustGetConversation(id))
-    })
+    }
     return threads
   },
 

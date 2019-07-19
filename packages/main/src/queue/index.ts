@@ -248,36 +248,54 @@ const handlers = {
     }
   }),
 
-  flag: handler({
-    enqueue(params: { accountId: ID; box: { name: string }; uids: number[] }) {
-      cache.addFlag({ ...params, flag: "\\Flagged" })
+  setFlagged: handler({
+    enqueue(params: {
+      accountId: ID
+      box: { name: string }
+      uids: number[]
+      isFlagged: boolean
+    }) {
+      params.isFlagged
+        ? cache.delFlags({ ...params, flags: ["\\Flagged"] })
+        : cache.addFlag({ ...params, flag: "\\Flagged" })
+
       return params
     },
 
     process({
       accountId,
       box,
-      uids
+      uids,
+      isFlagged
     }: {
       accountId: ID
       box: { name: string }
       uids: number[]
+      isFlagged: boolean
     }): Promise<void> {
       return withConnectionManager(accountId, connectionManager =>
         connectionManager
           .request(
-            request.actions.addFlags(
-              { name: box.name, readonly: false },
-              uids,
-              ["\\Flagged"]
-            )
+            isFlagged
+              ? request.actions.delFlags(
+                  { name: box.name, readonly: false },
+                  uids,
+                  ["\\Flagged"]
+                )
+              : request.actions.addFlags(
+                  { name: box.name, readonly: false },
+                  uids,
+                  ["\\Flagged"]
+                )
           )
           .toPromise()
       )
     },
 
-    failure(_error, { accountId, box, uids }) {
-      cache.delFlags({ accountId, box, uids, flags: ["\\Flagged"] })
+    failure(_error, { accountId, box, uids, isFlagged }) {
+      isFlagged
+        ? cache.addFlag({ accountId, box, uids, flag: "\\Flagged" })
+        : cache.delFlags({ accountId, box, uids, flags: ["\\Flagged"] })
     }
   }),
 

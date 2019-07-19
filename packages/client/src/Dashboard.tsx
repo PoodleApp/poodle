@@ -12,6 +12,7 @@ import {
   ListItemText,
   Paper,
   Toolbar,
+  Tooltip,
   Typography
 } from "@material-ui/core"
 import { makeStyles } from "@material-ui/core/styles"
@@ -115,18 +116,27 @@ export default function Dashboard({ accountId, navigate }: Props) {
   const conversations = data && data.account && data.account.conversations
   const [selected, dispatch] = Sel.useSelectedConversations(conversations)
 
-  let isStarred = false
+  let isStarred =
+    !!conversations &&
+    conversations
+      .filter(conversation =>
+        selected.some(conversationId => conversation.id === conversationId)
+      )
+      .reduce(
+        (isStarred, conversation) => isStarred || conversation.isStarred,
+        false
+      )
 
-  selected.forEach(select => {
-    conversations &&
-      conversations.forEach(conversation => {
-        if (conversation.id === select) {
-          if (conversation.isStarred) {
-            isStarred = true
-          }
-        }
-      })
-  })
+  //if not all selected star, we want to star instead of unstar
+  if (isStarred && selected.length > 1) {
+    isStarred =
+      !!conversations &&
+      conversations
+        .filter(conversation =>
+          selected.some(conversationId => conversation.id === conversationId)
+        )
+        .every(conversation => conversation.isStarred)
+  }
 
   // TODO: is there a way to guarantee that `accountId` is available?
   if (!accountId) {
@@ -271,12 +281,27 @@ function SelectedActionsBar({
       >
         <Toolbar className={classes.toolbar}>
           <span className={classes.title} />
-          <IconButton aria-label="archive" onClick={onArchive}>
-            <ArchiveIcon />
-          </IconButton>
-          <IconButton aria-label="star" onClick={onFlag}>
-            {isStarred ? <StarBorder /> : <StarIcon />}
-          </IconButton>
+          <Tooltip
+            title="Archive Selected Conversation"
+            enterDelay={500}
+            leaveDelay={200}
+          >
+            <IconButton aria-label="archive" onClick={onArchive}>
+              <ArchiveIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip
+            title={(isStarred ? "Unstar " : "Star ") + "Selected Conversation"}
+            enterDelay={500}
+            leaveDelay={200}
+          >
+            <IconButton
+              aria-label={isStarred ? "unstar" : "star"}
+              onClick={onFlag}
+            >
+              {isStarred ? <StarBorder /> : <StarIcon />}
+            </IconButton>
+          </Tooltip>
         </Toolbar>
       </AppBar>
       <DisplayErrors results={[archiveResult, flagResult]} />
