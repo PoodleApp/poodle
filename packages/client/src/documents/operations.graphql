@@ -45,6 +45,7 @@ query getConversation($id: ID!, $accountId: ID!) {
 
 query searchConversations($accountId: ID!, $query: String!) {
   account(id: $accountId) {
+    id
     search(query: $query) {
       id
       conversations {
@@ -159,7 +160,17 @@ fragment ConversationFieldsForListView on Conversation {
 }
 
 fragment ConversationFieldsForConversationView on Conversation {
-  ...ConversationFieldsForListView
+  id
+  date
+  from {
+    host
+    mailbox
+    name
+  }
+  isRead
+  labels
+  snippet
+  subject
   presentableElements {
     id
     isRead

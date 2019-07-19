@@ -159,7 +159,7 @@ export const conversation2: graphql.Conversation = {
       editedBy: null
     },
     {
-      __typename: "Conversation",
+      __typename: "Presentable",
       id: "12",
       isRead: true,
       contents: [

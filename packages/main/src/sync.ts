@@ -25,6 +25,7 @@ const cachePolicy = {
 } as const
 
 const BATCH_SIZE = 50
+const MAX_SEARCH_RESULTS = 30
 
 export async function search(
   searchRecord: cache.Search,
@@ -92,7 +93,9 @@ class BoxSync {
           request.actions.search(this.box, [["X-GM-RAW", searchRecord.query]])
         )
         .toPromise()
-    ).map(uid => parseInt(uid, 10))
+    )
+      .map(uid => parseInt(uid, 10))
+      .take(MAX_SEARCH_RESULTS)
 
     await this.downloadMissingMessages({ uids })
     cache.addSearchResults({

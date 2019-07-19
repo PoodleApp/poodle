@@ -79,6 +79,10 @@ const useStyles = makeStyles(theme => ({
     fontSize: "24px",
     flexGrow: 1
   },
+  toolbarSearchForm: {
+    display: "flex",
+    flexGrow: 1
+  },
   title: {
     flexGrow: 1
   },
@@ -114,22 +118,27 @@ export default function Dashboard({ accountId, navigate }: Props) {
   const classes = useStyles()
   const [open, setOpen] = React.useState(false)
   const [isSearching, setIsSearching] = React.useState(false)
-  const { data, error, loading } = graphql.useGetAccountQuery({
+  const [searchQuery, setSearchQuery] = React.useState("")
+  const getAccountResult = graphql.useGetAccountQuery({
     variables: { accountId: accountId! }
   })
-  const conversations = data && data.account && data.account.conversations
+  const skipSearch = !isSearching || searchQuery.length < 3
+  const searchResult = graphql.useSearchConversationsQuery({
+    variables: { accountId: accountId!, query: searchQuery },
+    skip: skipSearch
+  })
+  const conversations = skipSearch
+    ? getAccountResult.data &&
+      getAccountResult.data.account &&
+      getAccountResult.data.account.conversations
+    : searchResult.data &&
+      searchResult.data.account &&
+      searchResult.data.account.search.conversations
   const [selected, dispatch] = Sel.useSelectedConversations(conversations)
 
   // TODO: is there a way to guarantee that `accountId` is available?
   if (!accountId) {
     return <Redirect to="/accounts" />
-  }
-
-  if (loading) {
-    return <div>Loading...</div>
-  }
-  if (error) {
-    return <div>Error! {error.message}</div>
   }
 
   return (
@@ -139,9 +148,11 @@ export default function Dashboard({ accountId, navigate }: Props) {
         <SelectedActionsBar accountId={accountId} selected={selected} />
       ) : isSearching ? (
         <SearchBar
+          onChange={setSearchQuery}
           onClose={() => {
             setIsSearching(false)
           }}
+          query={searchQuery}
         />
       ) : (
         <MainBar
@@ -169,15 +180,22 @@ export default function Dashboard({ accountId, navigate }: Props) {
       </Drawer>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        <Conversations
-          accountId={accountId}
-          conversations={conversations!}
-          selected={selected}
-          dispatch={dispatch}
-          navigate={navigate}
-        />
+        {conversations && conversations.length > 0 ? (
+          <Conversations
+            accountId={accountId}
+            conversations={conversations}
+            selected={selected}
+            dispatch={dispatch}
+            navigate={navigate}
+          />
+        ) : conversations ? (
+          "No conversations to display"
+        ) : (
+          "Loading..."
+        )}
       </main>
       <ComposeButton accountId={accountId} />
+      <DisplayErrors results={[getAccountResult, searchResult]} />
     </div>
   )
 }
@@ -244,18 +262,46 @@ function MainBar({
   )
 }
 
-function SearchBar({ onClose }: { onClose: () => void }) {
+function SearchBar({
+  onChange,
+  onClose,
+  query
+}: {
+  onChange: (q: string) => void
+  onClose: () => void
+  query: string
+}) {
   const classes = useStyles()
+  const [value, setValue] = React.useState(query)
   return (
     <AppBar position="absolute" color="default" className={classes.appBar}>
       <Toolbar>
-        <InputBase
-          className={classes.searchInput}
-          inputProps={{ placeholder: "Search" }}
-        />
-        <IconButton aria-label="cancel search" onClick={onClose}>
-          <CloseIcon />
-        </IconButton>
+        <form
+          className={classes.toolbarSearchForm}
+          onSubmit={event => {
+            event.preventDefault()
+            onChange(value)
+          }}
+        >
+          <InputBase
+            className={classes.searchInput}
+            inputProps={{
+              onBlur() {
+                onChange(value)
+              },
+              onChange(event) {
+                setValue(
+                  (event as React.ChangeEvent<HTMLInputElement>).target.value
+                )
+              },
+              placeholder: "Search",
+              value
+            }}
+          />
+          <IconButton aria-label="cancel search" onClick={onClose}>
+            <CloseIcon />
+          </IconButton>
+        </form>
       </Toolbar>
     </AppBar>
   )
