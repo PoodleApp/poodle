@@ -97,11 +97,22 @@ class BoxSync {
       .map(uid => parseInt(uid, 10))
       .take(MAX_SEARCH_RESULTS)
 
-    await this.downloadMissingMessages({ uids })
+    // Add messages that have already been downloaded to result set
     cache.addSearchResults({
       search: searchRecord,
       uids,
       updatedAt: this.updatedAt
+    })
+
+    await this.downloadMissingMessages({
+      uids,
+      afterEachBatch: batch => {
+        cache.addSearchResults({
+          search: searchRecord,
+          uids: batch,
+          updatedAt: this.updatedAt
+        })
+      }
     })
     cache.removeStaleSearchResults(searchRecord, this.updatedAt)
 
@@ -203,9 +214,11 @@ class BoxSync {
   }
 
   private async downloadMissingMessages({
-    uids
+    uids,
+    afterEachBatch
   }: {
     uids: Seq.Indexed<number>
+    afterEachBatch?: (batch: Seq.Indexed<number>) => void
   }) {
     const filteredUids = uids.filter(
       uid =>
@@ -217,6 +230,7 @@ class BoxSync {
     )
     return this.downloadMessagesInBatches({
       uids: filteredUids,
+      afterEachBatch,
       fetchOptions: {
         bodies: "HEADER",
         envelope: true,
@@ -229,6 +243,7 @@ class BoxSync {
     uids,
     filter = () => true,
     shouldContinue = async () => true,
+    afterEachBatch,
     fetchOptions
   }: {
     uids: Seq.Indexed<number>
@@ -236,6 +251,7 @@ class BoxSync {
     shouldContinue?: (
       messages: R<imap.ImapMessageAttributes>
     ) => Promise<boolean>
+    afterEachBatch?: (batch: Seq.Indexed<number>) => void
     fetchOptions?: imap.FetchOptions
   }): Promise<void> {
     const batch = uids.take(BATCH_SIZE)
@@ -253,6 +269,9 @@ class BoxSync {
     )
 
     await this.captureResponses(fetchResponses.filter(filter))
+    if (afterEachBatch) {
+      afterEachBatch(batch)
+    }
     await this.fetchMissingBodiesAndPartHeaders()
 
     if (await continueToNextBatch) {
@@ -260,6 +279,7 @@ class BoxSync {
         uids: rest,
         filter,
         shouldContinue,
+        afterEachBatch,
         fetchOptions
       })
     }
