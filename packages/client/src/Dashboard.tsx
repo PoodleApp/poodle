@@ -14,6 +14,7 @@ import {
   Toolbar,
   Typography
 } from "@material-ui/core"
+import { red } from "@material-ui/core/colors"
 import { makeStyles } from "@material-ui/core/styles"
 import ArchiveIcon from "@material-ui/icons/Archive"
 import CheckIcon from "@material-ui/icons/Check"
@@ -333,6 +334,8 @@ function ConversationRow({
   const classes = useConversationRowStyles()
   const isSelected = selected.some(i => i === id)
   const rowId = "conversation-row-" + id
+  let count = 0
+  const labelId = "label-" + id + "-"
   return (
     <ListItem
       className={clsx(isRead && classes.read, classes.message)}
@@ -392,17 +395,21 @@ function ConversationRow({
           secondary: classes.snippetText
         }}
       />
-      {newLabels && newLabels.map(label => <DisplayLabel label={label} />)}
+      {newLabels &&
+        newLabels.map(label => (
+          <DisplayLabel key={labelId + count++} label={label} />
+        ))}
     </ListItem>
   )
 }
 
 function DisplayLabel({ label }: { label: string }) {
   const important = {
-    color: "maroon",
-    backgroundColor: "crimson",
-    borderRadius: "15px",
-    padding: "4px"
+    color: red[400],
+    backgroundColor: red[200],
+    borderRadius: "10px",
+    padding: "4.5px",
+    borderColor: red[400]
   }
 
   function extract(shade: string) {
@@ -413,15 +420,15 @@ function DisplayLabel({ label }: { label: string }) {
   }
 
   const colorMaps = Array.from(Object.values(colors))
-  const primaryColors = colorMaps.flatMap(extract("500"))
-  const accentColors = colorMaps.flatMap(extract("A100"))
+  const primaryColors = colorMaps.flatMap(extract("300"))
+  const primaryShade = colorMaps.flatMap(extract("200"))
   const primaryCount = primaryColors.length
-  const accentCount = accentColors.length
+  const shadeCount = primaryShade.length
 
   function getColors(id: string): [string, string] {
     const f = stringHash("fg" + id)
     const b = stringHash("bg" + id)
-    return [accentColors[f % accentCount], primaryColors[b % primaryCount]]
+    return [primaryShade[f % shadeCount], primaryColors[b % primaryCount]]
   }
 
   const [color, backgroundColor] = getColors(label)
@@ -435,8 +442,8 @@ function DisplayLabel({ label }: { label: string }) {
             style={{
               color,
               backgroundColor,
-              borderRadius: "15px",
-              padding: "3px"
+              borderRadius: "10px",
+              padding: "4.5px"
             }}
           >
             {label}
