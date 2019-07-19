@@ -218,7 +218,7 @@ class BoxSync {
     afterEachBatch
   }: {
     uids: Seq.Indexed<number>
-    afterEachBatch?: (batch: Seq.Indexed<number>) => void
+    afterEachBatch?: (batch: Iterable<number>) => void
   }) {
     const filteredUids = uids.filter(
       uid =>
@@ -251,7 +251,7 @@ class BoxSync {
     shouldContinue?: (
       messages: R<imap.ImapMessageAttributes>
     ) => Promise<boolean>
-    afterEachBatch?: (batch: Seq.Indexed<number>) => void
+    afterEachBatch?: (batch: Iterable<number>) => void
     fetchOptions?: imap.FetchOptions
   }): Promise<void> {
     const batch = uids.take(BATCH_SIZE)
@@ -259,6 +259,9 @@ class BoxSync {
     if (batch.isEmpty()) {
       return
     }
+
+    // TODO: it seems as though something is modifying `batch`
+    const batchSnapshot = batch.toArray()
 
     const fetchResponses = this.manager.request(
       request.actions.fetch(this.box, fetchQuery(batch), fetchOptions)
@@ -270,7 +273,7 @@ class BoxSync {
 
     await this.captureResponses(fetchResponses.filter(filter))
     if (afterEachBatch) {
-      afterEachBatch(batch)
+      afterEachBatch(batchSnapshot)
     }
     await this.fetchMissingBodiesAndPartHeaders()
 
