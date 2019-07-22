@@ -102,11 +102,12 @@ export const ConversationMutations: ConversationMutationsResolvers = {
     for (const id of ids) {
       const thread = C.mustGetConversation(id)
       updateAction(thread.messages, (accountId, box, uids) => {
+        console.log(uids)
         schedule(
           actions.setFlagged({
             accountId: String(accountId),
             box,
-            uids,
+            uids: uids.slice(-1),
             isFlagged
           })
         )
@@ -116,10 +117,7 @@ export const ConversationMutations: ConversationMutationsResolvers = {
     return threads
   },
 
-  async edit(
-    _parent,
-    { accountId, conversationId, resource, revision, content }
-  ) {
+  async edit(_parent, { accountId, conversationId, revision, content }) {
     const account = mustGetAccount(accountId)
     const conversation = C.mustGetConversation(conversationId)
     const editedPart = cache.getPartByContentId(revision)

@@ -134,7 +134,7 @@ export default function Conversation({
   async function onFlag() {
     await (conversationId &&
       flag({
-        variables: { conversationIDs: [conversationId!], isFlagged: isStarred }
+        variables: { conversationIDs: [conversationId!], isFlagged: !isStarred }
       }))
   }
 

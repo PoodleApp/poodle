@@ -39,7 +39,7 @@ it("un-stars a conversation in list view", async () => {
         ...$.flagMock,
         request: {
           ...$.flagMock.request,
-          variables: { ...$.flagMock.request.variables, isFlagged: true }
+          variables: { ...$.flagMock.request.variables, isFlagged: false }
         },
         result: {
           data: {
@@ -84,7 +84,7 @@ it("stars selected conversations when some are unstarred", async () => {
           ...$.flagMock.request,
           variables: {
             conversationIDs: ["2", $.conversation.id],
-            isFlagged: false
+            isFlagged: true
           }
         },
         result: {
@@ -144,7 +144,7 @@ it("unstars selected conversations when all are starred", async () => {
           ...$.flagMock.request,
           variables: {
             conversationIDs: ["2", $.conversation.id],
-            isFlagged: true
+            isFlagged: false
           }
         },
         result: {
@@ -217,7 +217,7 @@ it("un-stars a conversation in conversation view", async () => {
           ...$.flagMock,
           request: {
             ...$.flagMock.request,
-            variables: { ...$.flagMock.request.variables, isFlagged: true }
+            variables: { ...$.flagMock.request.variables, isFlagged: false }
           },
           result: {
             data: {

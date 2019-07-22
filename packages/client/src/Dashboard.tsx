@@ -268,7 +268,7 @@ function SelectedActionsBar({
 
   async function onFlag() {
     await flag({
-      variables: { conversationIDs: selected, isFlagged: isStarred }
+      variables: { conversationIDs: selected, isFlagged: !isStarred }
     })
   }
 

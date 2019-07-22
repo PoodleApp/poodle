@@ -256,8 +256,8 @@ const handlers = {
       isFlagged: boolean
     }) {
       params.isFlagged
-        ? cache.delFlags({ ...params, flags: ["\\Flagged"] })
-        : cache.addFlag({ ...params, flag: "\\Flagged" })
+        ? cache.addFlag({ ...params, flag: "\\Flagged" })
+        : cache.delFlags({ ...params, flags: ["\\Flagged"] })
 
       return params
     },
@@ -277,12 +277,12 @@ const handlers = {
         connectionManager
           .request(
             isFlagged
-              ? request.actions.delFlags(
+              ? request.actions.addFlags(
                   { name: box.name, readonly: false },
                   uids,
                   ["\\Flagged"]
                 )
-              : request.actions.addFlags(
+              : request.actions.delFlags(
                   { name: box.name, readonly: false },
                   uids,
                   ["\\Flagged"]
@@ -294,8 +294,8 @@ const handlers = {
 
     failure(_error, { accountId, box, uids, isFlagged }) {
       isFlagged
-        ? cache.addFlag({ accountId, box, uids, flag: "\\Flagged" })
-        : cache.delFlags({ accountId, box, uids, flags: ["\\Flagged"] })
+        ? cache.delFlags({ accountId, box, uids, flags: ["\\Flagged"] })
+        : cache.addFlag({ accountId, box, uids, flag: "\\Flagged" })
     }
   }),
 

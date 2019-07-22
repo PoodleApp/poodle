@@ -155,7 +155,7 @@ export const flagMock = {
     query: graphql.FlagDocument,
     variables: {
       conversationIDs: [conversation.id],
-      isFlagged: conversation.isStarred
+      isFlagged: true
     }
   },
   result: {

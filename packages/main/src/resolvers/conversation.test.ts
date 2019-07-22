@@ -423,7 +423,7 @@ describe("when querying conversations", () => {
         }
       }
       `,
-      { conversationIDs: [conversationId], isFlagged: false }
+      { conversationIDs: [conversationId], isFlagged: true }
     )
     expect(result).toEqual({
       data: {
@@ -451,7 +451,7 @@ describe("when querying conversations", () => {
         }
       }
       `,
-      { conversationIDs: [conversationId], isFlagged: true }
+      { conversationIDs: [conversationId], isFlagged: false }
     )
     expect(result).toEqual({
       data: {
