@@ -52,6 +52,14 @@ type ConversationMutations {
   sendMessage(accountId: ID!, message: MessageInput!): Conversation!
 }
 
+type PresentableMutations {
+  flagPresentable(
+    id: ID!
+    conversationId: ID!
+    isFlagged: Boolean!
+  ): Presentable
+}
+
 type Message {
   id: ID!
   date: String!
@@ -123,6 +131,7 @@ input PartSpecInput {
 type Mutation {
   accounts: AccountMutations!
   conversations: ConversationMutations!
+  presentableElements: PresentableMutations!
 }
 
 type Query {

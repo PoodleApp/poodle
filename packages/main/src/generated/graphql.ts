@@ -171,6 +171,7 @@ export type Mutation = {
   __typename?: "Mutation"
   accounts: AccountMutations
   conversations: ConversationMutations
+  presentableElements: PresentableMutations
 }
 
 export type Participants = {
@@ -202,6 +203,17 @@ export type Presentable = {
   from: Address
   editedAt?: Maybe<Scalars["String"]>
   editedBy?: Maybe<Address>
+}
+
+export type PresentableMutations = {
+  __typename?: "PresentableMutations"
+  flagPresentable?: Maybe<Presentable>
+}
+
+export type PresentableMutationsFlagPresentableArgs = {
+  id: Scalars["ID"]
+  conversationId: Scalars["ID"]
+  isFlagged: Scalars["Boolean"]
 }
 
 export type Query = {
@@ -326,6 +338,7 @@ export type ResolversTypes = {
   ContentInput: ContentInput
   MessageInput: MessageInput
   AddressInput: AddressInput
+  PresentableMutations: ResolverTypeWrapper<PresentableMutations>
 }
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -353,6 +366,7 @@ export type ResolversParentTypes = {
   ContentInput: ContentInput
   MessageInput: MessageInput
   AddressInput: AddressInput
+  PresentableMutations: PresentableMutations
 }
 
 export type AccountResolvers<
@@ -530,6 +544,11 @@ export type MutationResolvers<
     ParentType,
     ContextType
   >
+  presentableElements?: Resolver<
+    ResolversTypes["PresentableMutations"],
+    ParentType,
+    ContextType
+  >
 }
 
 export type ParticipantsResolvers<
@@ -570,6 +589,18 @@ export type PresentableResolvers<
   from?: Resolver<ResolversTypes["Address"], ParentType, ContextType>
   editedAt?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
   editedBy?: Resolver<Maybe<ResolversTypes["Address"]>, ParentType, ContextType>
+}
+
+export type PresentableMutationsResolvers<
+  ContextType = any,
+  ParentType = ResolversParentTypes["PresentableMutations"]
+> = {
+  flagPresentable?: Resolver<
+    Maybe<ResolversTypes["Presentable"]>,
+    ParentType,
+    ContextType,
+    PresentableMutationsFlagPresentableArgs
+  >
 }
 
 export type QueryResolvers<
@@ -616,6 +647,7 @@ export type Resolvers<ContextType = any> = {
   Participants?: ParticipantsResolvers<ContextType>
   PartSpec?: PartSpecResolvers<ContextType>
   Presentable?: PresentableResolvers<ContextType>
+  PresentableMutations?: PresentableMutationsResolvers<ContextType>
   Query?: QueryResolvers<ContextType>
 }
 

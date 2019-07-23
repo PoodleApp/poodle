@@ -206,7 +206,7 @@ function setIsRead(messages: cache.Message[], isRead: boolean) {
  * Groups messages by account and box as a convenience for dispatching IMAP
  * requests.
  */
-function updateAction(
+export function updateAction(
   messages: cache.Message[],
   fn: (accountId: cache.ID, box: cache.Box, uids: number[]) => void
 ) {

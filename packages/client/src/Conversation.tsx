@@ -106,8 +106,6 @@ export default function Conversation({
     conversationId: conversationId!
   })
 
-  const [flag, flagResult] = graphql.useFlagMutation()
-
   const setIsReadResult = useSetIsRead(data && data.conversation)
 
   // TODO: is there a way to guarantee that `accountId` and `conversationId` are available?
@@ -131,19 +129,11 @@ export default function Conversation({
     navigate!(`/accounts/${accountId}/dashboard`)
   }
 
-  async function onFlag() {
-    await (conversationId &&
-      flag({
-        variables: { conversationIDs: [conversationId!], isFlagged: !isStarred }
-      }))
-  }
-
   const {
     labels,
     presentableElements,
     replyRecipients,
-    subject,
-    isStarred
+    subject
   } = data.conversation
 
   return (
@@ -181,25 +171,12 @@ export default function Conversation({
               <ArchiveIcon />
             </IconButton>
           </Tooltip>
-          <Tooltip
-            title={(isStarred ? "Unstar " : "Star ") + "Conversation"}
-            enterDelay={500}
-            leaveDelay={200}
-          >
-            <IconButton
-              color="inherit"
-              aria-label={isStarred ? "unstar" : "star"}
-              onClick={onFlag}
-            >
-              {isStarred ? <StarBorder /> : <StarIcon />}
-            </IconButton>
-          </Tooltip>
         </Toolbar>
       </AppBar>
       <CssBaseline />
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        <DisplayErrors results={[archiveResult, setIsReadResult, flagResult]} />
+        <DisplayErrors results={[archiveResult, setIsReadResult]} />
         {labels
           ? labels.map(label => (
               <span className="label" key={label}>
@@ -244,6 +221,7 @@ function Presentable({
   const [expanded, setExpanded] = React.useState(
     isLast ? true : !presentable.isRead
   )
+  const [flag, flagResult] = graphql.useFlagPresentableMutation()
 
   const classes = useStyles()
   const cardContentID = `card-content-${presentable.id}`
@@ -254,6 +232,17 @@ function Presentable({
 
   function handleClose() {
     setAnchorEl(null)
+  }
+
+  async function onFlag() {
+    await (conversationId &&
+      flag({
+        variables: {
+          conversationId: conversationId!,
+          isFlagged: !presentable.isStarred,
+          presentableId: presentable.id
+        }
+      }))
   }
 
   return (
@@ -276,6 +265,20 @@ function Presentable({
             >
               <MoreVertIcon />
             </IconButton>
+            <Tooltip
+              title={
+                (presentable.isStarred ? "Unstar " : "Star ") + "Conversation"
+              }
+              enterDelay={500}
+              leaveDelay={200}
+            >
+              <IconButton
+                aria-label={presentable.isStarred ? "unstar" : "star"}
+                onClick={onFlag}
+              >
+                {presentable.isStarred ? <StarBorder /> : <StarIcon />}
+              </IconButton>
+            </Tooltip>
             <IconButton
               className={clsx(classes.expand, {
                 [classes.expandOpen]: expanded

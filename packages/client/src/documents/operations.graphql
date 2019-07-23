@@ -211,6 +211,30 @@ mutation flag($conversationIDs: [ID!]!, $isFlagged: Boolean!) {
   }
 }
 
+mutation flagPresentable(
+  $presentableId: ID!
+  $conversationId: ID!
+  $isFlagged: Boolean!
+) {
+  presentableElements {
+    flagPresentable(
+      id: $presentableId
+      conversationId: $conversationId
+      isFlagged: $isFlagged
+    ) {
+      id
+      date
+      from {
+        host
+        mailbox
+        name
+      }
+      isRead
+      isStarred
+    }
+  }
+}
+
 mutation sendMessage($accountId: ID!, $message: MessageInput!) {
   conversations {
     sendMessage(accountId: $accountId, message: $message) {

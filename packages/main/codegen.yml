@@ -14,3 +14,4 @@ generates:
         Conversation: ../models/conversation#Conversation
         ConversationMutations: ../resolvers/types#ConversationMutations
         Message: ../resolvers/types#Message
+        PresentableMutations: ../resolvers/types#PresentableMutations

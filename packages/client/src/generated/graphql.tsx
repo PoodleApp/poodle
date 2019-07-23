@@ -164,6 +164,7 @@ export type Mutation = {
   __typename?: "Mutation"
   accounts: AccountMutations
   conversations: ConversationMutations
+  presentableElements: PresentableMutations
 }
 
 export type Participants = {
@@ -195,6 +196,17 @@ export type Presentable = {
   from: Address
   editedAt?: Maybe<Scalars["String"]>
   editedBy?: Maybe<Address>
+}
+
+export type PresentableMutations = {
+  __typename?: "PresentableMutations"
+  flagPresentable?: Maybe<Presentable>
+}
+
+export type PresentableMutationsFlagPresentableArgs = {
+  id: Scalars["ID"]
+  conversationId: Scalars["ID"]
+  isFlagged: Scalars["Boolean"]
 }
 
 export type Query = {
@@ -472,6 +484,28 @@ export type FlagMutation = { __typename?: "Mutation" } & {
         | "labels"
         | "snippet"
         | "subject"
+      > & {
+          from: { __typename?: "Address" } & Pick<
+            Address,
+            "host" | "mailbox" | "name"
+          >
+        }
+    >
+  }
+}
+
+export type FlagPresentableMutationVariables = {
+  presentableId: Scalars["ID"]
+  conversationId: Scalars["ID"]
+  isFlagged: Scalars["Boolean"]
+}
+
+export type FlagPresentableMutation = { __typename?: "Mutation" } & {
+  presentableElements: { __typename?: "PresentableMutations" } & {
+    flagPresentable: Maybe<
+      { __typename?: "Presentable" } & Pick<
+        Presentable,
+        "id" | "date" | "isRead" | "isStarred"
       > & {
           from: { __typename?: "Address" } & Pick<
             Address,
@@ -2318,6 +2352,175 @@ export function useFlagMutation(
     FlagDocument,
     baseOptions
   )
+}
+export const FlagPresentableDocument: DocumentNode = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "flagPresentable" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "presentableId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } }
+          },
+          directives: []
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "conversationId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } }
+          },
+          directives: []
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "isFlagged" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "Boolean" }
+            }
+          },
+          directives: []
+        }
+      ],
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "presentableElements" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "flagPresentable" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "id" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "presentableId" }
+                      }
+                    },
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "conversationId" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "conversationId" }
+                      }
+                    },
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "isFlagged" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "isFlagged" }
+                      }
+                    }
+                  ],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "id" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "date" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "from" },
+                        arguments: [],
+                        directives: [],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "host" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "mailbox" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "name" },
+                              arguments: [],
+                              directives: []
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "isRead" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "isStarred" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+
+export function useFlagPresentableMutation(
+  baseOptions?: ReactApolloHooks.MutationHookOptions<
+    FlagPresentableMutation,
+    FlagPresentableMutationVariables
+  >
+) {
+  return ReactApolloHooks.useMutation<
+    FlagPresentableMutation,
+    FlagPresentableMutationVariables
+  >(FlagPresentableDocument, baseOptions)
 }
 export const SendMessageDocument: DocumentNode = {
   kind: "Document",

@@ -1,8 +1,9 @@
-import { Resolvers, Address } from "../generated/graphql"
+import db from "../db"
+import { Address, Resolvers } from "../generated/graphql"
 import * as account from "./account"
 import * as conversation from "./conversation"
 import * as message from "./message"
-import db from "../db"
+import * as presentable from "./presentable"
 
 export const resolvers: Resolvers = {
   Query: {
@@ -42,11 +43,13 @@ export const resolvers: Resolvers = {
   },
   Mutation: {
     ...account.mutations,
-    ...conversation.mutations
+    ...conversation.mutations,
+    ...presentable.mutations
   },
   Account: account.Account,
   AccountMutations: account.AccountMutations,
   Conversation: conversation.Conversation,
   ConversationMutations: conversation.ConversationMutations,
+  PresentableMutations: presentable.PresentableMutations,
   Message: message.Message
 }
