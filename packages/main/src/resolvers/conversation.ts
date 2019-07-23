@@ -102,7 +102,6 @@ export const ConversationMutations: ConversationMutationsResolvers = {
     for (const id of ids) {
       const thread = C.mustGetConversation(id)
       updateAction(thread.messages, (accountId, box, uids) => {
-        console.log(uids)
         schedule(
           actions.setFlagged({
             accountId: String(accountId),

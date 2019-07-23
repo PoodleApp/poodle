@@ -161,7 +161,9 @@ export function flagMock({
     request: {
       query: graphql.FlagDocument,
       variables: {
-        conversationIDs: conversations.map(c => c.id),
+        conversationIDs: conversations
+          ? conversations.map(c => c.id)
+          : conversation.id,
         isFlagged
       }
     },
@@ -169,7 +171,9 @@ export function flagMock({
       data: {
         conversations: {
           __typename: "ConversationMutations",
-          flag: conversations.map(c => ({ ...c, isStarred: isFlagged }))
+          flag: conversations
+            ? conversations.map(c => ({ ...c, isStarred: isFlagged }))
+            : conversation
         }
       }
     }

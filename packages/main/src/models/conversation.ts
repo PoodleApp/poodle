@@ -109,7 +109,6 @@ export function getPresentableElements({
         isRead: cache
           .getFlags(latestEdit ? latestEdit.revision.message.id : message.id)
           .includes("\\Seen"),
-        isStarred: cache.getFlags(message.id).includes("\\Flagged"),
         contents: resources
           .valueSeq()
           .map(getPresentableContent)
