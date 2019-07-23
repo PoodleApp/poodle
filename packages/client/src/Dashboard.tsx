@@ -330,7 +330,6 @@ function ConversationRow({
 
   let newLabels = labels
   newLabels = newLabels && newLabels.map(label => label.slice(1))
-  newLabels && newLabels.push("Social")
 
   const classes = useConversationRowStyles()
   const isSelected = selected.some(i => i === id)
@@ -435,7 +434,7 @@ function DisplayLabel({ label }: { label: string }) {
   const [color, backgroundColor] = getColors(label)
   return (
     <div>
-      {label !== "Inbox" && label !== "Sent" ? (
+      {label !== "Inbox" && label !== "Sent" && label !== "Starred" ? (
         label === "Important" ? (
           <span style={important}>{label}</span>
         ) : (
