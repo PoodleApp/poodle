@@ -273,12 +273,14 @@ function Presentable({
               leaveDelay={200}
             >
               <IconButton
+                aria-controls={`star-${presentable.id}`}
                 aria-label={presentable.isStarred ? "unstar" : "star"}
                 onClick={onFlag}
               >
                 {presentable.isStarred ? <StarBorder /> : <StarIcon />}
               </IconButton>
             </Tooltip>
+            <DisplayErrors results={[flagResult]} />
             <IconButton
               className={clsx(classes.expand, {
                 [classes.expandOpen]: expanded

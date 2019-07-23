@@ -216,7 +216,7 @@ mutation flagPresentable(
   $conversationId: ID!
   $isFlagged: Boolean!
 ) {
-  presentableElements {
+  conversations {
     flagPresentable(
       id: $presentableId
       conversationId: $conversationId

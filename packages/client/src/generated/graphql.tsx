@@ -100,6 +100,7 @@ export type ConversationMutations = {
   __typename?: "ConversationMutations"
   archive: Conversation
   flag: Array<Conversation>
+  flagPresentable: Conversation
   edit: Conversation
   reply: Conversation
   setIsRead: Conversation
@@ -112,6 +113,12 @@ export type ConversationMutationsArchiveArgs = {
 
 export type ConversationMutationsFlagArgs = {
   ids: Array<Scalars["ID"]>
+  isFlagged: Scalars["Boolean"]
+}
+
+export type ConversationMutationsFlagPresentableArgs = {
+  id: Scalars["ID"]
+  conversationId: Scalars["ID"]
   isFlagged: Scalars["Boolean"]
 }
 
@@ -164,7 +171,6 @@ export type Mutation = {
   __typename?: "Mutation"
   accounts: AccountMutations
   conversations: ConversationMutations
-  presentableElements: PresentableMutations
 }
 
 export type Participants = {
@@ -196,17 +202,6 @@ export type Presentable = {
   from: Address
   editedAt?: Maybe<Scalars["String"]>
   editedBy?: Maybe<Address>
-}
-
-export type PresentableMutations = {
-  __typename?: "PresentableMutations"
-  flagPresentable?: Maybe<Presentable>
-}
-
-export type PresentableMutationsFlagPresentableArgs = {
-  id: Scalars["ID"]
-  conversationId: Scalars["ID"]
-  isFlagged: Scalars["Boolean"]
 }
 
 export type Query = {
@@ -501,18 +496,16 @@ export type FlagPresentableMutationVariables = {
 }
 
 export type FlagPresentableMutation = { __typename?: "Mutation" } & {
-  presentableElements: { __typename?: "PresentableMutations" } & {
-    flagPresentable: Maybe<
-      { __typename?: "Presentable" } & Pick<
-        Presentable,
-        "id" | "date" | "isRead" | "isStarred"
-      > & {
-          from: { __typename?: "Address" } & Pick<
-            Address,
-            "host" | "mailbox" | "name"
-          >
-        }
-    >
+  conversations: { __typename?: "ConversationMutations" } & {
+    flagPresentable: { __typename?: "Conversation" } & Pick<
+      Conversation,
+      "id" | "date" | "isRead" | "isStarred"
+    > & {
+        from: { __typename?: "Address" } & Pick<
+          Address,
+          "host" | "mailbox" | "name"
+        >
+      }
   }
 }
 
@@ -2407,7 +2400,7 @@ export const FlagPresentableDocument: DocumentNode = {
         selections: [
           {
             kind: "Field",
-            name: { kind: "Name", value: "presentableElements" },
+            name: { kind: "Name", value: "conversations" },
             arguments: [],
             directives: [],
             selectionSet: {

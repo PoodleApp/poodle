@@ -181,25 +181,28 @@ it("unstars selected conversations when all are starred", async () => {
   ).not.toIncludeText("⭐ ")
 })
 
-it("stars a conversation in conversation view", async () => {
+it("stars a presentable in conversation view", async () => {
   const app = mount(
     <Conversation
       accountId={$.account.id}
       conversationId={$.conversation.id}
     />,
     {
-      mocks: [$.getConversationMock, $.flagMock]
+      mocks: [
+        $.getConversationMock,
+        $.flagPresentableMock({ isFlagged: true, presentableId: "11" })
+      ]
     }
   )
 
   await updates(app)
-  app.find('button[aria-label="star"]').simulate("click")
-  await updates(app, 10)
+  app.find('button[aria-controls="star-11"]').simulate("click")
+  await updates(app, 100)
 
   expect(app.find(StarBorder)).toExist()
 })
 
-it("un-stars a conversation in conversation view", async () => {
+it("un-stars a presentable in conversation view", async () => {
   const app = mount(
     <Conversation
       accountId={$.account.id}
@@ -210,31 +213,29 @@ it("un-stars a conversation in conversation view", async () => {
         {
           ...$.getConversationMock,
           result: {
-            data: { conversation: { ...$.conversation, isStarred: true } }
-          }
-        },
-        {
-          ...$.flagMock,
-          request: {
-            ...$.flagMock.request,
-            variables: { ...$.flagMock.request.variables, isFlagged: false }
-          },
-          result: {
             data: {
-              conversations: {
-                ...$.flagMock.result.data.conversations,
-                flag: { ...$.conversation, isStarred: false }
+              conversation: {
+                ...$.conversation,
+                isStarred: true,
+                presentableElements: [
+                  {
+                    ...$.conversation.presentableElements[0],
+                    isStarred: true
+                  },
+                  { ...$.conversation.presentableElements[1] }
+                ]
               }
             }
           }
-        }
+        },
+        $.flagPresentableMock({ isFlagged: false, presentableId: "11" })
       ]
     }
   )
 
   await updates(app)
-  app.find('button[aria-label="unstar"]').simulate("click")
-  await updates(app, 10)
+  app.find('button[aria-controls="star-11"]').simulate("click")
+  await updates(app, 15)
 
   expect(app.find(StarIcon)).toExist()
 })

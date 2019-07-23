@@ -117,6 +117,26 @@ export const ConversationMutations: ConversationMutationsResolvers = {
     return threads
   },
 
+  async flagPresentable(_parent, { conversationId, id, isFlagged }) {
+    const thread = C.mustGetConversation(conversationId)
+    for (const message of thread.messages) {
+      if (String(message.id) === id) {
+        updateAction([message], (accountId, box, uids) => {
+          schedule(
+            actions.setFlagged({
+              accountId: String(accountId),
+              box,
+              uids,
+              isFlagged
+            })
+          )
+        })
+      }
+    }
+
+    return C.mustGetConversation(conversationId)
+  },
+
   async edit(_parent, { accountId, conversationId, revision, content }) {
     const account = mustGetAccount(accountId)
     const conversation = C.mustGetConversation(conversationId)

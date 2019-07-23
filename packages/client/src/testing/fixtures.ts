@@ -168,6 +168,33 @@ export const flagMock = {
   }
 }
 
+export function flagPresentableMock({
+  isFlagged,
+  presentableId
+}: {
+  isFlagged: boolean
+  presentableId: string
+}) {
+  return {
+    request: {
+      query: graphql.FlagPresentableDocument,
+      variables: {
+        conversationId: conversation.id,
+        isFlagged: isFlagged,
+        presentableId
+      }
+    },
+    result: {
+      data: {
+        conversations: {
+          __typename: "ConversationMutations",
+          flagPresentable: conversation
+        }
+      }
+    }
+  }
+}
+
 export function replyMock(content: string) {
   return {
     request: {

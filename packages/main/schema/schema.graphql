@@ -40,6 +40,11 @@ type ConversationSearchResult {
 type ConversationMutations {
   archive(id: ID!): Conversation!
   flag(ids: [ID!]!, isFlagged: Boolean!): [Conversation!]!
+  flagPresentable(
+    id: ID!
+    conversationId: ID!
+    isFlagged: Boolean!
+  ): Conversation!
   edit(
     accountId: ID!
     conversationId: ID!
@@ -50,14 +55,6 @@ type ConversationMutations {
   reply(accountId: ID!, id: ID!, content: ContentInput!): Conversation!
   setIsRead(id: ID!, isRead: Boolean!): Conversation!
   sendMessage(accountId: ID!, message: MessageInput!): Conversation!
-}
-
-type PresentableMutations {
-  flagPresentable(
-    id: ID!
-    conversationId: ID!
-    isFlagged: Boolean!
-  ): Presentable
 }
 
 type Message {
@@ -131,7 +128,6 @@ input PartSpecInput {
 type Mutation {
   accounts: AccountMutations!
   conversations: ConversationMutations!
-  presentableElements: PresentableMutations!
 }
 
 type Query {
