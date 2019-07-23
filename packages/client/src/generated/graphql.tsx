@@ -189,7 +189,6 @@ export type Presentable = {
   __typename?: "Presentable"
   id: Scalars["ID"]
   isRead: Scalars["Boolean"]
-  isStarred: Scalars["Boolean"]
   contents: Array<Content>
   date: Scalars["String"]
   from: Address
@@ -309,7 +308,7 @@ export type GetConversationQuery = { __typename?: "Query" } & {
         presentableElements: Array<
           { __typename?: "Presentable" } & Pick<
             Presentable,
-            "id" | "isRead" | "isStarred" | "date" | "editedAt"
+            "id" | "isRead" | "date" | "editedAt"
           > & {
               contents: Array<
                 { __typename?: "Content" } & Pick<
@@ -1172,12 +1171,6 @@ export const GetConversationDocument: DocumentNode = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "isRead" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "isStarred" },
                         arguments: [],
                         directives: []
                       },

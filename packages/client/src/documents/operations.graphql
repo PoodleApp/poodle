@@ -62,7 +62,6 @@ query getConversation($id: ID!, $accountId: ID!) {
     presentableElements {
       id
       isRead
-      isStarred
       contents {
         revision {
           messageId
