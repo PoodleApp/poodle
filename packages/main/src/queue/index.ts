@@ -297,39 +297,6 @@ const handlers = {
         ? cache.delFlags({ accountId, box, uids, flags: ["\\Flagged"] })
         : cache.addFlag({ accountId, box, uids, flag: "\\Flagged" })
     }
-  }),
-
-  unFlag: handler({
-    enqueue(params: { accountId: ID; box: { name: string }; uids: number[] }) {
-      cache.delFlags({ ...params, flags: ["\\Flagged"] })
-      return params
-    },
-
-    process({
-      accountId,
-      box,
-      uids
-    }: {
-      accountId: ID
-      box: { name: string }
-      uids: number[]
-    }): Promise<void> {
-      return withConnectionManager(accountId, connectionManager =>
-        connectionManager
-          .request(
-            request.actions.delFlags(
-              { name: box.name, readonly: false },
-              uids,
-              ["\\Flagged"]
-            )
-          )
-          .toPromise()
-      )
-    },
-
-    failure(_error, { accountId, box, uids }) {
-      cache.addFlag({ accountId, box, uids, flag: "\\Flagged" })
-    }
   })
 }
 

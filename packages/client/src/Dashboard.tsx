@@ -116,26 +116,14 @@ export default function Dashboard({ accountId, navigate }: Props) {
   const conversations = data && data.account && data.account.conversations
   const [selected, dispatch] = Sel.useSelectedConversations(conversations)
 
-  let isStarred =
+  //if not all selected star, we want to star instead of unstar
+  const isStarred =
     !!conversations &&
     conversations
       .filter(conversation =>
         selected.some(conversationId => conversation.id === conversationId)
       )
-      .reduce(
-        (isStarred, conversation) => isStarred || conversation.isStarred,
-        false
-      )
-
-  if (isStarred && selected.length > 1) {
-    isStarred =
-      !!conversations &&
-      conversations
-        .filter(conversation =>
-          selected.some(conversationId => conversation.id === conversationId)
-        )
-        .every(conversation => conversation.isStarred)
-  }
+      .every(conversation => conversation.isStarred)
 
   // TODO: is there a way to guarantee that `accountId` is available?
   if (!accountId) {
@@ -290,7 +278,7 @@ function SelectedActionsBar({
             </IconButton>
           </Tooltip>
           <Tooltip
-            title={(isStarred ? "Unstar " : "Star ") + "Selected Conversation"}
+            title={(isStarred ? "Unstar " : "Star ") + "Selected Conversations"}
             enterDelay={500}
             leaveDelay={200}
           >
