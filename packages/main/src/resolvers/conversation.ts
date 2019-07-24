@@ -1,11 +1,12 @@
 import * as htmlToText from "html-to-text"
 import { List, Seq } from "immutable"
 import replyParser from "node-email-reply-parser"
+import { idFromHeaderValue } from "poodle-common/lib/models/uri"
 import * as cache from "../cache"
 import { composeEdit, composeNewConversation, composeReply } from "../compose"
 import {
-  ConversationResolvers,
   ConversationMutationsResolvers,
+  ConversationResolvers,
   ConversationSearchResult,
   MutationResolvers,
   QueryResolvers
@@ -15,7 +16,6 @@ import * as C from "../models/conversation"
 import { actions, schedule } from "../queue"
 import { nonNull } from "../util/array"
 import * as types from "./types"
-import { idFromHeaderValue } from "poodle-common/lib/models/uri"
 
 export const Conversation: ConversationResolvers = {
   date(conversation: C.Conversation) {
@@ -47,6 +47,12 @@ export const Conversation: ConversationResolvers = {
   isRead({ messages }: C.Conversation) {
     return messages.every(message =>
       cache.getFlags(message.id).includes("\\Seen")
+    )
+  },
+
+  isStarred({ messages }: C.Conversation) {
+    return messages.some(message =>
+      cache.getFlags(message.id).includes("\\Flagged")
     )
   },
 
@@ -91,10 +97,26 @@ export const ConversationMutations: ConversationMutationsResolvers = {
     return thread
   },
 
-  async edit(
-    _parent,
-    { accountId, conversationId, resource, revision, content }
-  ) {
+  async flag(_parent, { ids, isFlagged }) {
+    let threads: C.Conversation[] = []
+    for (const id of ids) {
+      const thread = C.mustGetConversation(id)
+      updateAction(thread.messages, (accountId, box, uids) => {
+        schedule(
+          actions.setFlagged({
+            accountId: String(accountId),
+            box,
+            uids: uids.slice(-1),
+            isFlagged
+          })
+        )
+      })
+      threads.push(C.mustGetConversation(id))
+    }
+    return threads
+  },
+
+  async edit(_parent, { accountId, conversationId, revision, content }) {
     const account = mustGetAccount(accountId)
     const conversation = C.mustGetConversation(conversationId)
     const editedPart = cache.getPartByContentId(revision)

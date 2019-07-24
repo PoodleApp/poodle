@@ -1,17 +1,21 @@
 import * as graphql from "../generated/graphql"
 
 export const conversation: graphql.Conversation = {
+  __typename: "Conversation",
   id: "1",
   date: "2019-06-17T17:20:20.806Z",
   from: {
+    __typename: "Address",
     name: null,
     mailbox: "jesse",
     host: "sitr.us"
   },
   labels: [],
   replyRecipients: {
+    __typename: "Participants",
     to: [
       {
+        __typename: "Address",
         name: null,
         mailbox: "jesse",
         host: "sitr.us"
@@ -22,16 +26,20 @@ export const conversation: graphql.Conversation = {
   },
   presentableElements: [
     {
+      __typename: "Presentable",
       id: "11",
       isRead: true,
       contents: [
         {
+          __typename: "Content",
           revision: {
+            __typename: "PartSpec",
             messageId:
               "CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com",
             contentId: "text"
           },
           resource: {
+            __typename: "PartSpec",
             messageId:
               "CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-cGEDUoYUzPOfA@mail.gmail.com",
             contentId: "text"
@@ -43,6 +51,7 @@ export const conversation: graphql.Conversation = {
       ],
       date: "2019-06-17T17:20:20.806Z",
       from: {
+        __typename: "Address",
         name: null,
         mailbox: "jesse",
         host: "sitr.us"
@@ -51,16 +60,20 @@ export const conversation: graphql.Conversation = {
       editedBy: null
     },
     {
+      __typename: "Presentable",
       id: "12",
       isRead: true,
       contents: [
         {
+          __typename: "Content",
           revision: {
+            __typename: "PartSpec",
             messageId:
               "CAGM-pNvwffuB_LRE4zP7vaO2noOQ0p0qJ8UmSONP3k8ycyo3HA@mail.gmail.com",
             contentId: "replytext"
           },
           resource: {
+            __typename: "PartSpec",
             messageId:
               "CAGM-pNvwffuB_LRE4zP7vaO2noOQ0p0qJ8UmSONP3k8ycyo3HA@mail.gmail.com",
             contentId: "replytext"
@@ -72,6 +85,7 @@ export const conversation: graphql.Conversation = {
       ],
       date: "2019-07-17T17:20:20.806Z",
       from: {
+        __typename: "Address",
         name: null,
         mailbox: "ben",
         host: "test.us"
@@ -80,12 +94,14 @@ export const conversation: graphql.Conversation = {
       editedBy: null
     }
   ],
+  isStarred: false,
   isRead: true,
   snippet: "Hello from test",
   subject: "Test Thread"
 }
 
 export const account: graphql.Account = {
+  __typename: "Account",
   id: "1",
   conversations: [conversation],
   email: "jesse@sitr.us",
@@ -124,7 +140,40 @@ export const archiveMock = {
   },
   result: {
     data: {
-      conversations: { archive: conversation }
+      conversations: {
+        __typename: "ConversationMutations",
+        archive: conversation
+      }
+    }
+  }
+}
+
+export function flagMock({
+  isFlagged,
+  conversations = [conversation]
+}: {
+  conversations?: graphql.Conversation[]
+  isFlagged: boolean
+}) {
+  return {
+    request: {
+      query: graphql.FlagDocument,
+      variables: {
+        conversationIDs: conversations
+          ? conversations.map(c => c.id)
+          : conversation.id,
+        isFlagged
+      }
+    },
+    result: {
+      data: {
+        conversations: {
+          __typename: "ConversationMutations",
+          flag: conversations
+            ? conversations.map(c => ({ ...c, isStarred: isFlagged }))
+            : conversation
+        }
+      }
     }
   }
 }
@@ -146,6 +195,7 @@ export function replyMock(content: string) {
     result: {
       data: {
         conversations: {
+          __typename: "ConversationMutations",
           reply: conversation
         }
       }
@@ -160,7 +210,10 @@ export const setIsReadMock = {
   },
   result: {
     data: {
-      conversations: { setIsRead: { ...conversation, isRead: true } }
+      conversations: {
+        __typename: "ConversationMutations",
+        setIsRead: { ...conversation, isRead: true }
+      }
     }
   }
 }
