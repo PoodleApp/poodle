@@ -106,6 +106,8 @@ export default function Conversation({
     conversationId: conversationId!
   })
 
+  const [flag, flagResult] = graphql.useFlagMutation()
+
   const setIsReadResult = useSetIsRead(data && data.conversation)
 
   // TODO: is there a way to guarantee that `accountId` and `conversationId` are available?
@@ -129,11 +131,19 @@ export default function Conversation({
     navigate!(`/accounts/${accountId}/dashboard`)
   }
 
+  async function onFlag() {
+    await (conversationId &&
+      flag({
+        variables: { conversationIDs: [conversationId!], isFlagged: !isStarred }
+      }))
+  }
+
   const {
     labels,
     presentableElements,
     replyRecipients,
-    subject
+    subject,
+    isStarred
   } = data.conversation
 
   return (
@@ -171,12 +181,25 @@ export default function Conversation({
               <ArchiveIcon />
             </IconButton>
           </Tooltip>
+          <Tooltip
+            title={(isStarred ? "Unstar " : "Star ") + "Conversation"}
+            enterDelay={500}
+            leaveDelay={200}
+          >
+            <IconButton
+              color="inherit"
+              aria-label={isStarred ? "unstar" : "star"}
+              onClick={onFlag}
+            >
+              {isStarred ? <StarBorder /> : <StarIcon />}
+            </IconButton>
+          </Tooltip>
         </Toolbar>
       </AppBar>
       <CssBaseline />
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        <DisplayErrors results={[archiveResult, setIsReadResult]} />
+        <DisplayErrors results={[archiveResult, setIsReadResult, flagResult]} />
         {labels
           ? labels.map(label => (
               <span className="label" key={label}>

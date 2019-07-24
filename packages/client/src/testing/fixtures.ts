@@ -150,19 +150,31 @@ export const archiveMock = {
   }
 }
 
-export const flagMock = {
-  request: {
-    query: graphql.FlagDocument,
-    variables: {
-      conversationIDs: [conversation.id],
-      isFlagged: true
-    }
-  },
-  result: {
-    data: {
-      conversations: {
-        __typename: "ConversationMutations",
-        flag: { ...conversation, isStarred: true }
+export function flagMock({
+  isFlagged,
+  conversations = [conversation]
+}: {
+  conversations?: graphql.Conversation[]
+  isFlagged: boolean
+}) {
+  return {
+    request: {
+      query: graphql.FlagDocument,
+      variables: {
+        conversationIDs: conversations
+          ? conversations.map(c => c.id)
+          : conversation.id,
+        isFlagged
+      }
+    },
+    result: {
+      data: {
+        conversations: {
+          __typename: "ConversationMutations",
+          flag: conversations
+            ? conversations.map(c => ({ ...c, isStarred: isFlagged }))
+            : conversation
+        }
       }
     }
   }

@@ -85,6 +85,34 @@ describe("reply recipients", () => {
   })
 })
 
+describe("reply", () => {
+  it("has a Content-ID header", async () => {
+    const content = {
+      type: "text",
+      subtype: "plain",
+      content: "What I meant to say was, hello!"
+    }
+
+    const { attributes } = composeReply({
+      account,
+      content,
+      conversation: conversationFrom(testThread)
+    })
+
+    expect(attributes).toMatchObject({
+      struct: [
+        {
+          id: expect.any(String),
+          partID: "1",
+          type: content.type,
+          subtype: content.subtype,
+          params: { charset: "UTF-8" }
+        }
+      ]
+    })
+  })
+})
+
 afterEach(() => {
   db.prepare("delete from accounts").run()
 })

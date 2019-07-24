@@ -81,6 +81,52 @@ it("edits a message", () => {
   })
 })
 
+it("has a Content-ID header", async () => {
+  const content = {
+    type: "text",
+    subtype: "plain",
+    content: "What I meant to say was, hello!"
+  }
+  const testMessage = testThread[1].attributes
+  const testPart = testMessage.struct![0] as imap.ImapMessagePart
+  const editedMessage = {
+    envelope_messageId: testMessage.envelope.messageId
+  }
+  const editedPart = {
+    content_id: testPart.id
+  }
+  const { attributes } = composeEdit({
+    account,
+    content,
+    conversation: conversationFrom(testThread),
+    editedMessage,
+    editedPart
+  })
+
+  expect(attributes).toMatchObject({
+    struct: [
+      {
+        type: "multipart",
+        subtype: "mixed"
+      },
+      [
+        {
+          type: "text",
+          subtype: "plain",
+          id: expect.any(String)
+        }
+      ],
+      [
+        {
+          type: content.type,
+          subtype: content.subtype,
+          id: expect.any(String)
+        }
+      ]
+    ]
+  })
+})
+
 function conversationFrom(
   messages: Array<{ attributes: MessageAttributes }>
 ): C.Conversation {
@@ -89,3 +135,7 @@ function conversationFrom(
   }
   return cache.getThreads(accountId)[0]
 }
+
+afterEach(async () => {
+  db.prepare("delete from accounts").run()
+})

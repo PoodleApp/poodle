@@ -10,7 +10,7 @@ import * as $ from "./testing/fixtures"
 
 it("stars a conversation in list view", async () => {
   const app = mount(<Dashboard accountId={$.account.id} />, {
-    mocks: [$.getAccountMock, $.flagMock]
+    mocks: [$.getAccountMock, $.flagMock({ isFlagged: true })]
   })
 
   await updates(app)
@@ -35,21 +35,7 @@ it("un-stars a conversation in list view", async () => {
           }
         }
       },
-      {
-        ...$.flagMock,
-        request: {
-          ...$.flagMock.request,
-          variables: { ...$.flagMock.request.variables, isFlagged: false }
-        },
-        result: {
-          data: {
-            conversations: {
-              ...$.flagMock.result.data.conversations,
-              flag: { ...$.conversation, isStarred: false }
-            }
-          }
-        }
-      }
+      $.flagMock({ isFlagged: false })
     ]
   })
 
@@ -78,27 +64,10 @@ it("stars selected conversations when some are unstarred", async () => {
           }
         }
       },
-      {
-        ...$.flagMock,
-        request: {
-          ...$.flagMock.request,
-          variables: {
-            conversationIDs: ["2", $.conversation.id],
-            isFlagged: true
-          }
-        },
-        result: {
-          data: {
-            conversations: {
-              ...$.flagMock.result.data.conversations,
-              flag: [
-                { ...$.conversation, id: "2", isStarred: true },
-                { ...$.conversation, isStarred: true }
-              ]
-            }
-          }
-        }
-      }
+      $.flagMock({
+        isFlagged: true,
+        conversations: [{ ...$.conversation, id: "2" }, $.conversation]
+      })
     ]
   })
 
@@ -138,27 +107,10 @@ it("unstars selected conversations when all are starred", async () => {
           }
         }
       },
-      {
-        ...$.flagMock,
-        request: {
-          ...$.flagMock.request,
-          variables: {
-            conversationIDs: ["2", $.conversation.id],
-            isFlagged: false
-          }
-        },
-        result: {
-          data: {
-            conversations: {
-              ...$.flagMock.result.data.conversations,
-              flag: [
-                { ...$.conversation, id: "2", isStarred: false },
-                { ...$.conversation, isStarred: false }
-              ]
-            }
-          }
-        }
-      }
+      $.flagMock({
+        isFlagged: false,
+        conversations: [{ ...$.conversation, id: "2" }, $.conversation]
+      })
     ]
   })
 
