@@ -1,5 +1,5 @@
 import imap from "imap"
-import { Range, Seq, Set } from "immutable"
+import { Collection, List, Range, Seq, Set } from "immutable"
 import * as kefir from "kefir"
 import moment from "moment"
 import * as cache from "./cache"
@@ -87,7 +87,7 @@ class BoxSync {
   }
 
   async search(searchRecord: cache.Search) {
-    const uids = Seq(
+    const uids = List(
       await this.manager
         .request(
           request.actions.search(this.box, [["X-GM-RAW", searchRecord.query]])
@@ -133,41 +133,34 @@ class BoxSync {
   }
 
   async sync() {
-    const lastSeen = cache.lastSeenUid({ boxId: this.boxId })
+    const lastSeen = cache.lastSeenUid({ boxId: this.boxId }) || 0
     const filter = (event: request.FetchResponse) =>
       matchesCachePolicy(request.messageAttributes(event))
 
     // Fetch new messages
-    if (lastSeen < this.box.uidnext - 1) {
-      await this.downloadMessagesInBatches({
-        uids: Range(this.box.uidnext - 1, lastSeen, -1),
-        filter,
-        shouldContinue: async messagesStream => {
-          const messages = await kefirUtil.takeAll(messagesStream).toPromise()
-          const oldestDate = Seq(messages)
-            .map(message => message.date)
-            .sort()
-            .reverse()
-            .first(null)
-          return !oldestDate || oldestDate >= cachePolicy.since
-        },
-        fetchOptions: {
-          bodies: "HEADER",
-          envelope: true,
-          struct: true
-        }
-      })
-    } else {
-      await this.captureResponses(
-        this.manager.request(
-          request.actions.fetch(this.box, `${lastSeen + 1}:*`, {
-            bodies: "HEADER",
-            envelope: true,
-            struct: true
-          })
+    const newMessageUids = List(
+      await this.manager
+        .request(
+          request.actions.search(this.box, [
+            ["UID", `${lastSeen + 1}:*`],
+            ["SINCE", moment(cachePolicy.since).format("LL")]
+          ])
         )
-      )
-    }
+        .toPromise()
+    )
+      .map(uid => parseInt(uid, 10))
+      .sort()
+      .reverse()
+
+    await this.downloadMessagesInBatches({
+      uids: newMessageUids,
+      filter,
+      fetchOptions: {
+        bodies: "HEADER",
+        envelope: true,
+        struct: true
+      }
+    })
 
     // Record the fact that we have checked for messages up to UID `uidnext - 1`
     cache.saveUidLastSeen({ boxId: this.boxId, uid: this.box.uidnext - 1 })
@@ -178,7 +171,7 @@ class BoxSync {
       max: lastSeen
     })
     await this.downloadMessagesInBatches({
-      uids: Seq(cachedUids)
+      uids: List(cachedUids)
     })
 
     cache.removeStaleMessages(this.boxId, this.updatedAt)
@@ -217,7 +210,7 @@ class BoxSync {
     uids,
     afterEachBatch
   }: {
-    uids: Seq.Indexed<number>
+    uids: Collection.Indexed<number>
     afterEachBatch?: (batch: Iterable<number>) => void
   }) {
     const filteredUids = uids.filter(
@@ -242,15 +235,11 @@ class BoxSync {
   private async downloadMessagesInBatches({
     uids,
     filter = () => true,
-    shouldContinue = async () => true,
     afterEachBatch,
     fetchOptions
   }: {
-    uids: Seq.Indexed<number>
+    uids: Collection.Indexed<number>
     filter?: (event: request.FetchResponse) => boolean
-    shouldContinue?: (
-      messages: R<imap.ImapMessageAttributes>
-    ) => Promise<boolean>
     afterEachBatch?: (batch: Iterable<number>) => void
     fetchOptions?: imap.FetchOptions
   }): Promise<void> {
@@ -267,25 +256,18 @@ class BoxSync {
       request.actions.fetch(this.box, fetchQuery(batch), fetchOptions)
     )
 
-    const continueToNextBatch = shouldContinue(
-      fetchResponses.filter(request.isMessage).map(m => m.attributes)
-    )
-
     await this.captureResponses(fetchResponses.filter(filter))
     if (afterEachBatch) {
       afterEachBatch(batchSnapshot)
     }
     await this.fetchMissingBodiesAndPartHeaders()
 
-    if (await continueToNextBatch) {
-      await this.downloadMessagesInBatches({
-        uids: rest,
-        filter,
-        shouldContinue,
-        afterEachBatch,
-        fetchOptions
-      })
-    }
+    await this.downloadMessagesInBatches({
+      uids: rest,
+      filter,
+      afterEachBatch,
+      fetchOptions
+    })
   }
 
   private async fetchMissingBodiesAndPartHeaders() {
@@ -374,7 +356,9 @@ function matchesCachePolicy(message: imap.ImapMessageAttributes): boolean {
   return true
 }
 
-export function fetchQuery(uids: Seq.Indexed<number>): string | number[] {
+export function fetchQuery(
+  uids: Collection.Indexed<number>
+): string | number[] {
   if (uids instanceof Range) {
     const {
       _start,

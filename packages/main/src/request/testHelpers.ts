@@ -3,6 +3,7 @@ import { EventEmitter } from "events"
 import equal from "fast-deep-equal"
 import { default as Connection, default as imap } from "imap"
 import { Range, Seq, Set } from "immutable"
+import moment from "moment"
 import { Transporter } from "nodemailer"
 import Mailer from "nodemailer/lib/mailer"
 import { Readable } from "stream"
@@ -56,31 +57,50 @@ export function mockConnection({
       return
     }
 
-    let uids = Set<number>()
-    for (const c of criteria) {
+    const allUids = Set<number>(
+      thread.map(({ attributes }) => attributes.uid).filter(nonNull)
+    )
+
+    const uids = criteria.reduce((accum: Set<number>, c) => {
       if (c instanceof Array && c[0] === "HEADER" && c[1] === "Message-ID") {
         const messageId = c[2]
-        uids = uids.concat(
-          testThread
+        return accum.filter(uid =>
+          thread
             .filter(({ headers }) =>
               headers.some(
                 ([key, value]) => key === "message-id" && value === messageId
               )
             )
-            .map(({ attributes }) => attributes.uid)
-            .filter(nonNull)
+            .some(({ attributes }) => uid === attributes.uid)
         )
       }
-      if (
-        c instanceof Array &&
-        c[0] === "X-GM-THRID" &&
-        c[1] === thread[0].attributes["x-gm-thrid"]
-      ) {
-        uids = uids.concat(
-          testThread.map(({ attributes }) => attributes.uid).filter(nonNull)
+
+      if (c instanceof Array && c[0] === "SINCE") {
+        const since = moment(c[1], "LL")
+        return accum.filter(uid =>
+          thread.some(
+            ({ attributes }) =>
+              uid === attributes.uid && since.isBefore(attributes.date)
+          )
         )
       }
-    }
+
+      if (c instanceof Array && c[0] === "UID") {
+        const uidRange = parseRange(c[1])
+        return accum.filter(uid => uidRange.includes(uid))
+      }
+
+      if (c instanceof Array && c[0] === "X-GM-THRID") {
+        const thrid = c[1]
+        return accum.filter(uid =>
+          thread.some(
+            ({ attributes }) =>
+              uid === attributes.uid && thrid === attributes["x-gm-thrid"]
+          )
+        )
+      }
+    }, allUids)
+
     cb(
       null,
       uids
