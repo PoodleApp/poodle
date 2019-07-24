@@ -94,6 +94,7 @@ export const conversation: graphql.Conversation = {
       editedBy: null
     }
   ],
+  isStarred: false,
   isRead: true,
   snippet: "Hello from test",
   subject: "Test Thread"
@@ -192,6 +193,7 @@ export const conversation2: graphql.Conversation = {
     }
   ],
   isRead: true,
+  isStarred: false,
   snippet: "What, again?",
   subject: "Another conversation"
 }
@@ -239,6 +241,36 @@ export const archiveMock = {
       conversations: {
         __typename: "ConversationMutations",
         archive: conversation
+      }
+    }
+  }
+}
+
+export function flagMock({
+  isFlagged,
+  conversations = [conversation]
+}: {
+  conversations?: graphql.Conversation[]
+  isFlagged: boolean
+}) {
+  return {
+    request: {
+      query: graphql.FlagDocument,
+      variables: {
+        conversationIDs: conversations
+          ? conversations.map(c => c.id)
+          : conversation.id,
+        isFlagged
+      }
+    },
+    result: {
+      data: {
+        conversations: {
+          __typename: "ConversationMutations",
+          flag: conversations
+            ? conversations.map(c => ({ ...c, isStarred: isFlagged }))
+            : conversation
+        }
       }
     }
   }

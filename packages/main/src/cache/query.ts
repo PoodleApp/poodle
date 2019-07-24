@@ -1,5 +1,4 @@
 import imap from "imap"
-import { Collection } from "immutable"
 import db from "../db"
 import { nonNull } from "../util/array"
 import { Account, Box, ID, Message, MessagePart, Thread } from "./types"

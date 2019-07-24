@@ -411,6 +411,62 @@ describe("when querying conversations", () => {
     })
   })
 
+  it("stars a conversation", async () => {
+    const result = await request(
+      `
+      mutation flag($conversationIDs: [ID!]!, $isFlagged: Boolean!) {
+        conversations {
+          flag(ids: $conversationIDs, isFlagged: $isFlagged) {
+            id
+            isStarred
+          }
+        }
+      }
+      `,
+      { conversationIDs: [conversationId], isFlagged: true }
+    )
+    expect(result).toEqual({
+      data: {
+        conversations: {
+          flag: [
+            {
+              id: conversationId,
+              isStarred: true
+            }
+          ]
+        }
+      }
+    })
+  })
+
+  it("un-stars a conversation", async () => {
+    const result = await request(
+      `
+      mutation flag($conversationIDs: [ID!]!, $isFlagged: Boolean!) {
+        conversations {
+          flag(ids: $conversationIDs, isFlagged: $isFlagged) {
+            id
+            isStarred
+          }
+        }
+      }
+      `,
+      { conversationIDs: [conversationId], isFlagged: false }
+    )
+    expect(result).toEqual({
+      data: {
+        conversations: {
+          flag: [
+            {
+              id: conversationId,
+              isStarred: false
+            }
+          ]
+        }
+      }
+    })
+  })
+
   it("accepts a reply to a conversation", async () => {
     const result = await request(
       `
