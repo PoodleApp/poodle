@@ -127,7 +127,6 @@ export default function Dashboard({ accountId, navigate }: Props) {
         false
       )
 
-  //if not all selected star, we want to star instead of unstar
   if (isStarred && selected.length > 1) {
     isStarred =
       !!conversations &&
