@@ -78,7 +78,7 @@ export default function Accounts(_props: RouteComponentProps) {
   const [open, setOpen] = React.useState(false)
 
   const handleClick = () => {
-    open ? setOpen(false) : setOpen(true)
+    setOpen(!open)
   }
 
   const handleClose = () => {
