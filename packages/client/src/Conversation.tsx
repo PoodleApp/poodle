@@ -10,15 +10,12 @@ import {
   Menu,
   MenuItem,
   Toolbar,
-  Tooltip,
   Typography
 } from "@material-ui/core"
 import ArchiveIcon from "@material-ui/icons/Archive"
 import CloseIcon from "@material-ui/icons/Close"
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore"
 import MoreVertIcon from "@material-ui/icons/MoreVert"
-import StarIcon from "@material-ui/icons/Star"
-import StarBorder from "@material-ui/icons/StarBorder"
 import { Redirect, RouteComponentProps } from "@reach/router"
 import clsx from "clsx"
 import moment from "moment"
@@ -105,9 +102,6 @@ export default function Conversation({
     accountId: accountId!,
     conversationId: conversationId!
   })
-
-  const [flag, flagResult] = graphql.useFlagMutation()
-
   const setIsReadResult = useSetIsRead(data && data.conversation)
 
   // TODO: is there a way to guarantee that `accountId` and `conversationId` are available?
@@ -131,19 +125,11 @@ export default function Conversation({
     navigate!(`/accounts/${accountId}/dashboard`)
   }
 
-  async function onFlag() {
-    await (conversationId &&
-      flag({
-        variables: { conversationIDs: [conversationId!], isFlagged: !isStarred }
-      }))
-  }
-
   const {
     labels,
     presentableElements,
     replyRecipients,
-    subject,
-    isStarred
+    subject
   } = data.conversation
 
   return (
@@ -168,38 +154,15 @@ export default function Conversation({
           >
             {subject}
           </Typography>
-          <Tooltip
-            title="Archive Conversation"
-            enterDelay={500}
-            leaveDelay={200}
-          >
-            <IconButton
-              color="inherit"
-              aria-label="archive"
-              onClick={onArchive}
-            >
-              <ArchiveIcon />
-            </IconButton>
-          </Tooltip>
-          <Tooltip
-            title={(isStarred ? "Unstar " : "Star ") + "Conversation"}
-            enterDelay={500}
-            leaveDelay={200}
-          >
-            <IconButton
-              color="inherit"
-              aria-label={isStarred ? "unstar" : "star"}
-              onClick={onFlag}
-            >
-              {isStarred ? <StarBorder /> : <StarIcon />}
-            </IconButton>
-          </Tooltip>
+          <IconButton color="inherit" aria-label="archive" onClick={onArchive}>
+            <ArchiveIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
       <CssBaseline />
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        <DisplayErrors results={[archiveResult, setIsReadResult, flagResult]} />
+        <DisplayErrors results={[archiveResult, setIsReadResult]} />
         {labels
           ? labels.map(label => (
               <span className="label" key={label}>

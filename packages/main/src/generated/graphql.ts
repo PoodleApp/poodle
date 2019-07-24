@@ -93,7 +93,6 @@ export type Conversation = {
   messageId?: Maybe<Scalars["String"]>
   presentableElements: Array<Presentable>
   isRead: Scalars["Boolean"]
-  isStarred: Scalars["Boolean"]
   replyRecipients: Participants
   snippet?: Maybe<Scalars["String"]>
   subject?: Maybe<Scalars["String"]>
@@ -106,7 +105,6 @@ export type ConversationReplyRecipientsArgs = {
 export type ConversationMutations = {
   __typename?: "ConversationMutations"
   archive: Conversation
-  flag: Array<Conversation>
   edit: Conversation
   reply: Conversation
   setIsRead: Conversation
@@ -115,11 +113,6 @@ export type ConversationMutations = {
 
 export type ConversationMutationsArchiveArgs = {
   id: Scalars["ID"]
-}
-
-export type ConversationMutationsFlagArgs = {
-  ids: Array<Scalars["ID"]>
-  isFlagged: Scalars["Boolean"]
 }
 
 export type ConversationMutationsEditArgs = {
@@ -439,7 +432,6 @@ export type ConversationResolvers<
     ContextType
   >
   isRead?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>
-  isStarred?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>
   replyRecipients?: Resolver<
     ResolversTypes["Participants"],
     ParentType,
@@ -459,12 +451,6 @@ export type ConversationMutationsResolvers<
     ParentType,
     ContextType,
     ConversationMutationsArchiveArgs
-  >
-  flag?: Resolver<
-    Array<ResolversTypes["Conversation"]>,
-    ParentType,
-    ContextType,
-    ConversationMutationsFlagArgs
   >
   edit?: Resolver<
     ResolversTypes["Conversation"],

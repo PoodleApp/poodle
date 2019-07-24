@@ -22,7 +22,6 @@ query getAccount($accountId: ID!) {
         name
       }
       isRead
-      isStarred
       labels
       snippet
       subject
@@ -89,7 +88,6 @@ query getConversation($id: ID!, $accountId: ID!) {
       }
     }
     isRead
-    isStarred
     labels
     replyRecipients(fromAccountId: $accountId) {
       from {
@@ -184,25 +182,6 @@ mutation archive($conversationId: ID!) {
         name
       }
       isRead
-      labels
-      snippet
-      subject
-    }
-  }
-}
-
-mutation flag($conversationIDs: [ID!]!, $isFlagged: Boolean!) {
-  conversations {
-    flag(ids: $conversationIDs, isFlagged: $isFlagged) {
-      id
-      date
-      from {
-        host
-        mailbox
-        name
-      }
-      isRead
-      isStarred
       labels
       snippet
       subject

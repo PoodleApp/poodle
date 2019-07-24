@@ -31,7 +31,7 @@ export function mount(
   } = {}
 ): enzyme.ReactWrapper {
   const wrapper = enzyme.mount(
-    <MockedProvider mocks={mocks}>
+    <MockedProvider addTypename={false} mocks={mocks}>
       <LocationProvider history={history}>{element}</LocationProvider>
     </MockedProvider>
   )
