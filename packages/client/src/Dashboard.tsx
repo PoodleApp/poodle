@@ -286,7 +286,11 @@ function SelectedActionsBar({
               aria-label={isStarred ? "unstar" : "star"}
               onClick={onFlag}
             >
-              {isStarred ? <StarIcon /> : <StarBorder />}
+              {isStarred ? (
+                <StarIcon style={{ fill: "gold" }} />
+              ) : (
+                <StarBorder />
+              )}
             </IconButton>
           </Tooltip>
         </Toolbar>

@@ -276,7 +276,11 @@ function Presentable({
                 aria-label={presentable.isStarred ? "unstar" : "star"}
                 onClick={onFlag}
               >
-                {presentable.isStarred ? <StarIcon /> : <StarBorder />}
+                {presentable.isStarred ? (
+                  <StarIcon style={{ fill: "gold" }} />
+                ) : (
+                  <StarBorder />
+                )}
               </IconButton>
             </Tooltip>
             <DisplayErrors results={[flagResult]} />
