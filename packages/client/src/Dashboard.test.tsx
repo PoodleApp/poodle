@@ -1,9 +1,6 @@
 import { ListItemText } from "@material-ui/core"
-import StarIcon from "@material-ui/icons/Star"
-import StarBorder from "@material-ui/icons/StarBorder"
 import * as React from "react"
 import Avatar from "./Avatar"
-import Conversation from "./Conversation"
 import Dashboard from "./Dashboard"
 import { mount, updates } from "./testing"
 import * as $ from "./testing/fixtures"
@@ -131,63 +128,4 @@ it("unstars selected conversations when all are starred", async () => {
       .find(ListItemText)
       .filterWhere(node => node.prop("id") === "conversation-row-2")
   ).not.toIncludeText("⭐ ")
-})
-
-it("stars a presentable in conversation view", async () => {
-  const app = mount(
-    <Conversation
-      accountId={$.account.id}
-      conversationId={$.conversation.id}
-    />,
-    {
-      mocks: [
-        $.getConversationMock,
-        $.flagPresentableMock({ isFlagged: true, presentableId: "11" })
-      ]
-    }
-  )
-
-  await updates(app)
-  app.find('button[aria-controls="star-11"]').simulate("click")
-  await updates(app, 100)
-
-  expect(app.find(StarBorder)).toExist()
-})
-
-it("un-stars a presentable in conversation view", async () => {
-  const app = mount(
-    <Conversation
-      accountId={$.account.id}
-      conversationId={$.conversation.id}
-    />,
-    {
-      mocks: [
-        {
-          ...$.getConversationMock,
-          result: {
-            data: {
-              conversation: {
-                ...$.conversation,
-                isStarred: true,
-                presentableElements: [
-                  {
-                    ...$.conversation.presentableElements[0],
-                    isStarred: true
-                  },
-                  { ...$.conversation.presentableElements[1] }
-                ]
-              }
-            }
-          }
-        },
-        $.flagPresentableMock({ isFlagged: false, presentableId: "11" })
-      ]
-    }
-  )
-
-  await updates(app)
-  app.find('button[aria-controls="star-11"]').simulate("click")
-  await updates(app, 15)
-
-  expect(app.find(StarIcon)).toExist()
 })

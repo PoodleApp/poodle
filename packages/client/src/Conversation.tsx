@@ -234,12 +234,11 @@ function Presentable({
   function handleClose() {
     setAnchorEl(null)
   }
-
   async function onFlag() {
     await (conversationId &&
       flag({
         variables: {
-          conversationId: conversationId!,
+          conversationId: conversationId,
           isFlagged: !presentable.isStarred,
           presentableId: presentable.id
         }
@@ -260,7 +259,7 @@ function Presentable({
           <div>
             <IconButton
               aria-label="Action"
-              aria-controls={`${presentable.id}-menu`}
+              aria-controls={`menu-${presentable.id}`}
               aria-haspopup="true"
               onClick={handleClick}
             >
@@ -274,11 +273,10 @@ function Presentable({
               leaveDelay={200}
             >
               <IconButton
-                aria-controls={`star-${presentable.id}`}
                 aria-label={presentable.isStarred ? "unstar" : "star"}
                 onClick={onFlag}
               >
-                {presentable.isStarred ? <StarBorder /> : <StarIcon />}
+                {presentable.isStarred ? <StarIcon /> : <StarBorder />}
               </IconButton>
             </Tooltip>
             <DisplayErrors results={[flagResult]} />
@@ -295,7 +293,7 @@ function Presentable({
             </IconButton>
 
             <Menu
-              id={`${presentable.id}-menu`}
+              id={`menu-${presentable.id}`}
               anchorEl={anchorEl}
               keepMounted
               open={Boolean(anchorEl)}

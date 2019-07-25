@@ -150,6 +150,41 @@ export const archiveMock = {
   }
 }
 
+// export function editMock({
+//   revision,
+//   content,
+//   accountId
+// }: {
+//   revision: graphql.PartSpecInput,
+//   content: graphql.ContentInput,
+//   accountId: string
+// }) {
+//   return {
+//     request: {
+//       query: graphql.EditDocument,
+//       variables: {
+//         accountId,
+//         conversationId: conversation.id,
+//         revision,
+//         content
+//       }
+//     },
+//     result: {
+//       data: {
+//         conversations: {
+//           _typename: "ConversationMutation"
+//           edit: {...conversation, presentableElements: [
+//             {
+//               ...conversation.presentableElements[0],
+
+//             }
+//           ]}
+//         }
+//       }
+//     }
+//   }
+// }
+
 export function flagMock({
   isFlagged,
   conversations = [conversation]
@@ -200,7 +235,19 @@ export function flagPresentableMock({
       data: {
         conversations: {
           __typename: "ConversationMutations",
-          flagPresentable: conversation
+          flagPresentable: {
+            ...conversation,
+            isStarred: isFlagged,
+            presentableElements: [
+              {
+                ...conversation.presentableElements[0],
+                isStarred: isFlagged
+              },
+              {
+                ...conversation.presentableElements[1]
+              }
+            ]
+          }
         }
       }
     }

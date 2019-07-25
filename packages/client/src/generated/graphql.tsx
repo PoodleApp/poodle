@@ -470,21 +470,7 @@ export type FlagMutationVariables = {
 export type FlagMutation = { __typename?: "Mutation" } & {
   conversations: { __typename?: "ConversationMutations" } & {
     flag: Array<
-      { __typename?: "Conversation" } & Pick<
-        Conversation,
-        | "id"
-        | "date"
-        | "isRead"
-        | "isStarred"
-        | "labels"
-        | "snippet"
-        | "subject"
-      > & {
-          from: { __typename?: "Address" } & Pick<
-            Address,
-            "host" | "mailbox" | "name"
-          >
-        }
+      { __typename?: "Conversation" } & Pick<Conversation, "id" | "isStarred">
     >
   }
 }
@@ -499,11 +485,10 @@ export type FlagPresentableMutation = { __typename?: "Mutation" } & {
   conversations: { __typename?: "ConversationMutations" } & {
     flagPresentable: { __typename?: "Conversation" } & Pick<
       Conversation,
-      "id" | "date" | "isRead" | "isStarred"
+      "id" | "isStarred"
     > & {
-        from: { __typename?: "Address" } & Pick<
-          Address,
-          "host" | "mailbox" | "name"
+        presentableElements: Array<
+          { __typename?: "Presentable" } & Pick<Presentable, "id" | "isStarred">
         >
       }
   }
@@ -2260,66 +2245,7 @@ export const FlagDocument: DocumentNode = {
                       },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "date" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "from" },
-                        arguments: [],
-                        directives: [],
-                        selectionSet: {
-                          kind: "SelectionSet",
-                          selections: [
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "host" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "mailbox" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "name" },
-                              arguments: [],
-                              directives: []
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "isRead" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
                         name: { kind: "Name", value: "isStarred" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "labels" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "snippet" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "subject" },
                         arguments: [],
                         directives: []
                       }
@@ -2441,19 +2367,7 @@ export const FlagPresentableDocument: DocumentNode = {
                     selections: [
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "id" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "date" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "from" },
+                        name: { kind: "Name", value: "presentableElements" },
                         arguments: [],
                         directives: [],
                         selectionSet: {
@@ -2461,19 +2375,13 @@ export const FlagPresentableDocument: DocumentNode = {
                           selections: [
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "host" },
+                              name: { kind: "Name", value: "id" },
                               arguments: [],
                               directives: []
                             },
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "mailbox" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "name" },
+                              name: { kind: "Name", value: "isStarred" },
                               arguments: [],
                               directives: []
                             }
@@ -2482,7 +2390,7 @@ export const FlagPresentableDocument: DocumentNode = {
                       },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "isRead" },
+                        name: { kind: "Name", value: "id" },
                         arguments: [],
                         directives: []
                       },

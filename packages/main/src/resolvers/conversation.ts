@@ -118,9 +118,10 @@ export const ConversationMutations: ConversationMutationsResolvers = {
 
   async flagPresentable(_parent, { conversationId, id, isFlagged }) {
     const thread = C.mustGetConversation(conversationId)
-    for (const message of thread.messages) {
-      if (String(message.id) === id) {
-        updateAction([message], (accountId, box, uids) => {
+    const presentables = C.getPresentableElements(thread)
+    for (const presentable of presentables) {
+      if (presentable.id === id) {
+        updateAction(presentable.revisions, (accountId, box, uids) => {
           schedule(
             actions.setFlagged({
               accountId: String(accountId),
@@ -133,7 +134,7 @@ export const ConversationMutations: ConversationMutationsResolvers = {
       }
     }
 
-    return C.mustGetConversation(conversationId)
+    return thread
   },
 
   async edit(_parent, { accountId, conversationId, revision, content }) {
@@ -225,7 +226,7 @@ function setIsRead(messages: cache.Message[], isRead: boolean) {
  * Groups messages by account and box as a convenience for dispatching IMAP
  * requests.
  */
-export function updateAction(
+function updateAction(
   messages: cache.Message[],
   fn: (accountId: cache.ID, box: cache.Box, uids: number[]) => void
 ) {

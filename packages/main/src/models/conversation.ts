@@ -2,7 +2,7 @@ import { convert } from "encoding"
 import { Collection, is, List, Seq } from "immutable"
 import { idFromHeaderValue, parseMidUri } from "poodle-common/lib/models/uri"
 import * as cache from "../cache"
-import { Content, Participants, Presentable } from "../generated/graphql"
+import { Address, Content, Participants } from "../generated/graphql"
 import { uniqBy } from "../util/immutable"
 import * as Addr from "./Address"
 import { inlineContentParts } from "./Message"
@@ -10,6 +10,18 @@ import { inlineContentParts } from "./Message"
 export interface Conversation {
   id: string
   messages: cache.Message[]
+}
+
+export interface Presentable {
+  id: string
+  isRead: boolean
+  isStarred: boolean
+  contents: Content[]
+  date: string
+  from: Address
+  editedAt?: string
+  editedBy?: Address
+  revisions: cache.Message[]
 }
 
 export function getConversation(id: string): Conversation | null {
@@ -109,7 +121,9 @@ export function getPresentableElements({
         isRead: cache
           .getFlags(latestEdit ? latestEdit.revision.message.id : message.id)
           .includes("\\Seen"),
-        isStarred: cache.getFlags(message.id).includes("\\Flagged"),
+        isStarred: resources.some(r =>
+          cache.getFlags(r.revision.message.id).includes("\\Flagged")
+        ),
         contents: resources
           .valueSeq()
           .map(getPresentableContent)
@@ -117,6 +131,10 @@ export function getPresentableElements({
         date: message.date,
         from: cache.getParticipants(message.id, "from")[0],
         editedAt: latestEdit && latestEdit.revision.message.date,
+        revisions: resources
+          .valueSeq()
+          .flatMap(r => [r.revision.message])
+          .toArray(),
         editedBy:
           latestEdit &&
           cache.getParticipants(latestEdit.revision.message.id, "from")[0]
