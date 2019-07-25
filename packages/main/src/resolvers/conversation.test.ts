@@ -661,6 +661,49 @@ describe("when querying conversations", () => {
     })
   })
 
+  it("un-stars an edited message", async () => {
+    const revisedContent = "What I meant to say was, hi."
+    await sendEdit({
+      type: "text",
+      subtype: "plain",
+      content: revisedContent
+    })
+    const result = await request(
+      `
+        mutation flagPresentable($presentableId: ID!, $conversationId: ID!, $isFlagged: Boolean!){
+          conversations {
+            flagPresentable(id: $presentableId, conversationId: $conversationId, isFlagged: $isFlagged){
+              presentableElements {
+                id
+                isStarred
+              }
+              id
+              isStarred
+            }
+          }
+        }
+      `,
+      { conversationId: conversationId, isFlagged: false, presentableId }
+    )
+
+    expect(result).toMatchObject({
+      data: {
+        conversations: {
+          flagPresentable: {
+            id: conversationId,
+            isStarred: false,
+            presentableElements: expect.arrayContaining([
+              {
+                id: presentableId,
+                isStarred: false
+              }
+            ])
+          }
+        }
+      }
+    })
+  })
+
   it("applies edits to get updated content", async () => {
     const orig = cache.getThreads(accountId)[0]
     const message = testThread[1].attributes
