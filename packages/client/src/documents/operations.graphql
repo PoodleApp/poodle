@@ -74,6 +74,7 @@ query getConversation($id: ID!, $accountId: ID!) {
         type
         subtype
         content
+        disposition
       }
       date
       from {

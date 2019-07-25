@@ -46,7 +46,8 @@ export const conversation: graphql.Conversation = {
           },
           type: "text",
           subtype: "plain",
-          content: "Hello from test"
+          content: "Hello from test",
+          disposition: graphql.Disposition.Inline
         }
       ],
       date: "2019-06-17T17:20:20.806Z",
@@ -80,7 +81,8 @@ export const conversation: graphql.Conversation = {
           },
           type: "text",
           subtype: "plain",
-          content: "Hello from next test"
+          content: "Hello from next test",
+          disposition: graphql.Disposition.Inline
         }
       ],
       date: "2019-07-17T17:20:20.806Z",

@@ -1,3 +1,8 @@
+enum Disposition {
+  inline
+  attachment
+}
+
 type Account {
   id: ID!
   email: String!
@@ -98,6 +103,7 @@ type Presentable {
 type Content {
   resource: PartSpec!
   revision: PartSpec!
+  disposition: Disposition!
   type: String!
   subtype: String!
   content: String!

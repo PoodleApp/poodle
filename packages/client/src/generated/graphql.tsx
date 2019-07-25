@@ -65,6 +65,7 @@ export type Content = {
   __typename?: "Content"
   resource: PartSpec
   revision: PartSpec
+  disposition: Disposition
   type: Scalars["String"]
   subtype: Scalars["String"]
   content: Scalars["String"]
@@ -143,6 +144,11 @@ export type ConversationSearchResult = {
   __typename?: "ConversationSearchResult"
   conversation: Conversation
   query: Scalars["String"]
+}
+
+export enum Disposition {
+  Inline = "inline",
+  Attachment = "attachment"
 }
 
 export type Message = {
@@ -313,7 +319,7 @@ export type GetConversationQuery = { __typename?: "Query" } & {
               contents: Array<
                 { __typename?: "Content" } & Pick<
                   Content,
-                  "type" | "subtype" | "content"
+                  "type" | "subtype" | "content" | "disposition"
                 > & {
                     revision: { __typename?: "PartSpec" } & Pick<
                       PartSpec,
@@ -1243,6 +1249,12 @@ export const GetConversationDocument: DocumentNode = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "content" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "disposition" },
                               arguments: [],
                               directives: []
                             }
