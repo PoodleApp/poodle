@@ -13,6 +13,7 @@ import {
   ListItemText,
   Paper,
   Toolbar,
+  Tooltip,
   Typography
 } from "@material-ui/core"
 import { makeStyles } from "@material-ui/core/styles"
@@ -23,6 +24,8 @@ import CloseIcon from "@material-ui/icons/Close"
 import MenuIcon from "@material-ui/icons/Menu"
 import RefreshIcon from "@material-ui/icons/Refresh"
 import SearchIcon from "@material-ui/icons/Search"
+import StarIcon from "@material-ui/icons/Star"
+import StarBorder from "@material-ui/icons/StarBorder"
 import { Redirect, RouteComponentProps } from "@reach/router"
 import clsx from "clsx"
 import moment from "moment"
@@ -144,7 +147,17 @@ export default function Dashboard({ accountId, navigate }: Props) {
     : searchResult.data &&
       searchResult.data.account &&
       searchResult.data.account.search.conversations
+
   const [selected, dispatch] = Sel.useSelectedConversations(conversations)
+
+  //if not all selected star, we want to star instead of unstar
+  const isStarred =
+    !!conversations &&
+    conversations
+      .filter(conversation =>
+        selected.some(conversationId => conversation.id === conversationId)
+      )
+      .every(conversation => conversation.isStarred)
 
   // TODO: is there a way to guarantee that `accountId` is available?
   if (!accountId) {
@@ -155,7 +168,11 @@ export default function Dashboard({ accountId, navigate }: Props) {
     <div className={classes.root}>
       <CssBaseline />
       {selected.length > 0 ? (
-        <SelectedActionsBar accountId={accountId} selected={selected} />
+        <SelectedActionsBar
+          accountId={accountId}
+          selected={selected}
+          isStarred={isStarred}
+        />
       ) : isSearching ? (
         <SearchBar
           onChange={(q: string) =>
@@ -321,18 +338,29 @@ function SearchBar({
 
 function SelectedActionsBar({
   accountId,
-  selected
+  selected,
+  isStarred
 }: {
   accountId: string
   selected: string[]
+  isStarred: boolean
 }) {
   const classes = useStyles()
   const [archive, archiveResult] = useArchive({ accountId })
+  const [flag, flagResult] = graphql.useFlagMutation()
+
   function onArchive() {
     for (const conversationId of selected) {
       archive({ variables: { conversationId } })
     }
   }
+
+  async function onFlag() {
+    await flag({
+      variables: { conversationIDs: selected, isFlagged: !isStarred }
+    })
+  }
+
   return (
     <>
       <AppBar
@@ -342,12 +370,30 @@ function SelectedActionsBar({
       >
         <Toolbar className={classes.toolbar}>
           <span className={classes.title} />
-          <IconButton aria-label="archive" onClick={onArchive}>
-            <ArchiveIcon />
-          </IconButton>
+          <Tooltip
+            title="Archive Selected Conversation"
+            enterDelay={500}
+            leaveDelay={200}
+          >
+            <IconButton aria-label="archive" onClick={onArchive}>
+              <ArchiveIcon />
+            </IconButton>
+          </Tooltip>
+          <Tooltip
+            title={(isStarred ? "Unstar " : "Star ") + "Selected Conversations"}
+            enterDelay={500}
+            leaveDelay={200}
+          >
+            <IconButton
+              aria-label={isStarred ? "unstar" : "star"}
+              onClick={onFlag}
+            >
+              {isStarred ? <StarBorder /> : <StarIcon />}
+            </IconButton>
+          </Tooltip>
         </Toolbar>
       </AppBar>
-      <DisplayErrors results={[archiveResult]} />
+      <DisplayErrors results={[archiveResult, flagResult]} />
     </>
   )
 }
@@ -393,6 +439,7 @@ function Conversations({
   navigate: RouteComponentProps["navigate"]
 }) {
   const classes = useConversationRowStyles()
+
   return (
     <Paper>
       <List className={classes.root}>
@@ -426,7 +473,8 @@ function ConversationRow({
   dispatch: (action: Sel.Action) => void
   navigate: RouteComponentProps["navigate"]
 }) {
-  const { from, date, id, isRead, snippet, subject } = conversation
+  const { from, date, id, isRead, snippet, subject, isStarred } = conversation
+
   const classes = useConversationRowStyles()
 
   const isSelected = selected.some(i => i === id)
@@ -466,9 +514,10 @@ function ConversationRow({
           />
         )}
       </ListItemAvatar>
+
       <ListItemText
         id={rowId}
-        primary={subject || "[no subject]"}
+        primary={(isStarred ? "⭐ " : "") + (subject || "[no subject]")}
         secondary={
           <>
             <Typography

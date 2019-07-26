@@ -1,5 +1,3 @@
-# TODO: use fragments after figuring out why fragments are not working
-
 query getAllAccounts {
   accounts {
     ...AccountFields
@@ -103,6 +101,25 @@ mutation archive($conversationId: ID!) {
   }
 }
 
+mutation flag($conversationIDs: [ID!]!, $isFlagged: Boolean!) {
+  conversations {
+    flag(ids: $conversationIDs, isFlagged: $isFlagged) {
+      id
+      date
+      from {
+        host
+        mailbox
+        name
+      }
+      isRead
+      isStarred
+      labels
+      snippet
+      subject
+    }
+  }
+}
+
 mutation sendMessage($accountId: ID!, $message: MessageInput!) {
   conversations {
     sendMessage(accountId: $accountId, message: $message) {
@@ -154,6 +171,7 @@ fragment ConversationFieldsForListView on Conversation {
     name
   }
   isRead
+  isStarred
   labels
   snippet
   subject
@@ -168,6 +186,7 @@ fragment ConversationFieldsForConversationView on Conversation {
     name
   }
   isRead
+  isStarred
   labels
   snippet
   subject

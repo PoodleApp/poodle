@@ -1,0 +1,2 @@
+# Collapse generated files by default when viewing change sets on Github
+**/generated/* linguist-generated=true

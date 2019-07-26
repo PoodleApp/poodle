@@ -122,8 +122,7 @@ export function initImap(
     xoauth2: token,
     host: "imap.gmail.com",
     port: 993,
-    tls: true,
-    debug: console.log
+    tls: true
   })
   const p: Promise<Connection> = new Promise((resolve, reject) => {
     imap.once("ready", () => resolve(imap))

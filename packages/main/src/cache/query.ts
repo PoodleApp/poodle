@@ -1,10 +1,9 @@
 import imap from "imap"
-import { Collection } from "immutable"
 import db from "../db"
 import { nonNull } from "../util/array"
 import { Account, Box, ID, Message, MessagePart, Thread } from "./types"
 
-export function lastSeenUid({ boxId }: { boxId: ID }): number {
+export function lastSeenUid({ boxId }: { boxId: ID }): number | null {
   const result = db
     .prepare("select uidlastseen from boxes where id = ?")
     .get(boxId)

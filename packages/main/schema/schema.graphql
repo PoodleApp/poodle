@@ -27,6 +27,7 @@ type Conversation {
 
   presentableElements: [Presentable!]!
   isRead: Boolean!
+  isStarred: Boolean!
   replyRecipients(fromAccountId: ID!): Participants!
   snippet: String
   subject: String
@@ -39,6 +40,7 @@ type ConversationSearchResult {
 
 type ConversationMutations {
   archive(id: ID!): Conversation!
+  flag(ids: [ID!]!, isFlagged: Boolean!): [Conversation!]!
   edit(
     accountId: ID!
     conversationId: ID!
