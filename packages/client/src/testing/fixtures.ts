@@ -47,7 +47,9 @@ export const conversation: graphql.Conversation = {
           type: "text",
           subtype: "plain",
           content: "Hello from test",
-          disposition: graphql.Disposition.Inline
+          disposition: graphql.Disposition.Inline,
+          filename: null,
+          name: null
         }
       ],
       date: "2019-06-17T17:20:20.806Z",
@@ -82,7 +84,9 @@ export const conversation: graphql.Conversation = {
           type: "text",
           subtype: "plain",
           content: "Hello from next test",
-          disposition: graphql.Disposition.Inline
+          disposition: graphql.Disposition.Inline,
+          filename: null,
+          name: null
         }
       ],
       date: "2019-07-17T17:20:20.806Z",
@@ -90,6 +94,41 @@ export const conversation: graphql.Conversation = {
         __typename: "Address",
         name: null,
         mailbox: "ben",
+        host: "test.us"
+      },
+      editedAt: null,
+      editedBy: null
+    },
+    {
+      __typename: "Presentable",
+      id: "13",
+      isRead: true,
+      contents: [
+        {
+          __typename: "Content",
+          revision: {
+            __typename: "PartSpec",
+            messageId: "4962f41f-c675-4b6f-a1b6-ee72b41833ee@mail.gmail.com",
+            contentId: "replytext"
+          },
+          resource: {
+            __typename: "PartSpec",
+            messageId: "4962f41f-c675-4b6f-a1b6-ee72b41833ee@mail.gmail.com",
+            contentId: "replytext"
+          },
+          type: "image",
+          subtype: "jpeg",
+          content: "",
+          disposition: graphql.Disposition.Attachment,
+          filename: "cat.jpg",
+          name: null
+        }
+      ],
+      date: "2019-07-26T15:57:24.301Z",
+      from: {
+        __typename: "Address",
+        name: null,
+        mailbox: "carina",
         host: "test.us"
       },
       editedAt: null,

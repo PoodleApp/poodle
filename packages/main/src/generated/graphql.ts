@@ -73,9 +73,11 @@ export type Content = {
   resource: PartSpec
   revision: PartSpec
   disposition: Disposition
+  filename?: Maybe<Scalars["String"]>
+  name?: Maybe<Scalars["String"]>
   type: Scalars["String"]
   subtype: Scalars["String"]
-  content: Scalars["String"]
+  content?: Maybe<Scalars["String"]>
 }
 
 export type ContentInput = {
@@ -424,9 +426,11 @@ export type ContentResolvers<
   resource?: Resolver<ResolversTypes["PartSpec"], ParentType, ContextType>
   revision?: Resolver<ResolversTypes["PartSpec"], ParentType, ContextType>
   disposition?: Resolver<ResolversTypes["Disposition"], ParentType, ContextType>
+  filename?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
+  name?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
   type?: Resolver<ResolversTypes["String"], ParentType, ContextType>
   subtype?: Resolver<ResolversTypes["String"], ParentType, ContextType>
-  content?: Resolver<ResolversTypes["String"], ParentType, ContextType>
+  content?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
 }
 
 export type ConversationResolvers<

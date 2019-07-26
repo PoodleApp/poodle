@@ -36,7 +36,14 @@ export function getPartByPartId(
 export function inlineAndAttachmentContentParts(
   struct: imap.ImapMessageStruct
 ): List<imap.ImapMessagePart> {
-  return getInlineAndAttachmentParts(part => part.type !== "multipart", struct)
+  return getInlineAndAttachmentParts(part => {
+    const disposition_type = part.disposition && part.disposition.type
+    return (
+      !P.isMultipart(part) &&
+      disposition_type !== "replacement" &&
+      disposition_type !== "fallback"
+    )
+  }, struct)
 }
 
 export function allContentParts(

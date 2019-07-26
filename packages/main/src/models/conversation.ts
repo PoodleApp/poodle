@@ -96,13 +96,18 @@ export function getPresentableElements({
   messages
 }: Conversation): Collection.Indexed<Presentable> {
   const initialContents = Seq(messages).flatMap(getContentParts)
+  console.log("initial contents", JSON.stringify(initialContents))
   const edits = Seq(messages).flatMap(getEdits)
   const editedContents = initialContents.map(resource => ({
     resource,
     revision: walkGraph(edits, List([resource]), resource).lastNonConflict
   }))
   return editedContents
-    .groupBy(({ resource }) => resource.message)
+    .groupBy(({ resource, revision }) => {
+      console.log("resource", resource)
+      console.log("revision", revision)
+      return resource.message
+    })
     .entrySeq()
     .map(([message, resources]) => {
       const latestEdit = resources
@@ -264,11 +269,13 @@ function getPresentableContent({
   return {
     type: part.type || "text",
     subtype: part.subtype || "plain",
-    content: decoded ? decoded.toString("utf8") : "null", //TODO: make content nullable
+    content: decoded ? decoded.toString("utf8") : null,
     disposition:
       part.disposition_type === "attachment"
         ? Disposition.Attachment
         : Disposition.Inline,
+    filename: part.disposition_filename,
+    name: part.disposition_name,
     resource: partSpec(resource),
     revision: partSpec(revision)
   }

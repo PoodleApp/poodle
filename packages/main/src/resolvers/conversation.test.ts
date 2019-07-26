@@ -185,6 +185,8 @@ describe("when querying conversations", () => {
               subtype
               content
               disposition
+              filename
+              name
             }
           }
         }
@@ -210,13 +212,17 @@ describe("when querying conversations", () => {
                   type: "text",
                   subtype: "html",
                   content: "<p>This is a test.</p>",
-                  disposition: "inline"
+                  disposition: "inline",
+                  filename: null,
+                  name: null
                 },
                 {
                   type: "image",
                   subtype: "jpeg",
                   content: "",
-                  disposition: "attachment"
+                  disposition: "attachment",
+                  filename: "cat.jpg",
+                  name: null
                 }
               ]
             },
@@ -233,7 +239,9 @@ describe("when querying conversations", () => {
                   type: "text",
                   subtype: "plain",
                   content: "A reply appears.",
-                  disposition: "inline"
+                  disposition: "inline",
+                  filename: null,
+                  name: null
                 }
               ]
             }
@@ -300,6 +308,11 @@ describe("when querying conversations", () => {
                   type: "text",
                   subtype: "html",
                   content: "<p>This is a test.</p>"
+                },
+                {
+                  type: "image",
+                  subtype: "jpeg",
+                  content: ""
                 }
               ]
             },
@@ -510,6 +523,11 @@ describe("when querying conversations", () => {
                     type: "text",
                     subtype: "html",
                     content: "<p>This is a test.</p>"
+                  },
+                  {
+                    type: "image",
+                    subtype: "jpeg",
+                    content: ""
                   }
                 ]
               },
@@ -608,6 +626,11 @@ describe("when querying conversations", () => {
                     type: "text",
                     subtype: "html",
                     content: "<p>This is a test.</p>"
+                  },
+                  {
+                    type: "image",
+                    subtype: "jpeg",
+                    content: ""
                   }
                 ]
               },
@@ -678,6 +701,7 @@ describe("when querying conversations", () => {
     `,
       { conversationId: testThread[0].attributes["x-gm-thrid"] }
     )
+    console.log(JSON.stringify(result))
     expect(result).toMatchObject({
       data: {
         conversation: {
@@ -694,6 +718,11 @@ describe("when querying conversations", () => {
                   type: "text",
                   subtype: "html",
                   content: "<p>This is a test.</p>"
+                },
+                {
+                  type: "image",
+                  subtype: "jpeg",
+                  content: ""
                 }
               ]
             },

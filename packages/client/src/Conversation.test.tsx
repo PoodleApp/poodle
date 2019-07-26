@@ -18,6 +18,20 @@ it("displays a conversation", async () => {
   expect(app).toIncludeText("Hello from test")
 })
 
+it("displays an attachment", async () => {
+  const app = mount(
+    <Conversation
+      accountId={$.account.id}
+      conversationId={$.conversation.id}
+    />,
+    {
+      mocks: [$.getConversationMock, $.setIsReadMock]
+    }
+  )
+  await delay()
+  expect(app).toIncludeText("cat.jpg")
+})
+
 it("displays a loading indicator while the conversation is loading", () => {
   const app = mount(
     <Conversation
@@ -49,6 +63,11 @@ it("collapses read messages, with the exception of the last message in the conve
   )
 
   expect(app.find({ presentable: { id: "12" } }).find(Collapse)).toHaveProp(
+    "in",
+    false
+  )
+
+  expect(app.find({ presentable: { id: "13" } }).find(Collapse)).toHaveProp(
     "in",
     true
   )

@@ -16,7 +16,9 @@ const useStyles = makeStyles(_theme => ({
 
   textContent: {
     whiteSpace: "pre-wrap"
-  }
+  },
+
+  attachment: {}
 }))
 
 type Props = graphql.Content & { accountId: string; className?: string }
@@ -26,6 +28,9 @@ export default function DisplayContent({
   type,
   subtype,
   content,
+  disposition,
+  filename,
+  name,
   className
 }: Props) {
   const classes = useStyles()
@@ -40,17 +45,23 @@ export default function DisplayContent({
             handleLink(accountId, navigate, event)
           }
         }
-        if (type === "text" && subtype === "html") {
+        if (!content && disposition == "attachment") {
+          return displayAttachment(filename, {
+            ...props,
+            className: clsx(className, "attachment-content", classes.attachment)
+          })
+        }
+        if (content && type === "text" && subtype === "html") {
           return displayHtml(content, {
             ...props,
             className: clsx(className, "html-content", classes.body)
           })
-        } else if (type === "text" && subtype === "markdown") {
+        } else if (content && type === "text" && subtype === "markdown") {
           return displayMarkdown(content, {
             ...props,
             className: clsx(className, "markdown-content", classes.body)
           })
-        } else if (type === "text") {
+        } else if (content && type === "text") {
           return displayText(content, {
             ...props,
             className: clsx(
@@ -92,12 +103,16 @@ function displayMarkdown(text: string, props: object) {
   return <div {...props} dangerouslySetInnerHTML={out} />
 }
 
+function displayAttachment(filename: string, props: object) {
+  return <div {...props}>{filename}</div>
+}
+
 function displayUnknown(
   {
     type,
     subtype,
     content
-  }: { type: string; subtype: string; content: string },
+  }: { type: string; subtype: string; content: string | null | undefined },
   props: object
 ) {
   return content ? (

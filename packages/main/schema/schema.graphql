@@ -104,9 +104,11 @@ type Content {
   resource: PartSpec!
   revision: PartSpec!
   disposition: Disposition!
+  filename: String
+  name: String
   type: String!
   subtype: String!
-  content: String!
+  content: String
 }
 
 input ContentInput {

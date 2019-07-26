@@ -66,9 +66,11 @@ export type Content = {
   resource: PartSpec
   revision: PartSpec
   disposition: Disposition
+  filename?: Maybe<Scalars["String"]>
+  name?: Maybe<Scalars["String"]>
   type: Scalars["String"]
   subtype: Scalars["String"]
-  content: Scalars["String"]
+  content?: Maybe<Scalars["String"]>
 }
 
 export type ContentInput = {
@@ -319,7 +321,12 @@ export type GetConversationQuery = { __typename?: "Query" } & {
               contents: Array<
                 { __typename?: "Content" } & Pick<
                   Content,
-                  "type" | "subtype" | "content" | "disposition"
+                  | "type"
+                  | "subtype"
+                  | "content"
+                  | "disposition"
+                  | "filename"
+                  | "name"
                 > & {
                     revision: { __typename?: "PartSpec" } & Pick<
                       PartSpec,
@@ -1255,6 +1262,18 @@ export const GetConversationDocument: DocumentNode = {
                             {
                               kind: "Field",
                               name: { kind: "Name", value: "disposition" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "filename" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "name" },
                               arguments: [],
                               directives: []
                             }
