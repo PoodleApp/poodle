@@ -1,21 +1,24 @@
-import { RouteComponentProps, Router } from "@reach/router"
+import { globalHistory, RouteComponentProps, Router } from "@reach/router"
 import * as React from "react"
-import "./App.css"
-import * as graphql from "./generated/graphql"
+import { QueryParamProvider } from "use-query-params"
 import Accounts from "./Accounts"
+import "./App.css"
 import Compose from "./compose/Compose"
 import Conversation from "./Conversation"
 import Dashboard from "./Dashboard"
+import * as graphql from "./generated/graphql"
 
 export default function App() {
   return (
-    <Router>
-      <Init path="/" />
-      <Accounts path="accounts" />
-      <Compose path="accounts/:accountId/compose" />
-      <Conversation path="accounts/:accountId/conversations/:conversationId" />
-      <Dashboard path="accounts/:accountId/dashboard/" />
-    </Router>
+    <QueryParamProvider reachHistory={globalHistory}>
+      <Router>
+        <Init path="/" />
+        <Accounts path="accounts" />
+        <Compose path="accounts/:accountId/compose" />
+        <Conversation path="accounts/:accountId/conversations/:conversationId" />
+        <Dashboard path="accounts/:accountId/dashboard/" />
+      </Router>
+    </QueryParamProvider>
   )
 }
 

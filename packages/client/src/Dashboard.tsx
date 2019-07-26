@@ -27,6 +27,7 @@ import { Redirect, RouteComponentProps } from "@reach/router"
 import clsx from "clsx"
 import moment from "moment"
 import * as React from "react"
+import { BooleanParam, StringParam, useQueryParams } from "use-query-params"
 import AccountSwitcher from "./AccountSwitcher"
 import Avatar from "./Avatar"
 import ComposeButton from "./ComposeButton"
@@ -117,14 +118,23 @@ const useStyles = makeStyles(theme => ({
 export default function Dashboard({ accountId, navigate }: Props) {
   const classes = useStyles()
   const [open, setOpen] = React.useState(false)
-  const [isSearching, setIsSearching] = React.useState(false)
-  const [searchQuery, setSearchQuery] = React.useState("")
+  // const [isSearching, setIsSearching] = React.useState(false)
+
+  const [query, setQuery] = useQueryParams({
+    searchQuery: StringParam,
+    isSearching: BooleanParam
+  })
+  const { searchQuery, isSearching } = query
+
+  // const [searchQuery, setSearchQuery] = React.useState("")
   const getAccountResult = graphql.useGetAccountQuery({
     variables: { accountId: accountId! }
   })
-  const skipSearch = !isSearching || searchQuery.length < 3
+  const skipSearch =
+    !isSearching || (searchQuery ? searchQuery.length < 3 : false)
+
   const searchResult = graphql.useSearchConversationsQuery({
-    variables: { accountId: accountId!, query: searchQuery },
+    variables: { accountId: accountId!, query: searchQuery || "" },
     skip: skipSearch
   })
   const conversations = skipSearch
@@ -148,17 +158,19 @@ export default function Dashboard({ accountId, navigate }: Props) {
         <SelectedActionsBar accountId={accountId} selected={selected} />
       ) : isSearching ? (
         <SearchBar
-          onChange={setSearchQuery}
+          onChange={(q: string) =>
+            setQuery({ searchQuery: q, isSearching: true }, "replace")
+          }
           onClose={() => {
-            setIsSearching(false)
+            setQuery({ searchQuery: "", isSearching: false }, "replace")
           }}
-          query={searchQuery}
+          query={searchQuery || ""}
         />
       ) : (
         <MainBar
           accountId={accountId}
           onSearch={() => {
-            setIsSearching(true)
+            setQuery({ isSearching: true }, "replace")
           }}
           open={open}
           setOpen={setOpen}
@@ -416,8 +428,10 @@ function ConversationRow({
 }) {
   const { from, date, id, isRead, snippet, subject } = conversation
   const classes = useConversationRowStyles()
+
   const isSelected = selected.some(i => i === id)
   const rowId = "conversation-row-" + id
+
   return (
     <ListItem
       className={clsx(isRead && classes.read, classes.message)}
