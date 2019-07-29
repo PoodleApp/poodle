@@ -260,10 +260,10 @@ it("downloads message part headers", async () => {
     }
   })
   editMessage.attributes.uid = 9000
-  const threadWithEdit = [...testThread, editMessage]
-  mock(Connection.prototype.fetch).mockImplementation(
-    mockFetchImplementation({ thread: threadWithEdit })
-  )
+
+  // Update fake IMAP connection responses to incorporate `editMessage`.
+  mockConnection({ thread: [...testThread, editMessage] })
+
   await sync(accountId, connectionManager)
   expect(
     db

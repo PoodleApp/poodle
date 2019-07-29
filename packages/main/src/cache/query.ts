@@ -333,7 +333,7 @@ export function partsMissingBodies({
 }: {
   accountId: ID
   boxId: ID
-}): Array<{ uid: number; boxName: string; part: imap.ImapMessagePart }> {
+}): Array<{ uid: number; part: imap.ImapMessagePart }> {
   return db
     .prepare(
       `
@@ -355,7 +355,6 @@ export function partsMissingBodies({
     .all({ accountId, boxId })
     .map(row => ({
       uid: row.uid,
-      boxName: row.boxName,
       part: toImapMessagePart(row)
     }))
 }
