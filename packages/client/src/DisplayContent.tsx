@@ -45,7 +45,7 @@ export default function DisplayContent({
             handleLink(accountId, navigate, event)
           }
         }
-        if (!content && disposition == "attachment") {
+        if (!content && disposition === "attachment") {
           return displayAttachment(filename, {
             ...props,
             className: clsx(className, "attachment-content", classes.attachment)
@@ -103,8 +103,12 @@ function displayMarkdown(text: string, props: object) {
   return <div {...props} dangerouslySetInnerHTML={out} />
 }
 
-function displayAttachment(filename: string, props: object) {
-  return <div {...props}>{filename}</div>
+function displayAttachment(filename: string | null | undefined, props: object) {
+  return filename ? (
+    <div {...props}>{filename}</div>
+  ) : (
+    <div {...props}>{"Attachment"}</div>
+  )
 }
 
 function displayUnknown(

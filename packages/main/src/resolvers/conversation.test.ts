@@ -701,7 +701,6 @@ describe("when querying conversations", () => {
     `,
       { conversationId: testThread[0].attributes["x-gm-thrid"] }
     )
-    console.log(JSON.stringify(result))
     expect(result).toMatchObject({
       data: {
         conversation: {
