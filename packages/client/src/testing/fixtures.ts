@@ -100,7 +100,7 @@ export const conversation: graphql.Conversation = {
   isRead: true,
   snippet: "Hello from test",
   subject: "Test Thread"
-}
+} as const
 
 export const account: graphql.Account = {
   __typename: "Account",
@@ -149,41 +149,6 @@ export const archiveMock = {
     }
   }
 }
-
-// export function editMock({
-//   revision,
-//   content,
-//   accountId
-// }: {
-//   revision: graphql.PartSpecInput,
-//   content: graphql.ContentInput,
-//   accountId: string
-// }) {
-//   return {
-//     request: {
-//       query: graphql.EditDocument,
-//       variables: {
-//         accountId,
-//         conversationId: conversation.id,
-//         revision,
-//         content
-//       }
-//     },
-//     result: {
-//       data: {
-//         conversations: {
-//           _typename: "ConversationMutation"
-//           edit: {...conversation, presentableElements: [
-//             {
-//               ...conversation.presentableElements[0],
-
-//             }
-//           ]}
-//         }
-//       }
-//     }
-//   }
-// }
 
 export function flagMock({
   isFlagged,
@@ -238,15 +203,14 @@ export function flagPresentableMock({
           flagPresentable: {
             ...conversation,
             isStarred: isFlagged,
-            presentableElements: [
-              {
-                ...conversation.presentableElements[0],
-                isStarred: isFlagged
-              },
-              {
-                ...conversation.presentableElements[1]
+            presentableElements: conversation.presentableElements.map(
+              presentable => {
+                if (presentable.id === presentableId) {
+                  return { ...presentable, isStarred: isFlagged }
+                }
+                return presentable
               }
-            ]
+            )
           }
         }
       }

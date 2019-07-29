@@ -121,7 +121,15 @@ export const ConversationMutations: ConversationMutationsResolvers = {
     const presentables = C.getPresentableElements(thread)
     for (const presentable of presentables) {
       if (presentable.id === id) {
-        updateAction(presentable.revisions, (accountId, box, uids) => {
+        const messages = isFlagged
+          ? [presentable.revisions[presentable.revisions.length - 1].message]
+          : presentable.revisions
+              .filter(revision =>
+                cache.getFlags(revision.message.id).includes("\\Flagged")
+              )
+              .map(revision => revision.message)
+
+        updateAction(messages, (accountId, box, uids) => {
           schedule(
             actions.setFlagged({
               accountId: String(accountId),
@@ -134,7 +142,7 @@ export const ConversationMutations: ConversationMutationsResolvers = {
       }
     }
 
-    return thread
+    return C.mustGetConversation(conversationId)
   },
 
   async edit(_parent, { accountId, conversationId, revision, content }) {

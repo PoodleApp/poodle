@@ -195,6 +195,10 @@ mutation archive($conversationId: ID!) {
 mutation flag($conversationIDs: [ID!]!, $isFlagged: Boolean!) {
   conversations {
     flag(ids: $conversationIDs, isFlagged: $isFlagged) {
+      presentableElements {
+        id
+        isStarred
+      }
       id
       isStarred
     }

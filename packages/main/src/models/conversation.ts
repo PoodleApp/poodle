@@ -2,7 +2,11 @@ import { convert } from "encoding"
 import { Collection, is, List, Seq } from "immutable"
 import { idFromHeaderValue, parseMidUri } from "poodle-common/lib/models/uri"
 import * as cache from "../cache"
-import { Address, Content, Participants } from "../generated/graphql"
+import {
+  Content,
+  Participants,
+  Presentable as GeneratedPresentable
+} from "../generated/graphql"
 import { uniqBy } from "../util/immutable"
 import * as Addr from "./Address"
 import { inlineContentParts } from "./Message"
@@ -12,16 +16,8 @@ export interface Conversation {
   messages: cache.Message[]
 }
 
-export interface Presentable {
-  id: string
-  isRead: boolean
-  isStarred: boolean
-  contents: Content[]
-  date: string
-  from: Address
-  editedAt?: string
-  editedBy?: Address
-  revisions: cache.Message[]
+export interface Presentable extends GeneratedPresentable {
+  revisions: Revision[]
 }
 
 export function getConversation(id: string): Conversation | null {
@@ -133,7 +129,7 @@ export function getPresentableElements({
         editedAt: latestEdit && latestEdit.revision.message.date,
         revisions: resources
           .valueSeq()
-          .flatMap(r => [r.revision.message])
+          .map(r => r.revision)
           .toArray(),
         editedBy:
           latestEdit &&
