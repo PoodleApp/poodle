@@ -30,7 +30,7 @@ import { Redirect, RouteComponentProps } from "@reach/router"
 import clsx from "clsx"
 import moment from "moment"
 import * as React from "react"
-import { BooleanParam, StringParam, useQueryParams } from "use-query-params"
+import { BooleanParam, StringParam, useQueryParam } from "use-query-params"
 import AccountSwitcher from "./AccountSwitcher"
 import Avatar from "./Avatar"
 import ComposeButton from "./ComposeButton"
@@ -122,21 +122,22 @@ export default function Dashboard({ accountId, navigate }: Props) {
   const classes = useStyles()
   const [open, setOpen] = React.useState(false)
 
-  const [
-    { searchParams = "", isSearching = false },
-    setSearchParams
-  ] = useQueryParams({
-    searchParams: StringParam,
-    isSearching: BooleanParam
-  })
+  const [searchQuery = "", setSearchQuery] = useQueryParam(
+    "searchQuery",
+    StringParam
+  )
+  const [isSearching = false, setIsSearching] = useQueryParam(
+    "isSearching",
+    BooleanParam
+  )
 
   const getAccountResult = graphql.useGetAccountQuery({
     variables: { accountId: accountId! }
   })
-  const skipSearch = !isSearching || searchParams.length < 3
+  const skipSearch = !isSearching || searchQuery.length < 3
 
   const searchResult = graphql.useSearchConversationsQuery({
-    variables: { accountId: accountId!, query: searchParams },
+    variables: { accountId: accountId!, query: searchQuery },
     skip: skipSearch
   })
   const conversations = skipSearch
@@ -174,19 +175,20 @@ export default function Dashboard({ accountId, navigate }: Props) {
         />
       ) : isSearching ? (
         <SearchBar
-          onChange={(q: string) =>
-            setSearchParams({ searchParams: q, isSearching: true }, "replace")
-          }
-          onClose={() => {
-            setSearchParams({ isSearching: false }, "replace")
+          onChange={(q: string) => {
+            setSearchQuery(q, "replace")
+            setIsSearching(true, "replace")
           }}
-          query={searchParams}
+          onClose={() => {
+            setIsSearching(false, "replace")
+          }}
+          query={searchQuery}
         />
       ) : (
         <MainBar
           accountId={accountId}
           onSearch={() => {
-            setSearchParams({ isSearching: true }, "replace")
+            setIsSearching(true, "replace")
           }}
           open={open}
           setOpen={setOpen}
