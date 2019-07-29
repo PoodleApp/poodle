@@ -263,12 +263,13 @@ function getPresentableContent({
   const charset = part.params_charset
   const decoded =
     content && (charset ? convert(content, "utf8", charset) : content)
+  const disposition = part.disposition_type || ""
   return {
     type: part.type || "text",
     subtype: part.subtype || "plain",
     content: decoded ? decoded.toString("utf8") : null,
     disposition:
-      part.disposition_type === "ATTACHMENT" //TODO make case insensitive
+      disposition.toLowerCase() === "attachment"
         ? Disposition.Attachment
         : Disposition.Inline,
     filename: part.disposition_filename,
