@@ -121,23 +121,22 @@ const useStyles = makeStyles(theme => ({
 export default function Dashboard({ accountId, navigate }: Props) {
   const classes = useStyles()
   const [open, setOpen] = React.useState(false)
-  // const [isSearching, setIsSearching] = React.useState(false)
 
-  const [query, setQuery] = useQueryParams({
-    searchQuery: StringParam,
+  const [
+    { searchParams = "", isSearching = false },
+    setSearchParams
+  ] = useQueryParams({
+    searchParams: StringParam,
     isSearching: BooleanParam
   })
-  const { searchQuery, isSearching } = query
 
-  // const [searchQuery, setSearchQuery] = React.useState("")
   const getAccountResult = graphql.useGetAccountQuery({
     variables: { accountId: accountId! }
   })
-  const skipSearch =
-    !isSearching || (searchQuery ? searchQuery.length < 3 : false)
+  const skipSearch = !isSearching || searchParams.length < 3
 
   const searchResult = graphql.useSearchConversationsQuery({
-    variables: { accountId: accountId!, query: searchQuery || "" },
+    variables: { accountId: accountId!, query: searchParams },
     skip: skipSearch
   })
   const conversations = skipSearch
@@ -176,18 +175,18 @@ export default function Dashboard({ accountId, navigate }: Props) {
       ) : isSearching ? (
         <SearchBar
           onChange={(q: string) =>
-            setQuery({ searchQuery: q, isSearching: true }, "replace")
+            setSearchParams({ searchParams: q, isSearching: true }, "replace")
           }
           onClose={() => {
-            setQuery({ searchQuery: "", isSearching: false }, "replace")
+            setSearchParams({ isSearching: false }, "replace")
           }}
-          query={searchQuery || ""}
+          query={searchParams}
         />
       ) : (
         <MainBar
           accountId={accountId}
           onSearch={() => {
-            setQuery({ isSearching: true }, "replace")
+            setSearchParams({ isSearching: true }, "replace")
           }}
           open={open}
           setOpen={setOpen}

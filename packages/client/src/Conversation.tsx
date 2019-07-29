@@ -155,7 +155,7 @@ export default function Conversation({
             edge="start"
             color="inherit"
             aria-label="close view"
-            onClick={() => window.history.back()} //navigate!(`/accounts/${accountId}/dashboard`)}
+            onClick={() => window.history.back()}
           >
             <CloseIcon />
           </IconButton>
