@@ -116,8 +116,8 @@ function displayAttachment(
   )
   return (
     <div>
-      {" "}
-      <PhotoIcon /> {name}{" "}
+      <PhotoIcon />
+      {name}
     </div>
   )
 }

@@ -1,4 +1,5 @@
 import { Collapse } from "@material-ui/core"
+import PhotoIcon from "@material-ui/icons/Photo"
 import * as React from "react"
 import Conversation from "./Conversation"
 import { delay, mount, updates } from "./testing"
@@ -28,8 +29,9 @@ it("displays an attachment", async () => {
       mocks: [$.getConversationMock, $.setIsReadMock]
     }
   )
-  await delay()
+  await updates(app)
   expect(app).toIncludeText("cat.jpg")
+  expect(app.find(PhotoIcon)).toExist()
 })
 
 it("displays a loading indicator while the conversation is loading", () => {
