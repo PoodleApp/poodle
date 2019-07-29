@@ -36,13 +36,13 @@ const client = new ApolloClient({
 ipcRenderer.on(
   "message_updates",
   debounce(
-    function() {
+    () => {
       if (client.queryManager) {
         client.queryManager.reFetchObservableQueries()
       }
     },
     3000,
-    false
+    true
   )
 )
 

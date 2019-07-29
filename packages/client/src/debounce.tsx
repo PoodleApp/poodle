@@ -5,14 +5,13 @@ export default function debounce(
 ) {
   let timeout: any
   return function(this: any, ...args: any[]) {
-    const context = this
-    let later = function() {
+    let later = () => {
       timeout = null
-      if (!immediate) func.apply(context, args)
+      if (!immediate) func.apply(this, args)
     }
     let callNow = immediate && !timeout
     clearTimeout(timeout)
     timeout = setTimeout(later, wait)
-    if (callNow) func.apply(context, args)
+    if (callNow) func.apply(this, args)
   }
 }
