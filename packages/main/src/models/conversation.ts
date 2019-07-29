@@ -96,7 +96,6 @@ export function getPresentableElements({
   messages
 }: Conversation): Collection.Indexed<Presentable> {
   const initialContents = Seq(messages).flatMap(getContentParts)
-  console.log("initial contents", JSON.stringify(initialContents))
   const edits = Seq(messages).flatMap(getEdits)
   const editedContents = initialContents.map(resource => ({
     resource,
@@ -104,8 +103,6 @@ export function getPresentableElements({
   }))
   return editedContents
     .groupBy(({ resource, revision }) => {
-      console.log("resource", resource)
-      console.log("revision", revision)
       return resource.message
     })
     .entrySeq()
@@ -271,7 +268,7 @@ function getPresentableContent({
     subtype: part.subtype || "plain",
     content: decoded ? decoded.toString("utf8") : null,
     disposition:
-      part.disposition_type === "attachment"
+      part.disposition_type === "ATTACHMENT" //TODO make case insensitive
         ? Disposition.Attachment
         : Disposition.Inline,
     filename: part.disposition_filename,

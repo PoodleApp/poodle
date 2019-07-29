@@ -1,4 +1,5 @@
 import { makeStyles } from "@material-ui/styles"
+import PhotoIcon from "@material-ui/icons/Photo"
 import { Location } from "@reach/router"
 import clsx from "clsx"
 import marked from "marked"
@@ -45,8 +46,8 @@ export default function DisplayContent({
             handleLink(accountId, navigate, event)
           }
         }
-        if (!content && disposition === "attachment") {
-          return displayAttachment(filename, {
+        if (disposition === "attachment") {
+          return displayAttachment(filename, subtype, {
             ...props,
             className: clsx(className, "attachment-content", classes.attachment)
           })
@@ -72,7 +73,7 @@ export default function DisplayContent({
           })
         } else {
           return displayUnknown(
-            { type, subtype, content },
+            { type, subtype, content, disposition },
             { className: clsx(className, classes.body) }
           )
         }
@@ -103,11 +104,21 @@ function displayMarkdown(text: string, props: object) {
   return <div {...props} dangerouslySetInnerHTML={out} />
 }
 
-function displayAttachment(filename: string | null | undefined, props: object) {
-  return filename ? (
+function displayAttachment(
+  filename: string | null | undefined,
+  subtype: string,
+  props: object
+) {
+  const name = filename ? (
     <div {...props}>{filename}</div>
   ) : (
-    <div {...props}>{"Attachment"}</div>
+    <div {...props}>[Attachment.{subtype}}</div>
+  )
+  return (
+    <div>
+      {" "}
+      <PhotoIcon /> {name}{" "}
+    </div>
   )
 }
 
@@ -115,15 +126,21 @@ function displayUnknown(
   {
     type,
     subtype,
-    content
-  }: { type: string; subtype: string; content: string | null | undefined },
+    content,
+    disposition
+  }: {
+    type: string
+    subtype: string
+    content: string | null | undefined
+    disposition: string
+  },
   props: object
 ) {
   return content ? (
     <div {...props}>
       <p>
         <em>
-          [unknown content type: {type}/{subtype}]
+          [unknown content type: {disposition}/{type}/{subtype}]
         </em>
       </p>
     </div>
