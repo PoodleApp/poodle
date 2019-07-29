@@ -289,7 +289,7 @@ class BoxSync {
     }
   }
 
-  private captureResponses(
+  private async captureResponses(
     responses: R<request.FetchResponse>
   ): Promise<cache.ID[]> {
     const context = {
