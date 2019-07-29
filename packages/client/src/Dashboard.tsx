@@ -12,7 +12,6 @@ import {
   ListItemText,
   Paper,
   Toolbar,
-  Tooltip,
   Typography
 } from "@material-ui/core"
 import { makeStyles } from "@material-ui/core/styles"
@@ -35,6 +34,7 @@ import * as graphql from "./generated/graphql"
 import useArchive from "./hooks/useArchive"
 import * as Sel from "./hooks/useSelectedConversations"
 import useSync from "./hooks/useSync"
+import Tooltip from "./Tooltip"
 
 type Props = RouteComponentProps & { accountId?: string }
 
@@ -268,19 +268,13 @@ function SelectedActionsBar({
       >
         <Toolbar className={classes.toolbar}>
           <span className={classes.title} />
-          <Tooltip
-            title="Archive Selected Conversation"
-            enterDelay={500}
-            leaveDelay={200}
-          >
+          <Tooltip title="Archive Selected Conversation">
             <IconButton aria-label="archive" onClick={onArchive}>
               <ArchiveIcon />
             </IconButton>
           </Tooltip>
           <Tooltip
             title={(isStarred ? "Unstar " : "Star ") + "Selected Conversations"}
-            enterDelay={500}
-            leaveDelay={200}
           >
             <IconButton
               aria-label={isStarred ? "unstar" : "star"}

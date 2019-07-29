@@ -10,7 +10,6 @@ import {
   Menu,
   MenuItem,
   Toolbar,
-  Tooltip,
   Typography
 } from "@material-ui/core"
 import ArchiveIcon from "@material-ui/icons/Archive"
@@ -32,6 +31,7 @@ import * as graphql from "./generated/graphql"
 import useArchive from "./hooks/useArchive"
 import useSetIsRead from "./hooks/useSetIsRead"
 import { displayParticipant } from "./Participant"
+import Tooltip from "./Tooltip"
 
 type Props = RouteComponentProps & {
   accountId?: string
@@ -159,11 +159,7 @@ export default function Conversation({
           >
             {subject}
           </Typography>
-          <Tooltip
-            title="Archive Conversation"
-            enterDelay={500}
-            leaveDelay={200}
-          >
+          <Tooltip title="Archive Conversation">
             <IconButton
               color="inherit"
               aria-label="archive"
@@ -269,8 +265,6 @@ function Presentable({
               title={
                 (presentable.isStarred ? "Unstar " : "Star ") + "Conversation"
               }
-              enterDelay={500}
-              leaveDelay={200}
             >
               <IconButton
                 aria-label={presentable.isStarred ? "unstar" : "star"}

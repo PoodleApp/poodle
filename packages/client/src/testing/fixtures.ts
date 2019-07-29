@@ -100,7 +100,7 @@ export const conversation: graphql.Conversation = {
   isRead: true,
   snippet: "Hello from test",
   subject: "Test Thread"
-} as const
+}
 
 export const account: graphql.Account = {
   __typename: "Account",
