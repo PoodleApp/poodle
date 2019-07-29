@@ -384,14 +384,9 @@ function ConversationRow({
     isStarred
   } = conversation
 
-  let newLabels = labels
-  newLabels = newLabels && newLabels.map(label => label.slice(1))
-
   const classes = useConversationRowStyles()
   const isSelected = selected.some(i => i === id)
   const rowId = "conversation-row-" + id
-  let count = 0
-  const labelId = "label-" + id + "-"
   return (
     <ListItem
       className={clsx(isRead && classes.read, classes.message)}
@@ -452,15 +447,15 @@ function ConversationRow({
           secondary: classes.snippetText
         }}
       />
-      {newLabels &&
-        newLabels.map(label => (
-          <DisplayLabel key={labelId + count++} label={label} />
-        ))}
+      {labels &&
+        labels.map(label => <DisplayLabel key={label} label={label} />)}
     </ListItem>
   )
 }
 
 function DisplayLabel({ label }: { label: string }) {
+  const labelForDisplay = label.replace(/\\/, "")
+
   const important = {
     color: red[400],
     backgroundColor: red[200],
@@ -488,12 +483,14 @@ function DisplayLabel({ label }: { label: string }) {
     return [primaryShade[f % shadeCount], primaryColors[b % primaryCount]]
   }
 
-  const [color, backgroundColor] = getColors(label)
+  const [color, backgroundColor] = getColors(labelForDisplay)
   return (
     <div>
-      {label !== "Inbox" && label !== "Sent" && label !== "Starred" ? (
-        label === "Important" ? (
-          <span style={important}>{label}</span>
+      {labelForDisplay !== "Inbox" &&
+      labelForDisplay !== "Sent" &&
+      labelForDisplay !== "Starred" ? (
+        labelForDisplay === "Important" ? (
+          <span style={important}>{labelForDisplay}</span>
         ) : (
           <span
             style={{
@@ -503,7 +500,7 @@ function DisplayLabel({ label }: { label: string }) {
               padding: "4.5px"
             }}
           >
-            {label}
+            {labelForDisplay}
           </span>
         )
       ) : null}
