@@ -127,7 +127,9 @@ export function mockConnection({
       name,
       readOnly,
       uidvalidity: 123,
-      uidnext: testThread[1].attributes.uid! + 1,
+      uidnext:
+        Math.max(0, ...thread.map(msg => msg.attributes.uid).filter(nonNull)) +
+        1,
       flags: [],
       permFlags: [],
       newKeywords: false,
