@@ -454,7 +454,7 @@ function ConversationRow({
 }
 
 function DisplayLabel({ label }: { label: string }) {
-  const labelForDisplay = label.replace(/\\/, "")
+  const labelForDisplay = label.replace(/^\\/, "")
 
   const important = {
     color: red[400],
