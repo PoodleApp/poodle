@@ -260,6 +260,7 @@ it("downloads message part headers", async () => {
     }
   })
   editMessage.attributes.uid = 9000
+  editMessage.attributes["x-gm-labels"] = ["\\Inbox"]
 
   // Update fake IMAP connection responses to incorporate `editMessage`.
   mockConnection({ thread: [...testThread, editMessage] })
