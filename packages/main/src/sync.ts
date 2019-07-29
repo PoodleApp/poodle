@@ -332,10 +332,7 @@ class BoxSync {
       }
     })
 
-    return kefirUtil
-      .takeAll(stream)
-      .map(xs => xs.filter(nonNull))
-      .toPromise()
+    return (await kefirUtil.takeAll(stream)).filter(nonNull)
   }
 }
 
