@@ -15,6 +15,7 @@ import {
   Tooltip,
   Typography
 } from "@material-ui/core"
+import { red } from "@material-ui/core/colors"
 import { makeStyles } from "@material-ui/core/styles"
 import ArchiveIcon from "@material-ui/icons/Archive"
 import CheckIcon from "@material-ui/icons/Check"
@@ -27,6 +28,7 @@ import { Redirect, RouteComponentProps } from "@reach/router"
 import clsx from "clsx"
 import moment from "moment"
 import * as React from "react"
+import stringHash from "string-hash"
 import AccountSwitcher from "./AccountSwitcher"
 import Avatar from "./Avatar"
 import ComposeButton from "./ComposeButton"
@@ -371,7 +373,16 @@ function ConversationRow({
   dispatch: (action: Sel.Action) => void
   navigate: RouteComponentProps["navigate"]
 }) {
-  const { from, date, id, isRead, snippet, subject, isStarred } = conversation
+  const {
+    from,
+    date,
+    id,
+    isRead,
+    snippet,
+    subject,
+    labels,
+    isStarred
+  } = conversation
 
   const classes = useConversationRowStyles()
   const isSelected = selected.some(i => i === id)
@@ -436,7 +447,64 @@ function ConversationRow({
           secondary: classes.snippetText
         }}
       />
+      {labels &&
+        labels.map(label => <DisplayLabel key={label} label={label} />)}
     </ListItem>
+  )
+}
+
+function DisplayLabel({ label }: { label: string }) {
+  const labelForDisplay = label.replace(/^\\/, "")
+
+  const important = {
+    color: red[400],
+    backgroundColor: red[200],
+    borderRadius: "10px",
+    padding: "4.5px",
+    borderColor: red[400]
+  }
+
+  function extract(shade: string) {
+    return (color: any) => {
+      const result = color[shade]
+      return result ? [result] : []
+    }
+  }
+
+  const colorMaps = Array.from(Object.values(colors))
+  const primaryColors = colorMaps.flatMap(extract("300"))
+  const primaryShade = colorMaps.flatMap(extract("200"))
+  const primaryCount = primaryColors.length
+  const shadeCount = primaryShade.length
+
+  function getColors(id: string): [string, string] {
+    const f = stringHash("fg" + id)
+    const b = stringHash("bg" + id)
+    return [primaryShade[f % shadeCount], primaryColors[b % primaryCount]]
+  }
+
+  const [color, backgroundColor] = getColors(labelForDisplay)
+  return (
+    <div>
+      {labelForDisplay !== "Inbox" &&
+      labelForDisplay !== "Sent" &&
+      labelForDisplay !== "Starred" ? (
+        labelForDisplay === "Important" ? (
+          <span style={important}>{labelForDisplay}</span>
+        ) : (
+          <span
+            style={{
+              color,
+              backgroundColor,
+              borderRadius: "10px",
+              padding: "4.5px"
+            }}
+          >
+            {labelForDisplay}
+          </span>
+        )
+      ) : null}
+    </div>
   )
 }
 
