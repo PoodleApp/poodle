@@ -112,7 +112,7 @@ function displayAttachment(
   const name = filename ? (
     <div {...props}>{filename}</div>
   ) : (
-    <div {...props}>[Attachment.{subtype}}</div>
+    <div {...props}>[Attachment.{subtype}]</div>
   )
   return (
     <div>
