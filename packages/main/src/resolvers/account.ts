@@ -1,8 +1,8 @@
 import * as cache from "../cache"
 import db from "../db"
 import {
-  AccountResolvers,
   AccountMutationsResolvers,
+  AccountResolvers,
   MutationResolvers,
   QueryResolvers
 } from "../generated/graphql"
@@ -25,6 +25,18 @@ export const Account: AccountResolvers = {
 
   messages(account: types.Account): types.Message[] {
     return cache.getMessages(account.id).map(message.fromCache)
+  },
+
+  async search(account, { query }) {
+    // TODO: This assumes that each account only has one box representing all
+    // mail.
+    const box = cache.getBoxesByAccount(account.id)[0]
+    const params = { accountId: account.id, boxId: box.id, query }
+    const search = cache.getSearch(params) || cache.initSearch(params)
+    if (!cache.isSearchFresh(search)) {
+      await schedule(actions.search(search))
+    }
+    return search
   }
 }
 

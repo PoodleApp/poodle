@@ -1,4 +1,5 @@
 import { ListItemText } from "@material-ui/core"
+import SearchIcon from "@material-ui/icons/Search"
 import StarIcon from "@material-ui/icons/Star"
 import StarBorder from "@material-ui/icons/StarBorder"
 import * as React from "react"
@@ -175,4 +176,27 @@ it("un-stars a conversation in conversation view", async () => {
   await updates(app, 10)
 
   expect(app.find(StarIcon)).toExist()
+})
+
+it("searches", async () => {
+  const app = mount(<Dashboard accountId={$.account.id} />, {
+    mocks: [$.getAccountMock, $.searchMock({ query: "search query" })]
+  })
+  await updates(app)
+  app.find(SearchIcon).simulate("click")
+  app
+    .find("SearchBar")
+    .find("input")
+    .simulate("change", { target: { value: "search query" } })
+  app
+    .find("SearchBar")
+    .find("form")
+    .simulate("submit")
+  await updates(app)
+  expect(app.find("Conversations").prop("conversations")).toMatchObject([
+    {
+      id: $.conversation2.id,
+      subject: $.conversation2.subject
+    }
+  ])
 })

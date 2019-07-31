@@ -635,10 +635,8 @@ describe("when querying conversations", () => {
       }
     })
     editMessage.attributes.uid = 9000
-    const threadWithEdit = [...testThread, editMessage]
-    mock(Connection.prototype.fetch).mockImplementation(
-      mockFetchImplementation({ thread: threadWithEdit })
-    )
+    editMessage.attributes["x-gm-labels"] = ["\\Inbox"]
+    mockConnection({ thread: [...testThread, editMessage] })
     await sync(accountId, connectionManager)
 
     const result = await request(
@@ -772,6 +770,7 @@ describe("when querying conversations", () => {
       }
     })
   })
+
   describe("searching", () => {
     it("lists conversations whose subject matches a given query", async () => {
       const result = await request(
