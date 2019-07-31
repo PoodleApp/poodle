@@ -245,13 +245,12 @@ it("downloads message part headers", async () => {
   const orig = cache.getThreads(accountId)[0]
   const message = testThread[1].attributes
   const part = message.struct![0] as imap.ImapMessagePart
-  const revisedContent = "What I meant to say was, hi."
   const editMessage = composeEdit({
     account,
     content: {
       type: "text",
       subtype: "plain",
-      content: revisedContent
+      content: "What I meant to say was, hi."
     },
     conversation: orig,
     editedMessage: { envelope_messageId: message.envelope.messageId },

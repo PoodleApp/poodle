@@ -348,7 +348,7 @@ export function partsMissingBodies({
         where
           box_id = @boxId
           and messages.account_id = @accountId
-          and (bodies.content is null or headers.key is null)
+          and bodies.content is null
           and structs.rgt = structs.lft + 1
       `
     )
