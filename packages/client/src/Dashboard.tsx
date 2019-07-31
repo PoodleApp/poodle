@@ -303,6 +303,7 @@ function SearchBar({
           }}
         >
           <InputBase
+            autoFocus={true}
             className={classes.searchInput}
             inputProps={{
               onBlur() {
