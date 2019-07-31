@@ -52,7 +52,7 @@ export function allContentParts(
   const f = (parts: List<imap.ImapMessagePart>, part: imap.ImapMessagePart) =>
     parts.push(part)
   const zero = List()
-  return foldPrimaryContent(f, zero, () => true, struct)
+  return foldParts(f, zero, selectAllContent(), struct)
 }
 
 function flatParts(msg: MessageAttributes): Seq.Indexed<imap.ImapMessagePart> {

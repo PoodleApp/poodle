@@ -102,9 +102,7 @@ export function getPresentableElements({
     revision: walkGraph(edits, List([resource]), resource).lastNonConflict
   }))
   return editedContents
-    .groupBy(({ resource, revision }) => {
-      return resource.message
-    })
+    .groupBy(({ resource }) => resource.message)
     .entrySeq()
     .map(([message, resources]) => {
       const latestEdit = resources
