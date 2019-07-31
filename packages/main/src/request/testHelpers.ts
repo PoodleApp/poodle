@@ -104,6 +104,8 @@ export function mockConnection({
           )
         )
       }
+
+      return accum
     }, allUids)
 
     cb(
