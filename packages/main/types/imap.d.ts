@@ -110,12 +110,12 @@ declare module "imap" {
       envelope: {
         date: Date
         subject: string | null
-        from: Address[] | null
-        sender: Address[] | null
-        replyTo: Address[] | null
-        to: Address[] | null
-        cc: Address[] | null
-        bcc: Address[] | null
+        from: (Address | AddressGroup)[] | null
+        sender: (Address | AddressGroup)[] | null
+        replyTo: (Address | AddressGroup)[] | null
+        to: (Address | AddressGroup)[] | null
+        cc: (Address | AddressGroup)[] | null
+        bcc: (Address | AddressGroup)[] | null
         inReplyTo: MessageId | null
         messageId: MessageId
       }
@@ -130,6 +130,11 @@ declare module "imap" {
       name?: string | null // e.g., person's full name
       mailbox: string // username portion of email address
       host: string // host portion of email address
+    }
+
+    export interface AddressGroup {
+      name: string
+      addresses: Address[]
     }
 
     export interface Disposition {
