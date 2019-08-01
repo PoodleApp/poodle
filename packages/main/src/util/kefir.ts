@@ -51,7 +51,7 @@ export function toReadable(input: Observable<Buffer, Error>): Readable {
   return output
 }
 
-/*
+/**
  * Given an observable and a callback, run the callback when the input
  * observable completes (whether or not it has produced any values). Returns an
  * observable that completes when the observable returned by the callback
@@ -100,7 +100,7 @@ export function fromEventsWithEnd<T>(
   })
 }
 
-/*
+/**
  * Wait until the given observable ends, then run the callback to produce
  * a second observable. Returns an observable that emits all values from both.
  */
@@ -115,7 +115,7 @@ export function andThen<A, E>(
   return obs.concat(next)
 }
 
-/*
+/**
  * Kefir's built-in `scan` method resets its accumulator on encountering an
  * error. This version emits errors like the built-in method, but does not reset
  * the accumulator.
@@ -142,6 +142,11 @@ export function sequence<A, B, E>(
   return andThen(fn(item), () => sequence(rest, fn))
 }
 
-export function takeAll<T, E>(obs: Observable<T, E>): Observable<T[], E> {
-  return obs.scan((xs: T[], x: T) => xs.concat(x), []).last()
+/**
+ * Collects all values from an input observable, and returns a promise that
+ * resolves with an array of the accumulated results. The promise rejects if the
+ * input observable emits any errors.
+ */
+export async function takeAll<T, E>(obs: Observable<T, E>): Promise<T[]> {
+  return obs.scan((xs: T[], x) => xs.concat(x), []).toPromise()
 }

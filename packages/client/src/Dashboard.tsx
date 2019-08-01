@@ -6,6 +6,7 @@ import {
   Divider,
   Drawer,
   IconButton,
+  InputBase,
   List,
   ListItem,
   ListItemAvatar,
@@ -20,8 +21,10 @@ import { makeStyles } from "@material-ui/core/styles"
 import ArchiveIcon from "@material-ui/icons/Archive"
 import CheckIcon from "@material-ui/icons/Check"
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft"
+import CloseIcon from "@material-ui/icons/Close"
 import MenuIcon from "@material-ui/icons/Menu"
 import RefreshIcon from "@material-ui/icons/Refresh"
+import SearchIcon from "@material-ui/icons/Search"
 import StarIcon from "@material-ui/icons/Star"
 import StarBorder from "@material-ui/icons/StarBorder"
 import { Redirect, RouteComponentProps } from "@reach/router"
@@ -77,6 +80,14 @@ const useStyles = makeStyles(theme => ({
   menuButtonHidden: {
     display: "none"
   },
+  searchInput: {
+    fontSize: "24px",
+    flexGrow: 1
+  },
+  toolbarSearchForm: {
+    display: "flex",
+    flexGrow: 1
+  },
   title: {
     flexGrow: 1
   },
@@ -111,11 +122,24 @@ const useStyles = makeStyles(theme => ({
 export default function Dashboard({ accountId, navigate }: Props) {
   const classes = useStyles()
   const [open, setOpen] = React.useState(false)
-  const { data, error, loading } = graphql.useGetAccountQuery({
+  const [isSearching, setIsSearching] = React.useState(false)
+  const [searchQuery, setSearchQuery] = React.useState("")
+  const getAccountResult = graphql.useGetAccountQuery({
     variables: { accountId: accountId! }
   })
+  const skipSearch = !isSearching || searchQuery.length < 3
+  const searchResult = graphql.useSearchConversationsQuery({
+    variables: { accountId: accountId!, query: searchQuery },
+    skip: skipSearch
+  })
+  const conversations = skipSearch
+    ? getAccountResult.data &&
+      getAccountResult.data.account &&
+      getAccountResult.data.account.conversations
+    : searchResult.data &&
+      searchResult.data.account &&
+      searchResult.data.account.search.conversations
 
-  const conversations = data && data.account && data.account.conversations
   const [selected, dispatch] = Sel.useSelectedConversations(conversations)
 
   //if not all selected star, we want to star instead of unstar
@@ -132,13 +156,6 @@ export default function Dashboard({ accountId, navigate }: Props) {
     return <Redirect to="/accounts" />
   }
 
-  if (loading) {
-    return <div>Loading...</div>
-  }
-  if (error) {
-    return <div>Error! {error.message}</div>
-  }
-
   return (
     <div className={classes.root}>
       <CssBaseline />
@@ -148,8 +165,23 @@ export default function Dashboard({ accountId, navigate }: Props) {
           selected={selected}
           isStarred={isStarred}
         />
+      ) : isSearching ? (
+        <SearchBar
+          onChange={setSearchQuery}
+          onClose={() => {
+            setIsSearching(false)
+          }}
+          query={searchQuery}
+        />
       ) : (
-        <MainBar accountId={accountId} open={open} setOpen={setOpen} />
+        <MainBar
+          accountId={accountId}
+          onSearch={() => {
+            setIsSearching(true)
+          }}
+          open={open}
+          setOpen={setOpen}
+        />
       )}
       <Drawer
         variant="permanent"
@@ -167,25 +199,34 @@ export default function Dashboard({ accountId, navigate }: Props) {
       </Drawer>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        <Conversations
-          accountId={accountId}
-          conversations={conversations!}
-          selected={selected}
-          dispatch={dispatch}
-          navigate={navigate}
-        />
+        {conversations && conversations.length > 0 ? (
+          <Conversations
+            accountId={accountId}
+            conversations={conversations}
+            selected={selected}
+            dispatch={dispatch}
+            navigate={navigate}
+          />
+        ) : conversations ? (
+          "No conversations to display"
+        ) : (
+          "Loading..."
+        )}
       </main>
       <ComposeButton accountId={accountId} />
+      <DisplayErrors results={[getAccountResult, searchResult]} />
     </div>
   )
 }
 
 function MainBar({
   accountId,
+  onSearch,
   open,
   setOpen
 }: {
   accountId: string
+  onSearch: () => void
   open: boolean
   setOpen: (isOpen: boolean) => void
 }) {
@@ -223,16 +264,66 @@ function MainBar({
           </Typography>
           <AccountSwitcher accountId={accountId} color="inherit" />
           <IconButton
+            aria-label="refresh"
             color="inherit"
             onClick={() => sync().catch(noop)}
             disabled={syncResult.loading}
           >
             <RefreshIcon />
           </IconButton>
+          <IconButton aria-label="search" color="inherit" onClick={onSearch}>
+            <SearchIcon />
+          </IconButton>
         </Toolbar>
       </AppBar>
       <DisplayErrors results={[syncResult]} />
     </>
+  )
+}
+
+function SearchBar({
+  onChange,
+  onClose,
+  query
+}: {
+  onChange: (q: string) => void
+  onClose: () => void
+  query: string
+}) {
+  const classes = useStyles()
+  const [value, setValue] = React.useState(query)
+  return (
+    <AppBar position="absolute" color="default" className={classes.appBar}>
+      <Toolbar>
+        <form
+          className={classes.toolbarSearchForm}
+          onSubmit={event => {
+            event.preventDefault()
+            onChange(value)
+          }}
+        >
+          <InputBase
+            autoFocus={true}
+            className={classes.searchInput}
+            inputProps={{
+              onBlur() {
+                onChange(value)
+              },
+              onChange(event) {
+                setValue(
+                  (event as React.ChangeEvent<HTMLInputElement>).target.value
+                )
+              },
+              placeholder: "Search",
+              value
+            }}
+          />
+          <IconButton aria-label="cancel search" onClick={onClose}>
+            <CloseIcon />
+          </IconButton>
+        </form>
+      </Toolbar>
+    </AppBar>
   )
 }
 
