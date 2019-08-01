@@ -339,7 +339,6 @@ function Conversations({
   navigate: RouteComponentProps["navigate"]
 }) {
   const classes = useConversationRowStyles()
-
   return (
     <Paper>
       <List className={classes.root}>

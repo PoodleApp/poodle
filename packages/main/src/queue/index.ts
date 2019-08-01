@@ -236,6 +236,89 @@ const handlers = {
     }
   }),
 
+  saveDraft: handler({
+    enqueue({
+      accountId,
+      message,
+      box
+    }: {
+      accountId: ID
+      message: ComposedMessage
+      box: { attribute: string }
+    }) {
+      const { attributes, headers, partHeaders, bodies } = message
+      let messageId: cache.ID | null = null
+
+      db.transaction(() => {
+        const updatedAt = new Date().toISOString()
+        messageId = cache.persistAttributes(
+          { accountId, updatedAt },
+          attributes
+        )
+        cache.persistHeadersAndReferences(messageId, headers, attributes)
+        for (const [partId, content] of Object.entries(bodies)) {
+          const part = M.getPartByPartId(partId, attributes)
+          if (!part) {
+            throw new Error("Error saving message body")
+          }
+          cache.persistBody(messageId, part, content)
+        }
+        cache.persistPartHeaders(messageId, partHeaders)
+      })()
+      if (!messageId) {
+        throw new Error("error saving message")
+      }
+
+      cache.addFlag({
+        accountId,
+        box: { name: "[GMAIL]/Drafts" },
+        uids: [messageId],
+        flag: "\\Draft"
+      })
+
+      return {
+        accountId,
+        box,
+        message,
+        messageId
+      }
+    },
+
+    process({
+      accountId,
+      message,
+      messageId,
+      box
+    }: {
+      accountId: ID
+      message: {
+        attributes: MessageAttributes
+        headers: cache.SerializedHeaders
+        partHeaders: Record<string, cache.SerializedHeaders>
+      }
+      messageId: cache.ID
+      box: { attribute: string }
+    }): Promise<string> {
+      return withConnectionManager(accountId, connectionManager => {
+        return (async () => {
+          const { attributes, headers, partHeaders } = message
+          const bodies = (partID: string) =>
+            cache.getBody(messageId, { partID }) || undefined
+          const mimeNode = serialize({
+            attributes,
+            headers,
+            partHeaders,
+            bodies
+          })
+          const raw = await promises.lift1<Buffer>(cb => mimeNode.build(cb))
+          return connectionManager
+            .request(request.actions.append(["\\Draft"], raw, box))
+            .toPromise()
+        })()
+      })
+    }
+  }),
+
   sync: handler({
     priority: LOW_PRIORITY,
     enqueue(params: { accountId: ID }) {
@@ -261,7 +344,6 @@ const handlers = {
 
       return params
     },
-
     process({
       accountId,
       box,

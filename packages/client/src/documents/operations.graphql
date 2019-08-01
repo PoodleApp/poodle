@@ -87,6 +87,7 @@ query getConversation($id: ID!, $accountId: ID!) {
         mailbox
         host
       }
+      isDraft
     }
     isRead
     isStarred
@@ -106,6 +107,47 @@ query getConversation($id: ID!, $accountId: ID!) {
         name
         mailbox
         host
+      }
+    }
+    replyDraft {
+      id
+      date
+      messageId
+      subject
+      from {
+        name
+        mailbox
+        host
+      }
+      presentables {
+        id
+        isRead
+        contents {
+          revision {
+            messageId
+            contentId
+          }
+          resource {
+            messageId
+            contentId
+          }
+          type
+          subtype
+          content
+        }
+        date
+        from {
+          name
+          mailbox
+          host
+        }
+        editedAt
+        editedBy {
+          name
+          mailbox
+          host
+        }
+        isDraft
       }
     }
     snippet
@@ -293,6 +335,51 @@ mutation edit(
           mailbox
           host
         }
+      }
+      isRead
+      labels
+      snippet
+      subject
+    }
+  }
+}
+
+mutation saveDraft(
+  $accountId: ID!
+  $conversationId: ID!
+  $content: ContentInput!
+) {
+  conversations {
+    saveDraft(accountId: $accountId, id: $conversationId, content: $content) {
+      id
+      presentableElements {
+        id
+        contents {
+          revision {
+            messageId
+            contentId
+          }
+          resource {
+            messageId
+            contentId
+          }
+          type
+          subtype
+          content
+        }
+        date
+        from {
+          name
+          mailbox
+          host
+        }
+        editedAt
+        editedBy {
+          name
+          mailbox
+          host
+        }
+        isDraft
       }
       isRead
       labels

@@ -20,16 +20,28 @@ type Props = React.FormHTMLAttributes<HTMLFormElement> & {
   accountId: string
   conversationId: string
   replyRecipients: graphql.Participants
+  replyDraft: graphql.Message | null
 }
 
 export default function ReplyForm({
   accountId,
   conversationId,
   replyRecipients,
+  replyDraft,
   ...rest
 }: Props) {
+  const content =
+    replyDraft &&
+    replyDraft.presentables &&
+    replyDraft.presentables[0].contents[0].content
+
+  console.log(content)
+
   const [reply, replyResult] = graphql.useReplyMutation()
-  const [value, setValue] = React.useState(initialValue)
+  const [saveDraft, saveDraftResult] = graphql.useSaveDraftMutation()
+  const [value, setValue] = React.useState(
+    serializer.deserialize(content || "")
+  )
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -62,9 +74,25 @@ export default function ReplyForm({
     />
   ))
 
+  //TODO figure out why value is null
+  function onChange() {
+    console.log("changing")
+    saveDraft({
+      variables: {
+        accountId,
+        conversationId,
+        content: {
+          type: "text",
+          subtype: "html",
+          content: serializer.serialize(value)
+        }
+      }
+    })
+  }
+
   return (
     <form onSubmit={onSubmit} {...rest}>
-      <DisplayErrors results={[replyResult]} />
+      <DisplayErrors results={[replyResult, saveDraftResult]} />
       <Card>
         <CardHeader
           avatar={<ReplyIcon />}
@@ -74,6 +102,7 @@ export default function ReplyForm({
         <CardContent>
           <Editor
             onChange={({ value }: { value: Value }) => {
+              onChange()
               setValue(value)
             }}
             value={value}

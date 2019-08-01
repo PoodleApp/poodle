@@ -20,7 +20,8 @@ const cachePolicy = {
       : moment()
           .subtract(30, "days")
           .toDate(),
-  labels: ["\\Inbox", "\\Sent"]
+  labels: ["\\Inbox", "\\Sent"],
+  flags: ["\\Draft"]
 } as const
 
 const BATCH_SIZE = 50
@@ -283,6 +284,13 @@ function matchesCachePolicy(message: imap.ImapMessageAttributes): boolean {
   if (cachePolicy.labels) {
     const labels = message["x-gm-labels"] || []
     if (!cachePolicy.labels.some(label => labels.includes(label))) {
+      return false
+    }
+  }
+
+  if (cachePolicy.flags) {
+    const flags = message.flags || []
+    if (!cachePolicy.flags.some(flag => flags.includes(flag))) {
       return false
     }
   }

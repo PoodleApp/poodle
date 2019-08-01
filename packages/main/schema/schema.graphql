@@ -30,6 +30,7 @@ type Conversation {
   replyRecipients(fromAccountId: ID!): Participants!
   snippet: String
   subject: String
+  replyDraft: Message
 }
 
 type ConversationSearchResult {
@@ -48,6 +49,7 @@ type ConversationMutations {
     content: ContentInput!
   ): Conversation!
   reply(accountId: ID!, id: ID!, content: ContentInput!): Conversation!
+  saveDraft(accountId: ID!, id: ID!, content: ContentInput!): Conversation!
   setIsRead(id: ID!, isRead: Boolean!): Conversation!
   sendMessage(accountId: ID!, message: MessageInput!): Conversation!
 }
@@ -58,6 +60,7 @@ type Message {
   messageId: ID!
   subject: String
   from: [Address!]!
+  presentables: [Presentable!]!
 }
 
 input MessageInput {
@@ -93,6 +96,7 @@ type Presentable {
   from: Address!
   editedAt: String
   editedBy: Address
+  isDraft: Boolean!
 }
 
 type Content {

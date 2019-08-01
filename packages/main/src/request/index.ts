@@ -72,6 +72,20 @@ export const { actions, perform } = combineHandlers({
     })
   },
 
+  append(
+    connection: Connection,
+    flags: string[],
+    msgData: Buffer,
+    box: BoxSpecifier
+  ): R<string> {
+    return withBox(connection, box, () => {
+      const result = promises.lift1<string>(cb =>
+        connection.append(msgData, { flags }, cb as any)
+      )
+      return kefir.fromPromise(result)
+    })
+  },
+
   delFlags(
     connection: Connection,
     box: BoxSpecifier,
@@ -95,6 +109,20 @@ export const { actions, perform } = combineHandlers({
     return withBox(connection, box, () => {
       const result = promises.lift0(cb =>
         connection.delLabels(source, labels, cb)
+      )
+      return kefir.fromPromise(result)
+    })
+  },
+
+  addLabels(
+    connection: Connection,
+    box: BoxSpecifier,
+    source: imap.MessageSource,
+    labels: string[]
+  ): R<void> {
+    return withBox(connection, box, () => {
+      const result = promises.lift0(cb =>
+        connection.addLabels(source, labels, cb)
       )
       return kefir.fromPromise(result)
     })

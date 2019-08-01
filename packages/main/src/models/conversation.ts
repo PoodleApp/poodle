@@ -89,7 +89,9 @@ type Edit = {
 
 export function getPresentableElements({
   messages
-}: Conversation): Collection.Indexed<Presentable> {
+}: {
+  messages: cache.Message[]
+}): Collection.Indexed<Presentable> {
   const initialContents = Seq(messages).flatMap(getContentParts)
   const edits = Seq(messages).flatMap(getEdits)
   const editedContents = initialContents.map(resource => ({
@@ -109,6 +111,9 @@ export function getPresentableElements({
         isRead: cache
           .getFlags(latestEdit ? latestEdit.revision.message.id : message.id)
           .includes("\\Seen"),
+        isDraft: cache
+          .getFlags(latestEdit ? latestEdit.revision.message.id : message.id)
+          .includes("\\Draft"),
         contents: resources
           .valueSeq()
           .map(getPresentableContent)
@@ -136,6 +141,15 @@ function getContentParts(message: cache.Message): List<Revision> {
       part: cachedPart
     }
   })
+}
+
+export function getReplyDraft(messages: cache.Message[]): cache.Message | null {
+  const message = Collection.Indexed(
+    messages.filter(message => cache.getFlags(message.id).includes("\\Draft"))
+  )
+    .sortBy(message => Number(message.date))
+    .last(null)
+  return message
 }
 
 function walkGraphOneStep(
