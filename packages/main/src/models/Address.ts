@@ -59,6 +59,12 @@ export function build({
 
 const specialChar = /[()<>[]:;@\\,."]/
 
+export function flatAddresses(
+  addressesAndGroups: Array<imap.Address | imap.AddressGroup>
+): imap.Address[] {
+  return addressesAndGroups.flatMap(x => ("addresses" in x ? x.addresses : [x]))
+}
+
 // Print an address according to RFC 5322
 export function formatAddress(a: imap.Address): string {
   const rawName = a.name
@@ -71,9 +77,14 @@ export function formatAddress(a: imap.Address): string {
   return `${name} <${a.mailbox}@${a.host}>`
 }
 
-// Print list of addresses as a single string according to RFC 5322
-export function formatAddressList(as: Iterable<imap.Address>): string {
-  return Seq(as)
+/**
+ * Print list of addresses as a single string according to RFC 5322
+ */
+export function formatAddressList(
+  as: Iterable<imap.Address | imap.AddressGroup>
+): string {
+  // TODO: format groups instead of flattening
+  return Seq(flatAddresses(Array.from(as)))
     .map(formatAddress)
     .join(", ")
 }
