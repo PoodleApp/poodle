@@ -25,7 +25,7 @@ export interface Message {
   envelope_subject?: string
   modseq?: string
   uid?: number
-  updatedAt?: string
+  updated_at?: string
   x_gm_msgid?: string
   x_gm_thrid?: string
 }
@@ -45,4 +45,17 @@ export interface MessagePart {
   size?: number
   subtype: string
   type: string
+}
+
+export interface Search {
+  id: ID
+  account_id: ID
+  box_id: ID
+  query: string
+  uidlastseen?: number
+}
+
+export interface Thread {
+  id: string
+  messages: Message[]
 }

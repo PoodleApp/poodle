@@ -3,6 +3,7 @@ import { Address, Resolvers } from "../generated/graphql"
 import * as account from "./account"
 import * as conversation from "./conversation"
 import * as message from "./message"
+import { Search } from "./search"
 
 export const resolvers: Resolvers = {
   Query: {
@@ -48,5 +49,6 @@ export const resolvers: Resolvers = {
   AccountMutations: account.AccountMutations,
   Conversation: conversation.Conversation,
   ConversationMutations: conversation.ConversationMutations,
-  Message: message.Message
+  Message: message.Message,
+  Search
 }

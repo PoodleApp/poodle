@@ -7,6 +7,7 @@ import {
   Message
 } from "../resolvers/types"
 import { Conversation } from "../models/conversation"
+import { Search } from "../cache/types"
 export type Maybe<T> = T | null
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
 /** All built-in and custom scalars, mapped to their actual values */
@@ -25,18 +26,23 @@ export type Account = {
   loggedIn: Scalars["Boolean"]
   conversations: Array<Conversation>
   messages: Array<Message>
+  search: Search
 }
 
 export type AccountConversationsArgs = {
   label?: Maybe<Scalars["String"]>
 }
 
+export type AccountSearchArgs = {
+  query: Scalars["String"]
+}
+
 export type AccountMutations = {
   __typename?: "AccountMutations"
   create: Account
   authenticate: Account
-  sync: Account
   delete: Scalars["Boolean"]
+  sync: Account
 }
 
 export type AccountMutationsCreateArgs = {
@@ -47,11 +53,11 @@ export type AccountMutationsAuthenticateArgs = {
   id: Scalars["ID"]
 }
 
-export type AccountMutationsSyncArgs = {
+export type AccountMutationsDeleteArgs = {
   id: Scalars["ID"]
 }
 
-export type AccountMutationsDeleteArgs = {
+export type AccountMutationsSyncArgs = {
   id: Scalars["ID"]
 }
 
@@ -237,6 +243,13 @@ export type QueryConversationsArgs = {
   specificityThreshold?: Maybe<Scalars["Int"]>
 }
 
+export type Search = {
+  __typename?: "Search"
+  id: Scalars["ID"]
+  conversations: Array<Conversation>
+  query: Scalars["String"]
+}
+
 export type ResolverTypeWrapper<T> = Promise<T> | T
 
 export type ResolverFn<TResult, TParent, TContext, TArgs> = (
@@ -320,6 +333,7 @@ export type ResolversTypes = {
   PartSpec: ResolverTypeWrapper<PartSpec>
   Participants: ResolverTypeWrapper<Participants>
   Message: ResolverTypeWrapper<Message>
+  Search: ResolverTypeWrapper<Search>
   Int: ResolverTypeWrapper<Scalars["Int"]>
   ConversationSearchResult: ResolverTypeWrapper<
     Omit<ConversationSearchResult, "conversation"> & {
@@ -349,6 +363,7 @@ export type ResolversParentTypes = {
   PartSpec: PartSpec
   Participants: Participants
   Message: Message
+  Search: Search
   Int: Scalars["Int"]
   ConversationSearchResult: Omit<ConversationSearchResult, "conversation"> & {
     conversation: ResolversTypes["Conversation"]
@@ -376,6 +391,12 @@ export type AccountResolvers<
     AccountConversationsArgs
   >
   messages?: Resolver<Array<ResolversTypes["Message"]>, ParentType, ContextType>
+  search?: Resolver<
+    ResolversTypes["Search"],
+    ParentType,
+    ContextType,
+    AccountSearchArgs
+  >
 }
 
 export type AccountMutationsResolvers<
@@ -394,17 +415,17 @@ export type AccountMutationsResolvers<
     ContextType,
     AccountMutationsAuthenticateArgs
   >
-  sync?: Resolver<
-    ResolversTypes["Account"],
-    ParentType,
-    ContextType,
-    AccountMutationsSyncArgs
-  >
   delete?: Resolver<
     ResolversTypes["Boolean"],
     ParentType,
     ContextType,
     AccountMutationsDeleteArgs
+  >
+  sync?: Resolver<
+    ResolversTypes["Account"],
+    ParentType,
+    ContextType,
+    AccountMutationsSyncArgs
   >
 }
 
@@ -616,6 +637,19 @@ export type QueryResolvers<
   >
 }
 
+export type SearchResolvers<
+  ContextType = any,
+  ParentType = ResolversParentTypes["Search"]
+> = {
+  id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
+  conversations?: Resolver<
+    Array<ResolversTypes["Conversation"]>,
+    ParentType,
+    ContextType
+  >
+  query?: Resolver<ResolversTypes["String"], ParentType, ContextType>
+}
+
 export type Resolvers<ContextType = any> = {
   Account?: AccountResolvers<ContextType>
   AccountMutations?: AccountMutationsResolvers<ContextType>
@@ -630,6 +664,7 @@ export type Resolvers<ContextType = any> = {
   PartSpec?: PartSpecResolvers<ContextType>
   Presentable?: PresentableResolvers<ContextType>
   Query?: QueryResolvers<ContextType>
+  Search?: SearchResolvers<ContextType>
 }
 
 /**
