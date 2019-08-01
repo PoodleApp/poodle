@@ -130,6 +130,7 @@ export const conversation2: graphql.Conversation = {
     {
       __typename: "Presentable",
       id: "11",
+      isStarred: false,
       isRead: true,
       contents: [
         {
@@ -165,6 +166,7 @@ export const conversation2: graphql.Conversation = {
       __typename: "Presentable",
       id: "12",
       isRead: true,
+      isStarred: false,
       contents: [
         {
           __typename: "Content",
