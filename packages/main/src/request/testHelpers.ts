@@ -15,11 +15,16 @@ import ConnectionManager from "../managers/ConnectionManager"
 import { mock } from "../testHelpers"
 import { nonNull } from "../util/array"
 
+/**
+ * Sets up fake responses for IMAP connection methods. Fake responses apply
+ * globally to all connection instances.
+ */
 export function mockConnection({
   thread = testThread,
   searchResults = []
 }: {
   thread?: ComposedMessage[]
+  /** Optionally override search results */
   searchResults?: Array<[unknown, number[]]>
 } = {}): ConnectionManager {
   const boxes = {
@@ -99,6 +104,8 @@ export function mockConnection({
           )
         )
       }
+
+      return accum
     }, allUids)
 
     cb(
@@ -122,7 +129,9 @@ export function mockConnection({
       name,
       readOnly,
       uidvalidity: 123,
-      uidnext: testThread[1].attributes.uid! + 1,
+      uidnext:
+        Math.max(0, ...thread.map(msg => msg.attributes.uid).filter(nonNull)) +
+        1,
       flags: [],
       permFlags: [],
       newKeywords: false,

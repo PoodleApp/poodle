@@ -289,7 +289,7 @@ class BoxSync {
     }
   }
 
-  private captureResponses(
+  private async captureResponses(
     responses: R<request.FetchResponse>
   ): Promise<cache.ID[]> {
     const context = {
@@ -332,10 +332,7 @@ class BoxSync {
       }
     })
 
-    return kefirUtil
-      .takeAll(stream)
-      .map(xs => xs.filter(nonNull))
-      .toPromise()
+    return (await kefirUtil.takeAll(stream)).filter(nonNull)
   }
 }
 

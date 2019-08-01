@@ -312,7 +312,11 @@ export function persistBody(
   if (!result) {
     throw new Error("message part not found in struct")
   }
-  insertInto("message_bodies", { message_struct_id: result.id, content })
+  insertInto(
+    "message_bodies",
+    { message_struct_id: result.id, content },
+    "on conflict do nothing"
+  )
 }
 
 // TODO: What is the proper way to provide a list of values in a query?
