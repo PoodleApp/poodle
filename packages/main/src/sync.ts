@@ -106,8 +106,10 @@ class BoxSync {
         .toPromise()
     )
       // Returned uids appear to be in ascending order, which should mean that
-      // the most recent search results are at the end of the list.
-      .slice(0 - MAX_SEARCH_RESULTS)
+      // the most recent search results are at the end of the list. We want to
+      // download most recent messages first.
+      .reverse()
+      .take(MAX_SEARCH_RESULTS)
       .map(uid => parseInt(uid, 10))
 
     // Add messages that have already been downloaded to result set
