@@ -1,4 +1,6 @@
 import { Collapse } from "@material-ui/core"
+import StarIcon from "@material-ui/icons/Star"
+import StarBorder from "@material-ui/icons/StarBorder"
 import * as React from "react"
 import Conversation from "./Conversation"
 import { delay, mount, updates } from "./testing"
@@ -90,4 +92,71 @@ it("does not collapse unread messages", async () => {
     "in",
     true
   )
+})
+
+it("stars a presentable in conversation view", async () => {
+  const app = mount(
+    <Conversation
+      accountId={$.account.id}
+      conversationId={$.conversation.id}
+    />,
+    {
+      mocks: [
+        $.getConversationMock,
+        $.flagPresentableMock({ isFlagged: true, presentableId: "11" })
+      ]
+    }
+  )
+
+  await updates(app)
+
+  app
+    .find({ presentable: { id: "11" } })
+    .find(StarBorder)
+    .simulate("click")
+
+  await updates(app, 10)
+
+  expect(app.find(StarIcon)).toExist()
+})
+
+it("un-stars a presentable in conversation view", async () => {
+  const app = mount(
+    <Conversation
+      accountId={$.account.id}
+      conversationId={$.conversation.id}
+    />,
+    {
+      mocks: [
+        {
+          ...$.getConversationMock,
+          result: {
+            data: {
+              conversation: {
+                ...$.conversation,
+                isStarred: true,
+                presentableElements: [
+                  {
+                    ...$.conversation.presentableElements[0],
+                    isStarred: true
+                  },
+                  { ...$.conversation.presentableElements[1] }
+                ]
+              }
+            }
+          }
+        },
+        $.flagPresentableMock({ isFlagged: false, presentableId: "11" })
+      ]
+    }
+  )
+
+  await updates(app)
+  app
+    .find({ presentable: { id: "11" } })
+    .find(StarIcon)
+    .simulate("click")
+  await updates(app, 10)
+
+  expect(app.find(StarBorder)).toExist()
 })

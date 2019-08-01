@@ -113,6 +113,7 @@ export type ConversationMutations = {
   __typename?: "ConversationMutations"
   archive: Conversation
   flag: Array<Conversation>
+  flagPresentable: Conversation
   edit: Conversation
   reply: Conversation
   setIsRead: Conversation
@@ -125,6 +126,12 @@ export type ConversationMutationsArchiveArgs = {
 
 export type ConversationMutationsFlagArgs = {
   ids: Array<Scalars["ID"]>
+  isFlagged: Scalars["Boolean"]
+}
+
+export type ConversationMutationsFlagPresentableArgs = {
+  id: Scalars["ID"]
+  conversationId: Scalars["ID"]
   isFlagged: Scalars["Boolean"]
 }
 
@@ -202,6 +209,7 @@ export type Presentable = {
   __typename?: "Presentable"
   id: Scalars["ID"]
   isRead: Scalars["Boolean"]
+  isStarred: Scalars["Boolean"]
   contents: Array<Content>
   date: Scalars["String"]
   from: Address
@@ -487,6 +495,12 @@ export type ConversationMutationsResolvers<
     ContextType,
     ConversationMutationsFlagArgs
   >
+  flagPresentable?: Resolver<
+    ResolversTypes["Conversation"],
+    ParentType,
+    ContextType,
+    ConversationMutationsFlagPresentableArgs
+  >
   edit?: Resolver<
     ResolversTypes["Conversation"],
     ParentType,
@@ -584,6 +598,7 @@ export type PresentableResolvers<
 > = {
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
   isRead?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>
+  isStarred?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>
   contents?: Resolver<Array<ResolversTypes["Content"]>, ParentType, ContextType>
   date?: Resolver<ResolversTypes["String"], ParentType, ContextType>
   from?: Resolver<ResolversTypes["Address"], ParentType, ContextType>

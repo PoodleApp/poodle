@@ -29,6 +29,7 @@ export const conversation: graphql.Conversation = {
       __typename: "Presentable",
       id: "11",
       isRead: true,
+      isStarred: false,
       contents: [
         {
           __typename: "Content",
@@ -63,6 +64,7 @@ export const conversation: graphql.Conversation = {
       __typename: "Presentable",
       id: "12",
       isRead: true,
+      isStarred: false,
       contents: [
         {
           __typename: "Content",
@@ -128,6 +130,7 @@ export const conversation2: graphql.Conversation = {
     {
       __typename: "Presentable",
       id: "11",
+      isStarred: false,
       isRead: true,
       contents: [
         {
@@ -163,6 +166,7 @@ export const conversation2: graphql.Conversation = {
       __typename: "Presentable",
       id: "12",
       isRead: true,
+      isStarred: false,
       contents: [
         {
           __typename: "Content",
@@ -270,6 +274,44 @@ export function flagMock({
           flag: conversations
             ? conversations.map(c => ({ ...c, isStarred: isFlagged }))
             : conversation
+        }
+      }
+    }
+  }
+}
+
+export function flagPresentableMock({
+  isFlagged,
+  presentableId
+}: {
+  isFlagged: boolean
+  presentableId: string
+}) {
+  return {
+    request: {
+      query: graphql.FlagPresentableDocument,
+      variables: {
+        conversationId: conversation.id,
+        isFlagged: isFlagged,
+        presentableId
+      }
+    },
+    result: {
+      data: {
+        conversations: {
+          __typename: "ConversationMutations",
+          flagPresentable: {
+            ...conversation,
+            isStarred: isFlagged,
+            presentableElements: conversation.presentableElements.map(
+              presentable => {
+                if (presentable.id === presentableId) {
+                  return { ...presentable, isStarred: isFlagged }
+                }
+                return presentable
+              }
+            )
+          }
         }
       }
     }

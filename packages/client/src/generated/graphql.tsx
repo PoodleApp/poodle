@@ -105,6 +105,7 @@ export type ConversationMutations = {
   __typename?: "ConversationMutations"
   archive: Conversation
   flag: Array<Conversation>
+  flagPresentable: Conversation
   edit: Conversation
   reply: Conversation
   setIsRead: Conversation
@@ -117,6 +118,12 @@ export type ConversationMutationsArchiveArgs = {
 
 export type ConversationMutationsFlagArgs = {
   ids: Array<Scalars["ID"]>
+  isFlagged: Scalars["Boolean"]
+}
+
+export type ConversationMutationsFlagPresentableArgs = {
+  id: Scalars["ID"]
+  conversationId: Scalars["ID"]
   isFlagged: Scalars["Boolean"]
 }
 
@@ -194,6 +201,7 @@ export type Presentable = {
   __typename?: "Presentable"
   id: Scalars["ID"]
   isRead: Scalars["Boolean"]
+  isStarred: Scalars["Boolean"]
   contents: Array<Content>
   date: Scalars["String"]
   from: Address
@@ -395,20 +403,35 @@ export type FlagMutation = { __typename?: "Mutation" } & {
     flag: Array<
       { __typename?: "Conversation" } & Pick<
         Conversation,
-        | "id"
-        | "date"
-        | "isRead"
-        | "isStarred"
-        | "labels"
-        | "snippet"
-        | "subject"
+        "id" | "isStarred"
       > & {
-          from: { __typename?: "Address" } & Pick<
-            Address,
-            "host" | "mailbox" | "name"
+          presentableElements: Array<
+            { __typename?: "Presentable" } & Pick<
+              Presentable,
+              "id" | "isStarred"
+            >
           >
         }
     >
+  }
+}
+
+export type FlagPresentableMutationVariables = {
+  presentableId: Scalars["ID"]
+  conversationId: Scalars["ID"]
+  isFlagged: Scalars["Boolean"]
+}
+
+export type FlagPresentableMutation = { __typename?: "Mutation" } & {
+  conversations: { __typename?: "ConversationMutations" } & {
+    flagPresentable: { __typename?: "Conversation" } & Pick<
+      Conversation,
+      "id" | "isStarred"
+    > & {
+        presentableElements: Array<
+          { __typename?: "Presentable" } & Pick<Presentable, "id" | "isStarred">
+        >
+      }
   }
 }
 
@@ -485,7 +508,7 @@ export type ConversationFieldsForConversationViewFragment = {
     presentableElements: Array<
       { __typename?: "Presentable" } & Pick<
         Presentable,
-        "id" | "isRead" | "date" | "editedAt"
+        "id" | "isRead" | "isStarred" | "date" | "editedAt"
       > & {
           contents: Array<
             { __typename?: "Content" } & Pick<
@@ -760,6 +783,12 @@ export const ConversationFieldsForConversationViewFragmentDoc: DocumentNode = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "isRead" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "isStarred" },
                   arguments: [],
                   directives: []
                 },
@@ -1769,6 +1798,12 @@ export const GetConversationDocument: DocumentNode = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "isRead" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "isStarred" },
                   arguments: [],
                   directives: []
                 },
@@ -3040,19 +3075,7 @@ export const FlagDocument: DocumentNode = {
                     selections: [
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "id" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "date" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "from" },
+                        name: { kind: "Name", value: "presentableElements" },
                         arguments: [],
                         directives: [],
                         selectionSet: {
@@ -3060,19 +3083,13 @@ export const FlagDocument: DocumentNode = {
                           selections: [
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "host" },
+                              name: { kind: "Name", value: "id" },
                               arguments: [],
                               directives: []
                             },
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "mailbox" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "name" },
+                              name: { kind: "Name", value: "isStarred" },
                               arguments: [],
                               directives: []
                             }
@@ -3081,31 +3098,13 @@ export const FlagDocument: DocumentNode = {
                       },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "isRead" },
+                        name: { kind: "Name", value: "id" },
                         arguments: [],
                         directives: []
                       },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "isStarred" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "labels" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "snippet" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "subject" },
                         arguments: [],
                         directives: []
                       }
@@ -3133,6 +3132,160 @@ export function useFlagMutation(
   )
 }
 export type FlagMutationHookResult = ReturnType<typeof useFlagMutation>
+export const FlagPresentableDocument: DocumentNode = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "flagPresentable" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "presentableId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } }
+          },
+          directives: []
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "conversationId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } }
+          },
+          directives: []
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "isFlagged" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "Boolean" }
+            }
+          },
+          directives: []
+        }
+      ],
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "conversations" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "flagPresentable" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "id" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "presentableId" }
+                      }
+                    },
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "conversationId" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "conversationId" }
+                      }
+                    },
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "isFlagged" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "isFlagged" }
+                      }
+                    }
+                  ],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "presentableElements" },
+                        arguments: [],
+                        directives: [],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "isStarred" },
+                              arguments: [],
+                              directives: []
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "id" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "isStarred" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+
+export function useFlagPresentableMutation(
+  baseOptions?: ReactApolloHooks.MutationHookOptions<
+    FlagPresentableMutation,
+    FlagPresentableMutationVariables
+  >
+) {
+  return ReactApolloHooks.useMutation<
+    FlagPresentableMutation,
+    FlagPresentableMutationVariables
+  >(FlagPresentableDocument, baseOptions)
+}
+export type FlagPresentableMutationHookResult = ReturnType<
+  typeof useFlagPresentableMutation
+>
 export const SendMessageDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -3322,6 +3475,12 @@ export const SendMessageDocument: DocumentNode = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "isRead" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "isStarred" },
                   arguments: [],
                   directives: []
                 },
@@ -3860,6 +4019,12 @@ export const EditDocument: DocumentNode = {
                 },
                 {
                   kind: "Field",
+                  name: { kind: "Name", value: "isStarred" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
                   name: { kind: "Name", value: "contents" },
                   arguments: [],
                   directives: [],
@@ -4340,6 +4505,12 @@ export const ReplyDocument: DocumentNode = {
                 {
                   kind: "Field",
                   name: { kind: "Name", value: "isRead" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "isStarred" },
                   arguments: [],
                   directives: []
                 },

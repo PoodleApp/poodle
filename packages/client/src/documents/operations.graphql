@@ -104,18 +104,33 @@ mutation archive($conversationId: ID!) {
 mutation flag($conversationIDs: [ID!]!, $isFlagged: Boolean!) {
   conversations {
     flag(ids: $conversationIDs, isFlagged: $isFlagged) {
-      id
-      date
-      from {
-        host
-        mailbox
-        name
+      presentableElements {
+        id
+        isStarred
       }
-      isRead
+      id
       isStarred
-      labels
-      snippet
-      subject
+    }
+  }
+}
+
+mutation flagPresentable(
+  $presentableId: ID!
+  $conversationId: ID!
+  $isFlagged: Boolean!
+) {
+  conversations {
+    flagPresentable(
+      id: $presentableId
+      conversationId: $conversationId
+      isFlagged: $isFlagged
+    ) {
+      presentableElements {
+        id
+        isStarred
+      }
+      id
+      isStarred
     }
   }
 }
@@ -193,6 +208,7 @@ fragment ConversationFieldsForConversationView on Conversation {
   presentableElements {
     id
     isRead
+    isStarred
     contents {
       revision {
         messageId

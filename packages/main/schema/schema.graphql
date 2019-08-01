@@ -41,6 +41,11 @@ type ConversationSearchResult {
 type ConversationMutations {
   archive(id: ID!): Conversation!
   flag(ids: [ID!]!, isFlagged: Boolean!): [Conversation!]!
+  flagPresentable(
+    id: ID!
+    conversationId: ID!
+    isFlagged: Boolean!
+  ): Conversation!
   edit(
     accountId: ID!
     conversationId: ID!
@@ -89,6 +94,7 @@ type Participants {
 type Presentable {
   id: ID!
   isRead: Boolean!
+  isStarred: Boolean!
   contents: [Content!]!
   date: String!
   from: Address!
