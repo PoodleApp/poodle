@@ -95,6 +95,9 @@ class BoxSync {
   }
 
   async search(searchRecord: cache.Search) {
+    // Make a record of the point when the search was fresh
+    cache.setSearchUidLastSeen(searchRecord, this.box.uidnext - 1)
+
     const uids = List(
       await this.manager
         .request(
@@ -136,9 +139,6 @@ class BoxSync {
       ).map(uid => parseInt(uid, 10))
       await this.downloadMissingMessages({ uids: threadUids })
     }
-
-    // Make a record of the point when the search was fresh
-    cache.setSearchUidLastSeen(searchRecord, this.box.uidnext - 1)
 
     publishMessageUpdates(null)
   }
