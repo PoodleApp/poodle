@@ -295,6 +295,7 @@ fragment ConversationFieldsForConversationView on Conversation {
       id
       isRead
       isDraft
+      isStarred
       contents {
         revision {
           messageId

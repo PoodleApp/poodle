@@ -617,7 +617,7 @@ export type ConversationFieldsForConversationViewFragment = {
           presentables: Array<
             { __typename?: "Presentable" } & Pick<
               Presentable,
-              "id" | "isRead" | "isDraft" | "date" | "editedAt"
+              "id" | "isRead" | "isDraft" | "isStarred" | "date" | "editedAt"
             > & {
                 contents: Array<
                   { __typename?: "Content" } & Pick<
@@ -1141,6 +1141,12 @@ export const ConversationFieldsForConversationViewFragmentDoc: DocumentNode = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "isDraft" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "isStarred" },
                         arguments: [],
                         directives: []
                       },
@@ -2412,6 +2418,12 @@ export const GetConversationDocument: DocumentNode = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "isDraft" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "isStarred" },
                         arguments: [],
                         directives: []
                       },
@@ -4350,6 +4362,12 @@ export const SendMessageDocument: DocumentNode = {
                       },
                       {
                         kind: "Field",
+                        name: { kind: "Name", value: "isStarred" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
                         name: { kind: "Name", value: "contents" },
                         arguments: [],
                         directives: [],
@@ -5140,6 +5158,12 @@ export const EditDocument: DocumentNode = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "isDraft" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "isStarred" },
                         arguments: [],
                         directives: []
                       },
@@ -6216,6 +6240,12 @@ export const ReplyDocument: DocumentNode = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "isDraft" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "isStarred" },
                         arguments: [],
                         directives: []
                       },
