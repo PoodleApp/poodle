@@ -247,6 +247,7 @@ export type Search = {
   __typename?: "Search"
   id: Scalars["ID"]
   conversations: Array<Conversation>
+  loading: Scalars["Boolean"]
   query: Scalars["String"]
 }
 
@@ -647,6 +648,7 @@ export type SearchResolvers<
     ParentType,
     ContextType
   >
+  loading?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>
   query?: Resolver<ResolversTypes["String"], ParentType, ContextType>
 }
 

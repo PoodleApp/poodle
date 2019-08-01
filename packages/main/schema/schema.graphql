@@ -129,6 +129,7 @@ input PartSpecInput {
 type Search {
   id: ID!
   conversations: [Conversation!]!
+  loading: Boolean!
   query: String!
 }
 
