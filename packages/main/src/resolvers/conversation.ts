@@ -24,7 +24,7 @@ export const Conversation: ConversationResolvers = {
 
   replyDraft({ messages }: C.Conversation) {
     const message = C.getReplyDraft(messages)
-    console.log("message from resolver", message)
+
     return (
       message && {
         ...message,

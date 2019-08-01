@@ -8,6 +8,7 @@ import {
 import ReplyIcon from "@material-ui/icons/Reply"
 import * as React from "react"
 import { Value } from "slate"
+import debounce from "../debounce"
 import DisplayErrors from "../DisplayErrors"
 import Editor from "../editor/Editor"
 import serializer from "../editor/serializer"
@@ -35,13 +36,13 @@ export default function ReplyForm({
     replyDraft.presentables &&
     replyDraft.presentables[0].contents[0].content
 
-  console.log(content)
-
   const [reply, replyResult] = graphql.useReplyMutation()
   const [saveDraft, saveDraftResult] = graphql.useSaveDraftMutation()
   const [value, setValue] = React.useState(
     serializer.deserialize(content || "")
   )
+
+  const debouncedFunction = debounce(saveDraft, 3000, false) //! why does this slow down saves to cache or server so much?
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -74,9 +75,8 @@ export default function ReplyForm({
     />
   ))
 
-  //TODO figure out why value is null
+  //TODO how can we limit amount of saveDraft calls
   function onChange() {
-    console.log("changing")
     saveDraft({
       variables: {
         accountId,

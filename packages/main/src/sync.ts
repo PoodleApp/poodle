@@ -338,27 +338,25 @@ class BoxSync {
 }
 
 function matchesCachePolicy(message: imap.ImapMessageAttributes): boolean {
+  let labelMatches = true
+  let flagMatches = true
+  let dateMatches = true
+
   if (cachePolicy.labels) {
     const labels = message["x-gm-labels"] || []
-    if (!cachePolicy.labels.some(label => labels.includes(label))) {
-      return false
-    }
+    labelMatches = !cachePolicy.labels.some(label => labels.includes(label))
   }
 
   if (cachePolicy.flags) {
     const flags = message.flags || []
-    if (!cachePolicy.flags.some(flag => flags.includes(flag))) {
-      return false
-    }
+    flagMatches = !cachePolicy.flags.some(flag => flags.includes(flag))
   }
 
   if (cachePolicy.since) {
-    if (message.date < cachePolicy.since) {
-      return false
-    }
+    dateMatches = message.date < cachePolicy.since
   }
 
-  return true
+  return labelMatches || flagMatches || dateMatches
 }
 
 export function fetchQuery(

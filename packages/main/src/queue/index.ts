@@ -266,7 +266,7 @@ const handlers = {
         const updatedAt = new Date().toISOString()
         messageId = cache.persistAttributes(
           { accountId, updatedAt },
-          attributes
+          { ...attributes, flags: [...attributes.flags, "\\Draft"] }
         )
         cache.persistHeadersAndReferences(messageId, headers, attributes)
         for (const [partId, content] of Object.entries(bodies)) {
@@ -281,13 +281,6 @@ const handlers = {
       if (!messageId) {
         throw new Error("error saving message")
       }
-
-      cache.addFlag({
-        accountId,
-        box: { name: "[GMAIL]/Drafts" },
-        uids: [messageId],
-        flag: "\\Draft"
-      })
 
       return {
         accountId,

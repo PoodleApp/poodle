@@ -106,8 +106,6 @@ export default function Conversation({
     conversationId: conversationId!
   })
 
-  console.log(data && data.conversation)
-
   const [flag, flagResult] = graphql.useFlagMutation()
 
   const setIsReadResult = useSetIsRead(data && data.conversation)

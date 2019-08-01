@@ -360,12 +360,6 @@ describe("when querying conversations", () => {
   })
 
   it("saves a draft when writing a reply", async () => {
-    const replyContent = "Sounds good!"
-    const content = await sendEdit({
-      type: "text",
-      subtype: "plain",
-      content: replyContent
-    })
     const result = await request(
       `
       mutation saveDraft($accountId: ID!, $conversationId: ID!, $content: ContentInput!) {
@@ -373,55 +367,56 @@ describe("when querying conversations", () => {
           saveDraft(accountId: $accountId, id: $conversationId, content: $content) {
             id
             presentableElements {
-              id
               contents {
-                revision {
-                  messageId
-                  contentId
-                }
-                resource {
-                  messageId
-                  contentId
-                }
                 type
                 subtype
                 content
               }
-              date
-              from {
-                name
-                mailbox
-                host
-              }
-              editedAt
-              editedBy {
-                name
-                mailbox
-                host
-              }
+              id
               isDraft
             }
-            isRead
             labels
             snippet
             subject
+            replyDraft{
+              presentables{
+                contents {
+                  type
+                  subtype
+                  content
+                }
+                id
+                isDraft
+              }
+            }
           }
         }
       }
       `,
-      { conversationId, accountId, content }
+      {
+        conversationId,
+        accountId,
+        content: { type: "text", subtype: "plain", content: "this is a reply" }
+      }
     )
 
     expect(result).toMatchObject({
       data: {
         conversations: {
           saveDraft: {
-            presentableElements: {
-              contents: {
-                type: "text",
-                subtype: "plain",
-                content: "Sounds good!"
-              }
+            replyDraft: {
+              presentables: [
+                {
+                  contents: expect.arrayContaining([
+                    {
+                      type: "text",
+                      subtype: "plain",
+                      content: "this is a reply"
+                    }
+                  ]),
+                  isDraft: true
+                }
+              ]
             }
           }
         }
