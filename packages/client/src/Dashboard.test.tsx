@@ -1,10 +1,7 @@
 import { ListItemText } from "@material-ui/core"
 import SearchIcon from "@material-ui/icons/Search"
-import StarIcon from "@material-ui/icons/Star"
-import StarBorder from "@material-ui/icons/StarBorder"
 import * as React from "react"
 import Avatar from "./Avatar"
-import Conversation from "./Conversation"
 import Dashboard from "./Dashboard"
 import { mount, updates } from "./testing"
 import * as $ from "./testing/fixtures"
@@ -132,50 +129,6 @@ it("unstars selected conversations when all are starred", async () => {
       .find(ListItemText)
       .filterWhere(node => node.prop("id") === "conversation-row-2")
   ).not.toIncludeText("⭐ ")
-})
-
-it("stars a conversation in conversation view", async () => {
-  const app = mount(
-    <Conversation
-      accountId={$.account.id}
-      conversationId={$.conversation.id}
-    />,
-    {
-      mocks: [$.getConversationMock, $.flagMock({ isFlagged: true })]
-    }
-  )
-
-  await updates(app)
-  app.find('button[aria-label="star"]').simulate("click")
-  await updates(app, 10)
-
-  expect(app.find(StarBorder)).toExist()
-})
-
-it("un-stars a conversation in conversation view", async () => {
-  const app = mount(
-    <Conversation
-      accountId={$.account.id}
-      conversationId={$.conversation.id}
-    />,
-    {
-      mocks: [
-        {
-          ...$.getConversationMock,
-          result: {
-            data: { conversation: { ...$.conversation, isStarred: true } }
-          }
-        },
-        $.flagMock({ isFlagged: false })
-      ]
-    }
-  )
-
-  await updates(app)
-  app.find('button[aria-label="unstar"]').simulate("click")
-  await updates(app, 10)
-
-  expect(app.find(StarIcon)).toExist()
 })
 
 it("searches", async () => {
