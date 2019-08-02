@@ -159,7 +159,17 @@ export const { actions, perform } = combineHandlers({
     criteria: any[]
   ): R<imap.UID[]> {
     return withBox(connection, box, () =>
-      kefir.fromNodeCallback(cb => connection.search(criteria, cb as any))
+      kefir.fromNodeCallback(cb => {
+        try {
+          // `search` may throw an error instead of relaying an error via the
+          // callback. This happens for example when searching with the
+          // `X-GM-THRID` criteria if the given thread ID is not a string
+          // containing only numeric digits.
+          connection.search(criteria, cb as any)
+        } catch (error) {
+          cb(error, null as any)
+        }
+      })
     )
   }
 })

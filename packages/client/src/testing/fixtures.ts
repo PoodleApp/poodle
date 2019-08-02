@@ -191,7 +191,8 @@ export const conversation2: graphql.Conversation = {
           },
           type: "text",
           subtype: "plain",
-          content: "It's another conversation"
+          content: "It's another conversation",
+          disposition: graphql.Disposition.Inline
         }
       ],
       date: "2019-07-19T12:03:11.114Z",
@@ -224,7 +225,8 @@ export const conversation2: graphql.Conversation = {
           },
           type: "text",
           subtype: "plain",
-          content: "What, again?"
+          content: "What, again?",
+          disposition: graphql.Disposition.Inline
         }
       ],
       date: "2019-07-19T12:21:00.002Z",
@@ -415,7 +417,8 @@ export function searchMock({ query }: { query: string }) {
             __typename: "Search",
             id: 1,
             conversations: [conversation2],
-            query: query
+            loading: false,
+            query
           }
         }
       }
