@@ -66,7 +66,8 @@ export const Conversation: ConversationResolvers = {
     const presentables = C.getPresentableElements(conversation)
     const latest = presentables.last(null)
     const content = latest && Seq(latest.contents).first(null)
-    const visible = content && replyParser(content.content, true)
+    const visible =
+      content && content.content && replyParser(content.content, true)
     const plainText =
       visible && content && content.subtype === "html"
         ? htmlToText.fromString(visible, {
@@ -74,7 +75,7 @@ export const Conversation: ConversationResolvers = {
             ignoreImage: true
           })
         : visible
-    return plainText && plainText.slice(0, 1024)
+    return plainText ? plainText.slice(0, 1024) : null
   },
 
   subject(conversation: C.Conversation) {

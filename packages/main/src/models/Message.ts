@@ -33,10 +33,17 @@ export function getPartByPartId(
     .first()
 }
 
-export function inlineContentParts(
+export function inlineAndAttachmentContentParts(
   struct: imap.ImapMessageStruct
 ): List<imap.ImapMessagePart> {
-  return getInlineParts(part => part.type === "text", struct)
+  return getInlineAndAttachmentParts(part => {
+    const disposition_type = part.disposition && part.disposition.type
+    return (
+      !P.isMultipart(part) &&
+      disposition_type !== "replacement" &&
+      disposition_type !== "fallback"
+    )
+  }, struct)
 }
 
 export function allContentParts(
@@ -107,10 +114,7 @@ function selectPrimaryContent(
     if (subtype === "mixed") {
       // mixed: all parts are inline unless they have a `disposition` type that
       // is not `inline`
-      return nestedStructs.filter(s => {
-        const [part] = unpack(s)
-        return !part.disposition || part.disposition.type === "inline"
-      })
+      return nestedStructs
     } else if (subtype === "alternative") {
       // alternative: recurse into the last part that matches the filter, or that
       // is an ancestor of a part that matches the predicate
@@ -172,7 +176,7 @@ function foldPrimaryContent<T>(
   return foldParts(f, accum, selectPrimaryContent(filter), struct)
 }
 
-function getInlineParts(
+function getInlineAndAttachmentParts(
   filter: (_: imap.ImapMessagePart) => boolean, // Determines which part to pick in an `alternative`
   struct: imap.ImapMessageStruct
 ): List<imap.ImapMessagePart> {

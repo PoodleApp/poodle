@@ -17,7 +17,9 @@ export default function EditForm({
   onComplete: () => void
 }) {
   const [content, setContent] = React.useState(
-    serializer.deserialize(contentToEdit.content)
+    contentToEdit.content
+      ? serializer.deserialize(contentToEdit.content)
+      : serializer.deserialize("")
   )
   const [sendEdit, sendEditResult] = graphql.useEditMutation()
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {

@@ -221,6 +221,9 @@ fragment ConversationFieldsForConversationView on Conversation {
       type
       subtype
       content
+      disposition
+      filename
+      name
     }
     date
     from {

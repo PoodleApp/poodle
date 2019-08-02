@@ -1,4 +1,5 @@
 import { Collapse } from "@material-ui/core"
+import PhotoIcon from "@material-ui/icons/Photo"
 import StarIcon from "@material-ui/icons/Star"
 import StarBorder from "@material-ui/icons/StarBorder"
 import * as React from "react"
@@ -18,6 +19,21 @@ it("displays a conversation", async () => {
   )
   await delay()
   expect(app).toIncludeText("Hello from test")
+})
+
+it("displays an attachment", async () => {
+  const app = mount(
+    <Conversation
+      accountId={$.account.id}
+      conversationId={$.conversation.id}
+    />,
+    {
+      mocks: [$.getConversationMock, $.setIsReadMock]
+    }
+  )
+  await updates(app)
+  expect(app).toIncludeText("cat.jpg")
+  expect(app.find(PhotoIcon)).toExist()
 })
 
 it("displays a loading indicator while the conversation is loading", () => {
@@ -51,6 +67,11 @@ it("collapses read messages, with the exception of the last message in the conve
   )
 
   expect(app.find({ presentable: { id: "12" } }).find(Collapse)).toHaveProp(
+    "in",
+    false
+  )
+
+  expect(app.find({ presentable: { id: "13" } }).find(Collapse)).toHaveProp(
     "in",
     true
   )

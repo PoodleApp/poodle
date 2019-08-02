@@ -70,9 +70,12 @@ export type Content = {
   __typename?: "Content"
   resource: PartSpec
   revision: PartSpec
+  disposition: Disposition
+  filename?: Maybe<Scalars["String"]>
+  name?: Maybe<Scalars["String"]>
   type: Scalars["String"]
   subtype: Scalars["String"]
-  content: Scalars["String"]
+  content?: Maybe<Scalars["String"]>
 }
 
 export type ContentInput = {
@@ -155,6 +158,11 @@ export type ConversationSearchResult = {
   __typename?: "ConversationSearchResult"
   conversation: Conversation
   query: Scalars["String"]
+}
+
+export enum Disposition {
+  Inline = "inline",
+  Attachment = "attachment"
 }
 
 export type Message = {
@@ -513,7 +521,12 @@ export type ConversationFieldsForConversationViewFragment = {
           contents: Array<
             { __typename?: "Content" } & Pick<
               Content,
-              "type" | "subtype" | "content"
+              | "type"
+              | "subtype"
+              | "content"
+              | "disposition"
+              | "filename"
+              | "name"
             > & {
                 revision: { __typename?: "PartSpec" } & Pick<
                   PartSpec,
@@ -861,6 +874,24 @@ export const ConversationFieldsForConversationViewFragmentDoc: DocumentNode = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "content" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "disposition" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "filename" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
                         arguments: [],
                         directives: []
                       }
@@ -1876,6 +1907,24 @@ export const GetConversationDocument: DocumentNode = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "content" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "disposition" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "filename" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
                         arguments: [],
                         directives: []
                       }
@@ -3555,6 +3604,24 @@ export const SendMessageDocument: DocumentNode = {
                         name: { kind: "Name", value: "content" },
                         arguments: [],
                         directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "disposition" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "filename" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
                       }
                     ]
                   }
@@ -4094,6 +4161,24 @@ export const EditDocument: DocumentNode = {
                         name: { kind: "Name", value: "content" },
                         arguments: [],
                         directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "disposition" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "filename" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
                       }
                     ]
                   }
@@ -4583,6 +4668,24 @@ export const ReplyDocument: DocumentNode = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "content" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "disposition" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "filename" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
                         arguments: [],
                         directives: []
                       }
