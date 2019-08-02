@@ -1,3 +1,5 @@
+import * as cache from "../cache"
+
 export interface Account {
   id: string
   email: string
@@ -9,7 +11,7 @@ export type ConversationMutations = {}
 
 export type PresentableMutations = {}
 
-export interface Message {
+export interface Message extends cache.Message {
   id: string
   date: string
   inReplyTo?: string

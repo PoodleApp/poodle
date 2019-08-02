@@ -29,6 +29,7 @@ export const conversation: graphql.Conversation = {
       __typename: "Presentable",
       id: "11",
       isRead: true,
+      isDraft: false,
       isStarred: false,
       contents: [
         {
@@ -67,6 +68,7 @@ export const conversation: graphql.Conversation = {
       __typename: "Presentable",
       id: "12",
       isRead: true,
+      isDraft: false,
       isStarred: false,
       contents: [
         {
@@ -141,7 +143,8 @@ export const conversation: graphql.Conversation = {
   isStarred: false,
   isRead: true,
   snippet: "Hello from test",
-  subject: "Test Thread"
+  subject: "Test Thread",
+  replyDraft: null
 }
 
 export const conversation2: graphql.Conversation = {
@@ -174,6 +177,7 @@ export const conversation2: graphql.Conversation = {
       id: "11",
       isStarred: false,
       isRead: true,
+      isDraft: false,
       contents: [
         {
           __typename: "Content",
@@ -208,6 +212,7 @@ export const conversation2: graphql.Conversation = {
       __typename: "Presentable",
       id: "12",
       isRead: true,
+      isDraft: false,
       isStarred: false,
       contents: [
         {
@@ -241,7 +246,8 @@ export const conversation2: graphql.Conversation = {
   isRead: true,
   isStarred: false,
   snippet: "What, again?",
-  subject: "Another conversation"
+  subject: "Another conversation",
+  replyDraft: null
 }
 
 export const account: Omit<graphql.Account, "search"> = {

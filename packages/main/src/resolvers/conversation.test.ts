@@ -383,6 +383,71 @@ describe("when querying conversations", () => {
     })
   })
 
+  it("saves a draft when writing a reply", async () => {
+    const result = await request(
+      `
+      mutation saveDraft($accountId: ID!, $conversationId: ID!, $content: ContentInput!) {
+        conversations {
+          saveDraft(accountId: $accountId, id: $conversationId, content: $content) {
+            id
+            presentableElements {
+              contents {
+                type
+                subtype
+                content
+              }
+              id
+              isDraft
+            }
+            labels
+            snippet
+            subject
+            replyDraft{
+              presentables{
+                contents {
+                  type
+                  subtype
+                  content
+                }
+                id
+                isDraft
+              }
+            }
+          }
+        }
+      }
+      `,
+      {
+        conversationId,
+        accountId,
+        content: { type: "text", subtype: "plain", content: "this is a reply" }
+      }
+    )
+
+    expect(result).toMatchObject({
+      data: {
+        conversations: {
+          saveDraft: {
+            replyDraft: {
+              presentables: [
+                {
+                  contents: expect.arrayContaining([
+                    {
+                      type: "text",
+                      subtype: "plain",
+                      content: "this is a reply"
+                    }
+                  ]),
+                  isDraft: true
+                }
+              ]
+            }
+          }
+        }
+      }
+    })
+  })
+
   it("marks a conversation as unread", async () => {
     const result = await request(
       `

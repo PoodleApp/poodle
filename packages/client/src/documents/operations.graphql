@@ -163,6 +163,51 @@ mutation edit(
   }
 }
 
+mutation saveDraft(
+  $accountId: ID!
+  $conversationId: ID!
+  $content: ContentInput!
+) {
+  conversations {
+    saveDraft(accountId: $accountId, id: $conversationId, content: $content) {
+      id
+      presentableElements {
+        id
+        contents {
+          revision {
+            messageId
+            contentId
+          }
+          resource {
+            messageId
+            contentId
+          }
+          type
+          subtype
+          content
+        }
+        date
+        from {
+          name
+          mailbox
+          host
+        }
+        editedAt
+        editedBy {
+          name
+          mailbox
+          host
+        }
+        isDraft
+      }
+      isRead
+      labels
+      snippet
+      subject
+    }
+  }
+}
+
 mutation reply($accountId: ID!, $conversationId: ID!, $content: ContentInput!) {
   conversations {
     reply(accountId: $accountId, id: $conversationId, content: $content) {
@@ -208,6 +253,7 @@ fragment ConversationFieldsForConversationView on Conversation {
   presentableElements {
     id
     isRead
+    isDraft
     isStarred
     contents {
       revision {
@@ -238,6 +284,50 @@ fragment ConversationFieldsForConversationView on Conversation {
       host
     }
   }
+  replyDraft {
+    id
+    date
+    messageId
+    subject
+    from {
+      name
+      mailbox
+      host
+    }
+    presentables {
+      id
+      isRead
+      isDraft
+      isStarred
+      contents {
+        revision {
+          messageId
+          contentId
+        }
+        resource {
+          messageId
+          contentId
+        }
+        type
+        subtype
+        content
+      }
+      date
+      from {
+        name
+        mailbox
+        host
+      }
+      editedAt
+      editedBy {
+        name
+        mailbox
+        host
+      }
+    }
+  }
+  snippet
+  subject
   replyRecipients(fromAccountId: $accountId) {
     from {
       name

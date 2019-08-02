@@ -22,6 +22,21 @@ export const Conversation: ConversationResolvers = {
     return lastUpdated(conversation)
   },
 
+  replyDraft({ messages }: C.Conversation) {
+    const message = C.getReplyDraft(messages)
+
+    return (
+      message && {
+        ...message,
+        id: String(message.id),
+        date: message.date,
+        inReplyTo: message.envelope_inReplyTo,
+        messageId: message.envelope_messageId,
+        subject: message.envelope_subject
+      }
+    )
+  },
+
   from({ messages }: C.Conversation) {
     const latest = messages[messages.length - 1]
     return cache.getParticipants(latest.id, "from")[0]
@@ -174,6 +189,19 @@ export const ConversationMutations: ConversationMutationsResolvers = {
     const conversation = C.mustGetConversation(id)
     schedule(
       actions.sendMessage({
+        accountId,
+        message: composeReply({ account, content, conversation })
+      })
+    )
+    return C.mustGetConversation(id)
+  },
+
+  async saveDraft(_parent, { accountId, id, content }) {
+    const account = mustGetAccount(accountId)
+    const conversation = C.mustGetConversation(id)
+    schedule(
+      actions.saveDraft({
+        box: { attribute: "\\Drafts" },
         accountId,
         message: composeReply({ account, content, conversation })
       })

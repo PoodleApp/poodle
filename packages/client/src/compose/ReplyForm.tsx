@@ -8,6 +8,7 @@ import {
 import ReplyIcon from "@material-ui/icons/Reply"
 import * as React from "react"
 import { Value } from "slate"
+import debounce from "../debounce"
 import DisplayErrors from "../DisplayErrors"
 import Editor from "../editor/Editor"
 import serializer from "../editor/serializer"
@@ -20,16 +21,28 @@ type Props = React.FormHTMLAttributes<HTMLFormElement> & {
   accountId: string
   conversationId: string
   replyRecipients: graphql.Participants
+  replyDraft: graphql.Message | null
 }
 
 export default function ReplyForm({
   accountId,
   conversationId,
   replyRecipients,
+  replyDraft,
   ...rest
 }: Props) {
+  const content =
+    replyDraft &&
+    replyDraft.presentables &&
+    replyDraft.presentables[0].contents[0].content
+
   const [reply, replyResult] = graphql.useReplyMutation()
-  const [value, setValue] = React.useState(initialValue)
+  const [saveDraft, saveDraftResult] = graphql.useSaveDraftMutation()
+  const [value, setValue] = React.useState(
+    serializer.deserialize(content || "")
+  )
+
+  const debouncedFunction = debounce(saveDraft, 3000, false) //! why does this slow down saves to cache or server so much?
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -62,9 +75,24 @@ export default function ReplyForm({
     />
   ))
 
+  //TODO how can we limit amount of saveDraft calls
+  function onChange() {
+    saveDraft({
+      variables: {
+        accountId,
+        conversationId,
+        content: {
+          type: "text",
+          subtype: "html",
+          content: serializer.serialize(value)
+        }
+      }
+    })
+  }
+
   return (
     <form onSubmit={onSubmit} {...rest}>
-      <DisplayErrors results={[replyResult]} />
+      <DisplayErrors results={[replyResult, saveDraftResult]} />
       <Card>
         <CardHeader
           avatar={<ReplyIcon />}
@@ -74,6 +102,7 @@ export default function ReplyForm({
         <CardContent>
           <Editor
             onChange={({ value }: { value: Value }) => {
+              onChange()
               setValue(value)
             }}
             value={value}

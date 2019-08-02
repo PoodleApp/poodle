@@ -134,7 +134,8 @@ export default function Conversation({
     presentableElements,
     replyRecipients,
     subject,
-    isStarred
+    isStarred,
+    replyDraft
   } = data.conversation
 
   return (
@@ -181,18 +182,21 @@ export default function Conversation({
               </span>
             ))
           : null}
-        {presentableElements.map((presentable, i) => (
-          <Presentable
-            key={presentable.id}
-            accountId={accountId}
-            conversationId={conversationId}
-            presentable={presentable}
-            isLast={presentableElements.length === i + 1}
-          />
-        ))}
+        {presentableElements
+          .filter(presentable => !presentable.isDraft)
+          .map((presentable, i) => (
+            <Presentable
+              key={presentable.id}
+              accountId={accountId}
+              conversationId={conversationId}
+              presentable={presentable}
+              isLast={presentableElements.length === i + 1}
+            />
+          ))}
         <ReplyForm
           accountId={accountId}
           conversationId={conversationId}
+          replyDraft={replyDraft}
           className={classes.replyForm}
           replyRecipients={replyRecipients}
         />

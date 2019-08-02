@@ -106,6 +106,7 @@ export type Conversation = {
   replyRecipients: Participants
   snippet?: Maybe<Scalars["String"]>
   subject?: Maybe<Scalars["String"]>
+  replyDraft?: Maybe<Message>
 }
 
 export type ConversationReplyRecipientsArgs = {
@@ -119,6 +120,7 @@ export type ConversationMutations = {
   flagPresentable: Conversation
   edit: Conversation
   reply: Conversation
+  saveDraft: Conversation
   setIsRead: Conversation
   sendMessage: Conversation
 }
@@ -152,6 +154,12 @@ export type ConversationMutationsReplyArgs = {
   content: ContentInput
 }
 
+export type ConversationMutationsSaveDraftArgs = {
+  accountId: Scalars["ID"]
+  id: Scalars["ID"]
+  content: ContentInput
+}
+
 export type ConversationMutationsSetIsReadArgs = {
   id: Scalars["ID"]
   isRead: Scalars["Boolean"]
@@ -180,6 +188,7 @@ export type Message = {
   messageId: Scalars["ID"]
   subject?: Maybe<Scalars["String"]>
   from: Array<Address>
+  presentables: Array<Presentable>
 }
 
 export type MessageInput = {
@@ -223,6 +232,7 @@ export type Presentable = {
   from: Address
   editedAt?: Maybe<Scalars["String"]>
   editedBy?: Maybe<Address>
+  isDraft: Scalars["Boolean"]
 }
 
 export type Query = {
@@ -490,6 +500,11 @@ export type ConversationResolvers<
   >
   snippet?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
   subject?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
+  replyDraft?: Resolver<
+    Maybe<ResolversTypes["Message"]>,
+    ParentType,
+    ContextType
+  >
 }
 
 export type ConversationMutationsResolvers<
@@ -526,6 +541,12 @@ export type ConversationMutationsResolvers<
     ContextType,
     ConversationMutationsReplyArgs
   >
+  saveDraft?: Resolver<
+    ResolversTypes["Conversation"],
+    ParentType,
+    ContextType,
+    ConversationMutationsSaveDraftArgs
+  >
   setIsRead?: Resolver<
     ResolversTypes["Conversation"],
     ParentType,
@@ -561,6 +582,11 @@ export type MessageResolvers<
   messageId?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
   subject?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
   from?: Resolver<Array<ResolversTypes["Address"]>, ParentType, ContextType>
+  presentables?: Resolver<
+    Array<ResolversTypes["Presentable"]>,
+    ParentType,
+    ContextType
+  >
 }
 
 export type MutationResolvers<
@@ -617,6 +643,7 @@ export type PresentableResolvers<
   from?: Resolver<ResolversTypes["Address"], ParentType, ContextType>
   editedAt?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
   editedBy?: Resolver<Maybe<ResolversTypes["Address"]>, ParentType, ContextType>
+  isDraft?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>
 }
 
 export type QueryResolvers<
