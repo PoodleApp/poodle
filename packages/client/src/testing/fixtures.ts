@@ -101,7 +101,8 @@ export const conversation: graphql.Conversation = {
   isStarred: false,
   isRead: true,
   snippet: "Hello from test",
-  subject: "Test Thread"
+  subject: "Test Thread",
+  replyDraft: null
 }
 
 export const conversation2: graphql.Conversation = {
@@ -203,7 +204,8 @@ export const conversation2: graphql.Conversation = {
   isRead: true,
   isStarred: false,
   snippet: "What, again?",
-  subject: "Another conversation"
+  subject: "Another conversation",
+  replyDraft: null
 }
 
 export const account: Omit<graphql.Account, "search"> = {
