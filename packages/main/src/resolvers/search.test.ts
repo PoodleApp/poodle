@@ -44,7 +44,10 @@ it("searches for conversations", async () => {
               presentableElements: [
                 {
                   from: { mailbox: "hallettj", host: "gmail.com" },
-                  contents: [{ content: "<p>This is a test.</p>" }]
+                  contents: [
+                    { content: "<p>This is a test.</p>" },
+                    { content: "" }
+                  ]
                 },
                 {
                   from: { mailbox: "jesse", host: "sitr.us" },

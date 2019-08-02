@@ -78,9 +78,12 @@ export type Content = {
   __typename?: "Content"
   resource: PartSpec
   revision: PartSpec
+  disposition: Disposition
+  filename?: Maybe<Scalars["String"]>
+  name?: Maybe<Scalars["String"]>
   type: Scalars["String"]
   subtype: Scalars["String"]
-  content: Scalars["String"]
+  content?: Maybe<Scalars["String"]>
 }
 
 export type ContentInput = {
@@ -163,6 +166,11 @@ export type ConversationSearchResult = {
   __typename?: "ConversationSearchResult"
   conversation: Conversation
   query: Scalars["String"]
+}
+
+export enum Disposition {
+  Inline = "inline",
+  Attachment = "attachment"
 }
 
 export type Message = {
@@ -332,6 +340,7 @@ export type ResolversTypes = {
   Presentable: ResolverTypeWrapper<Presentable>
   Content: ResolverTypeWrapper<Content>
   PartSpec: ResolverTypeWrapper<PartSpec>
+  Disposition: Disposition
   Participants: ResolverTypeWrapper<Participants>
   Message: ResolverTypeWrapper<Message>
   Search: ResolverTypeWrapper<Search>
@@ -362,6 +371,7 @@ export type ResolversParentTypes = {
   Presentable: Presentable
   Content: Content
   PartSpec: PartSpec
+  Disposition: Disposition
   Participants: Participants
   Message: Message
   Search: Search
@@ -445,9 +455,12 @@ export type ContentResolvers<
 > = {
   resource?: Resolver<ResolversTypes["PartSpec"], ParentType, ContextType>
   revision?: Resolver<ResolversTypes["PartSpec"], ParentType, ContextType>
+  disposition?: Resolver<ResolversTypes["Disposition"], ParentType, ContextType>
+  filename?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
+  name?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
   type?: Resolver<ResolversTypes["String"], ParentType, ContextType>
   subtype?: Resolver<ResolversTypes["String"], ParentType, ContextType>
-  content?: Resolver<ResolversTypes["String"], ParentType, ContextType>
+  content?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
 }
 
 export type ConversationResolvers<

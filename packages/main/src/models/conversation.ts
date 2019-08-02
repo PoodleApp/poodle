@@ -5,11 +5,12 @@ import * as cache from "../cache"
 import {
   Content,
   Participants,
+  Disposition,
   Presentable as GeneratedPresentable
 } from "../generated/graphql"
 import { uniqBy } from "../util/immutable"
 import * as Addr from "./Address"
-import { inlineContentParts } from "./Message"
+import { inlineAndAttachmentContentParts } from "./Message"
 
 export interface Conversation {
   id: string
@@ -139,18 +140,20 @@ export function getPresentableElements({
 }
 
 function getContentParts(message: cache.Message): List<Revision> {
-  return inlineContentParts(cache.getStruct(message.id)).map(part => {
-    const cachedPart =
-      part.partID &&
-      cache.getPartByPartId({ messageId: message.id, partId: part.partID })
-    if (!cachedPart) {
-      throw new Error("could not get message part from cache")
+  return inlineAndAttachmentContentParts(cache.getStruct(message.id)).map(
+    part => {
+      const cachedPart =
+        part.partID &&
+        cache.getPartByPartId({ messageId: message.id, partId: part.partID })
+      if (!cachedPart) {
+        throw new Error("could not get message part from cache")
+      }
+      return {
+        message,
+        part: cachedPart
+      }
     }
-    return {
-      message,
-      part: cachedPart
-    }
-  })
+  )
 }
 
 function walkGraphOneStep(
@@ -269,25 +272,19 @@ function getPresentableContent({
   const charset = part.params_charset
   const decoded =
     content && (charset ? convert(content, "utf8", charset) : content)
-  const contentMeta = decoded
-    ? {
-        type: part.type || "text",
-        subtype: part.subtype || "plain",
-        content: decoded.toString("utf8")
-      }
-    : fallbackContent()
+  const disposition = part.disposition_type || ""
   return {
-    ...contentMeta,
+    type: part.type || "text",
+    subtype: part.subtype || "plain",
+    content: decoded ? decoded.toString("utf8") : null,
+    disposition:
+      disposition.toLowerCase() === "attachment"
+        ? Disposition.Attachment
+        : Disposition.Inline,
+    filename: part.disposition_filename,
+    name: part.disposition_name,
     resource: partSpec(resource),
     revision: partSpec(revision)
-  }
-}
-
-function fallbackContent() {
-  return {
-    type: "text",
-    subtype: "plain",
-    content: "[content missing]"
   }
 }
 
