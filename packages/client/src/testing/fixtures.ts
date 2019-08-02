@@ -417,7 +417,8 @@ export function searchMock({ query }: { query: string }) {
             __typename: "Search",
             id: 1,
             conversations: [conversation2],
-            query: query
+            loading: false,
+            query
           }
         }
       }
