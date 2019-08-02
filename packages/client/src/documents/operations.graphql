@@ -170,40 +170,7 @@ mutation saveDraft(
 ) {
   conversations {
     saveDraft(accountId: $accountId, id: $conversationId, content: $content) {
-      id
-      presentableElements {
-        id
-        contents {
-          revision {
-            messageId
-            contentId
-          }
-          resource {
-            messageId
-            contentId
-          }
-          type
-          subtype
-          content
-        }
-        date
-        from {
-          name
-          mailbox
-          host
-        }
-        editedAt
-        editedBy {
-          name
-          mailbox
-          host
-        }
-        isDraft
-      }
-      isRead
-      labels
-      snippet
-      subject
+      ...ConversationFieldsForConversationView
     }
   }
 }
@@ -251,35 +218,7 @@ fragment ConversationFieldsForConversationView on Conversation {
   snippet
   subject
   presentableElements {
-    id
-    isRead
-    isDraft
-    isStarred
-    contents {
-      revision {
-        messageId
-        contentId
-      }
-      resource {
-        messageId
-        contentId
-      }
-      type
-      subtype
-      content
-    }
-    date
-    from {
-      name
-      mailbox
-      host
-    }
-    editedAt
-    editedBy {
-      name
-      mailbox
-      host
-    }
+    ...PresentableFields
   }
   replyDraft {
     id
@@ -291,36 +230,8 @@ fragment ConversationFieldsForConversationView on Conversation {
       mailbox
       host
     }
-    presentables {
-      id
-      isRead
-      isDraft
-      isStarred
-      contents {
-        revision {
-          messageId
-          contentId
-        }
-        resource {
-          messageId
-          contentId
-        }
-        type
-        subtype
-        content
-      }
-      date
-      from {
-        name
-        mailbox
-        host
-      }
-      editedAt
-      editedBy {
-        name
-        mailbox
-        host
-      }
+    presentableElements {
+      ...PresentableFields
     }
   }
   snippet
@@ -341,5 +252,37 @@ fragment ConversationFieldsForConversationView on Conversation {
       mailbox
       host
     }
+  }
+}
+
+fragment PresentableFields on Presentable {
+  id
+  isRead
+  isDraft
+  isStarred
+  contents {
+    revision {
+      messageId
+      contentId
+    }
+    resource {
+      messageId
+      contentId
+    }
+    type
+    subtype
+    content
+  }
+  date
+  from {
+    name
+    mailbox
+    host
+  }
+  editedAt
+  editedBy {
+    name
+    mailbox
+    host
   }
 }

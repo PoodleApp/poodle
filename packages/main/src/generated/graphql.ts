@@ -180,7 +180,7 @@ export type Message = {
   messageId: Scalars["ID"]
   subject?: Maybe<Scalars["String"]>
   from: Array<Address>
-  presentables: Array<Presentable>
+  presentableElements: Array<Presentable>
 }
 
 export type MessageInput = {
@@ -569,7 +569,7 @@ export type MessageResolvers<
   messageId?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
   subject?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
   from?: Resolver<Array<ResolversTypes["Address"]>, ParentType, ContextType>
-  presentables?: Resolver<
+  presentableElements?: Resolver<
     Array<ResolversTypes["Presentable"]>,
     ParentType,
     ContextType

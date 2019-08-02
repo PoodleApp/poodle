@@ -35,6 +35,7 @@
  */
 
 import * as fs from "fs"
+import { default as imap } from "imap"
 import { Transporter } from "nodemailer"
 import * as path from "path"
 import xdgBasedir from "xdg-basedir"
@@ -45,6 +46,7 @@ import AccountManager from "../managers/AccountManager"
 import ConnectionManager from "../managers/ConnectionManager"
 import * as M from "../models/Message"
 import * as request from "../request"
+import { BoxSpecifier } from "../request"
 import { search, sync } from "../sync"
 import { MessageAttributes } from "../types"
 import * as promises from "../util/promises"
@@ -257,7 +259,7 @@ const handlers = {
     }: {
       accountId: ID
       message: ComposedMessage
-      box: { attribute: string }
+      box: BoxSpecifier
     }) {
       const { attributes, headers, partHeaders, bodies } = message
       let messageId: cache.ID | null = null
@@ -303,8 +305,8 @@ const handlers = {
         partHeaders: Record<string, cache.SerializedHeaders>
       }
       messageId: cache.ID
-      box: { attribute: string }
-    }): Promise<string> {
+      box: BoxSpecifier
+    }): Promise<imap.UID> {
       return withConnectionManager(accountId, connectionManager => {
         return (async () => {
           const { attributes, headers, partHeaders } = message

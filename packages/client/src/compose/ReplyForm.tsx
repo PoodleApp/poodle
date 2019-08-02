@@ -6,6 +6,7 @@ import {
   CardHeader
 } from "@material-ui/core"
 import ReplyIcon from "@material-ui/icons/Reply"
+import getIn from "lodash-es/get"
 import * as React from "react"
 import { Value } from "slate"
 import debounce from "../debounce"
@@ -31,10 +32,13 @@ export default function ReplyForm({
   replyDraft,
   ...rest
 }: Props) {
-  const content =
-    replyDraft &&
-    replyDraft.presentables &&
-    replyDraft.presentables[0].contents[0].content
+  const content = getIn(replyDraft, [
+    "presentableElements",
+    0,
+    "contents",
+    0,
+    "content"
+  ])
 
   const [reply, replyResult] = graphql.useReplyMutation()
   const [saveDraft, saveDraftResult] = graphql.useSaveDraftMutation()

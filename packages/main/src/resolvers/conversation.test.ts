@@ -368,20 +368,8 @@ describe("when querying conversations", () => {
         conversations {
           saveDraft(accountId: $accountId, id: $conversationId, content: $content) {
             id
-            presentableElements {
-              contents {
-                type
-                subtype
-                content
-              }
-              id
-              isDraft
-            }
-            labels
-            snippet
-            subject
             replyDraft{
-              presentables{
+              presentableElements{
                 contents {
                   type
                   subtype
@@ -407,7 +395,7 @@ describe("when querying conversations", () => {
         conversations: {
           saveDraft: {
             replyDraft: {
-              presentables: [
+              presentableElements: [
                 {
                   contents: expect.arrayContaining([
                     {

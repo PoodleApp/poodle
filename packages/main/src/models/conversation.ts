@@ -159,7 +159,7 @@ function getContentParts(message: cache.Message): List<Revision> {
 }
 
 export function getReplyDraft(messages: cache.Message[]): cache.Message | null {
-  const message = Collection.Indexed(
+  const message = List(
     messages.filter(message => cache.getFlags(message.id).includes("\\Draft"))
   )
     .sortBy(message => Number(message.date))

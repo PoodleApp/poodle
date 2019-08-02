@@ -74,10 +74,10 @@ export const { actions, perform } = combineHandlers({
 
   append(
     connection: Connection,
-    flags: string[],
+    box: BoxSpecifier,
     msgData: Buffer,
-    box: BoxSpecifier
-  ): R<string> {
+    flags: string[]
+  ): R<imap.UID> {
     return withBox(connection, box, () => {
       const result = promises.lift1<string>(cb =>
         connection.append(msgData, { flags }, cb as any)

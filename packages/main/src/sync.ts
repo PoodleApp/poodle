@@ -338,25 +338,18 @@ class BoxSync {
 }
 
 function matchesCachePolicy(message: imap.ImapMessageAttributes): boolean {
-  let labelMatches = true
-  let flagMatches = true
-  let dateMatches = true
+  const labels = message["x-gm-labels"] || []
+  const labelMatches =
+    cachePolicy.labels &&
+    !cachePolicy.labels.some(label => labels.includes(label))
 
-  if (cachePolicy.labels) {
-    const labels = message["x-gm-labels"] || []
-    labelMatches = !cachePolicy.labels.some(label => labels.includes(label))
-  }
+  const flags = message.flags || []
+  const flagMatches =
+    cachePolicy.flags && !cachePolicy.flags.some(flag => flags.includes(flag))
 
-  if (cachePolicy.flags) {
-    const flags = message.flags || []
-    flagMatches = !cachePolicy.flags.some(flag => flags.includes(flag))
-  }
+  const dateMatches = cachePolicy.since && message.date < cachePolicy.since
 
-  if (cachePolicy.since) {
-    dateMatches = message.date < cachePolicy.since
-  }
-
-  return labelMatches || flagMatches || dateMatches
+  return (labelMatches || flagMatches) && dateMatches
 }
 
 export function fetchQuery(

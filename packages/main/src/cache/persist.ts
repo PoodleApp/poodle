@@ -128,6 +128,9 @@ function persistMessageUpdates(
     insertInto("message_gmail_labels", { message_id: messageId, label })
   }
   db.prepare(
+    "update message_bodies set content = @contentId join message_structs as structs on structs.message_id = @messageId where message_struct_id = structs.id "
+  )
+  db.prepare(
     "update messages set updated_at = @updatedAt where id = @messageId"
   ).run({ messageId, updatedAt })
 }
