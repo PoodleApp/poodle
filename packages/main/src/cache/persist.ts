@@ -1,7 +1,9 @@
 import imap from "imap"
 import { idFromHeaderValue } from "poodle-common/lib/models/uri"
 import db from "../db"
+import { flatAddresses } from "../models/Address"
 import { MessageAttributes } from "../types"
+import { insertInto } from "./helpers"
 import { getPartByPartId } from "./query"
 import { ID, SerializedHeaders } from "./types"
 
@@ -95,7 +97,10 @@ function persistNewMessage(
     x_gm_thrid: attributes["x-gm-thrid"]
   })
   for (const type of participantTypes) {
-    persistParticipants(type, messageId, attributes.envelope[type])
+    const values = attributes.envelope[type]
+    if (values) {
+      persistParticipants(type, messageId, flatAddresses(values))
+    }
   }
   for (const flag of attributes.flags) {
     insertInto("message_flags", { message_id: messageId, flag })
@@ -134,9 +139,9 @@ function persistMessageUpdates(
 function persistParticipants(
   type: string,
   messageId: ID,
-  participants: imap.Address[] | null
+  participants: imap.Address[]
 ) {
-  for (const { host, mailbox, name } of participants || []) {
+  for (const { host, mailbox, name } of participants) {
     insertInto("message_participants", {
       message_id: messageId,
       type,
@@ -311,7 +316,11 @@ export function persistBody(
   if (!result) {
     throw new Error("message part not found in struct")
   }
-  insertInto("message_bodies", { message_struct_id: result.id, content })
+  insertInto(
+    "message_bodies",
+    { message_struct_id: result.id, content },
+    "on conflict do nothing"
+  )
 }
 
 // TODO: What is the proper way to provide a list of values in a query?
@@ -421,18 +430,4 @@ export function addLabels({
     `
     ).run({ accountId, boxName: box.name, label })
   })
-}
-
-function insertInto(table: string, values: Record<string, unknown>): ID {
-  const keys = Object.keys(values)
-  const { lastInsertRowid } = db
-    .prepare(
-      `
-        insert into ${table}
-        (${keys.join(", ")}) values
-        (${keys.map(k => `@${k}`).join(", ")})
-      `
-    )
-    .run(values)
-  return lastInsertRowid
 }

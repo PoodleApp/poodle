@@ -1,24 +1,24 @@
+import {
+  AppBar,
+  Button,
+  Card,
+  CardActions,
+  CardHeader,
+  Fab,
+  IconButton,
+  Modal,
+  TextField,
+  Toolbar,
+  Typography
+} from "@material-ui/core"
+import { makeStyles } from "@material-ui/core/styles"
+import AddIcon from "@material-ui/icons/Add"
+import CloseIcon from "@material-ui/icons/Close"
+import DeleteIcon from "@material-ui/icons/Delete"
 import { Link, RouteComponentProps } from "@reach/router"
 import * as React from "react"
 import DisplayErrors from "./DisplayErrors"
 import * as graphql from "./generated/graphql"
-import { makeStyles } from "@material-ui/core/styles"
-import DeleteIcon from "@material-ui/icons/Delete"
-import {
-  AppBar,
-  Fab,
-  Typography,
-  TextField,
-  Card,
-  CardHeader,
-  IconButton,
-  CardActions,
-  Button,
-  Toolbar,
-  Modal
-} from "@material-ui/core"
-import AddIcon from "@material-ui/icons/Add"
-import CloseIcon from "@material-ui/icons/Close"
 
 const useStyles = makeStyles(theme => ({
   fab: {
@@ -78,7 +78,7 @@ export default function Accounts(_props: RouteComponentProps) {
   const [open, setOpen] = React.useState(false)
 
   const handleClick = () => {
-    open ? setOpen(false) : setOpen(true)
+    setOpen(!open)
   }
 
   const handleClose = () => {
@@ -90,6 +90,7 @@ export default function Accounts(_props: RouteComponentProps) {
     try {
       await addAccount({ variables: { email: emailValue } })
       setEmailValue("")
+      setOpen(false)
     } catch (err) {}
   }
 

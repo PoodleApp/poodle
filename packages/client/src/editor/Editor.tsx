@@ -16,7 +16,7 @@ const capture = /(\S+(?:\s+\S+){0,4}\s*)$/
 
 export default function Editor(props: EditorProps) {
   const { plugin, query: conversationQuery } = useSuggestionsPlugin({ capture })
-  const convSearchResult = graphql.useSearchConversationsQuery({
+  const convSearchResult = graphql.useSearchCachedConversationsQuery({
     skip: !conversationQuery,
     variables: { query: conversationQuery!, specificityThreshold: 2 }
   })
