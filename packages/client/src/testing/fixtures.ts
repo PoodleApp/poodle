@@ -105,6 +105,7 @@ export const conversation: graphql.Conversation = {
       __typename: "Presentable",
       id: "13",
       isRead: true,
+      isStarred: false,
       contents: [
         {
           __typename: "Content",
