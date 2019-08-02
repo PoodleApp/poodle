@@ -1,7 +1,9 @@
 import toStream from "buffer-to-stream"
 import { EventEmitter } from "events"
+import equal from "fast-deep-equal"
 import { default as Connection, default as imap } from "imap"
 import { Range, Seq, Set } from "immutable"
+import moment from "moment"
 import { Transporter } from "nodemailer"
 import Mailer from "nodemailer/lib/mailer"
 import { Readable } from "stream"
@@ -13,10 +15,17 @@ import ConnectionManager from "../managers/ConnectionManager"
 import { mock } from "../testHelpers"
 import { nonNull } from "../util/array"
 
+/**
+ * Sets up fake responses for IMAP connection methods. Fake responses apply
+ * globally to all connection instances.
+ */
 export function mockConnection({
-  thread = testThread
+  thread = testThread,
+  searchResults = []
 }: {
   thread?: ComposedMessage[]
+  /** Optionally override search results */
+  searchResults?: Array<[unknown, number[]]>
 } = {}): ConnectionManager {
   const boxes = {
     INBOX: { attribs: ["\\Inbox"] },
@@ -46,22 +55,66 @@ export function mockConnection({
   )
 
   mock(Connection.prototype.search).mockImplementation((criteria, cb) => {
-    let uids = Set()
-    for (const c of criteria) {
+    const match = searchResults.find(([c]) => equal(c, criteria))
+    if (match) {
+      const [, uids] = match
+      cb(null, uids.map(String))
+      return
+    }
+
+    const allUids = Set<number>(
+      thread.map(({ attributes }) => attributes.uid).filter(nonNull)
+    )
+
+    const uids = criteria.reduce((accum: Set<number>, c) => {
       if (c instanceof Array && c[0] === "HEADER" && c[1] === "Message-ID") {
         const messageId = c[2]
-        uids = uids.concat(
-          testThread
+        return accum.filter(uid =>
+          thread
             .filter(({ headers }) =>
               headers.some(
                 ([key, value]) => key === "message-id" && value === messageId
               )
             )
-            .map(({ attributes }) => attributes.uid)
+            .some(({ attributes }) => uid === attributes.uid)
         )
       }
-    }
-    cb(null, uids.valueSeq().toArray())
+
+      if (c instanceof Array && c[0] === "SINCE") {
+        const since = moment(c[1], "LL")
+        return accum.filter(uid =>
+          thread.some(
+            ({ attributes }) =>
+              uid === attributes.uid && since.isBefore(attributes.date)
+          )
+        )
+      }
+
+      if (c instanceof Array && c[0] === "UID") {
+        const uidRange = parseRange(c[1])
+        return accum.filter(uid => uidRange.includes(uid))
+      }
+
+      if (c instanceof Array && c[0] === "X-GM-THRID") {
+        const thrid = c[1]
+        return accum.filter(uid =>
+          thread.some(
+            ({ attributes }) =>
+              uid === attributes.uid && thrid === attributes["x-gm-thrid"]
+          )
+        )
+      }
+
+      return accum
+    }, allUids)
+
+    cb(
+      null,
+      uids
+        .valueSeq()
+        .map(String)
+        .toArray()
+    )
   })
 
   mock(Connection.prototype.connect).mockReturnValue(undefined)
@@ -76,7 +129,9 @@ export function mockConnection({
       name,
       readOnly,
       uidvalidity: 123,
-      uidnext: testThread[1].attributes.uid! + 1,
+      uidnext:
+        Math.max(0, ...thread.map(msg => msg.attributes.uid).filter(nonNull)) +
+        1,
       flags: [],
       permFlags: [],
       newKeywords: false,

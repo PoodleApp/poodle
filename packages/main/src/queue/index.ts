@@ -45,7 +45,7 @@ import AccountManager from "../managers/AccountManager"
 import ConnectionManager from "../managers/ConnectionManager"
 import * as M from "../models/Message"
 import * as request from "../request"
-import { sync } from "../sync"
+import { search, sync } from "../sync"
 import { MessageAttributes } from "../types"
 import * as promises from "../util/promises"
 import SqliteStore from "./better-queue-better-sqlite3"
@@ -159,6 +159,19 @@ const handlers = {
 
     failure(_error, { accountId, box, uids }) {
       cache.addFlag({ accountId, box, uids, flag: "\\Seen" })
+    }
+  }),
+
+  search: handler({
+    priority: LOW_PRIORITY,
+    enqueue(searchRecord: cache.Search) {
+      return searchRecord
+    },
+    process(searchRecord: cache.Search) {
+      return withConnectionManager(
+        String(searchRecord.account_id),
+        connectionManager => search(searchRecord, connectionManager)
+      )
     }
   }),
 

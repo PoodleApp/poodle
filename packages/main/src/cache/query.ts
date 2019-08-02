@@ -1,10 +1,9 @@
 import imap from "imap"
-import { Collection } from "immutable"
 import db from "../db"
 import { nonNull } from "../util/array"
-import { Account, Box, ID, Message, MessagePart } from "./types"
+import { Account, Box, ID, Message, MessagePart, Thread } from "./types"
 
-export function lastSeenUid({ boxId }: { boxId: ID }): number {
+export function lastSeenUid({ boxId }: { boxId: ID }): number | null {
   const result = db
     .prepare("select uidlastseen from boxes where id = ?")
     .get(boxId)
@@ -44,9 +43,14 @@ export function getBox(boxId: ID): Box | null {
     .get(boxId)
 }
 
-interface Thread {
-  id: string
-  messages: Message[]
+export function getBoxesByAccount(accountId: ID): Box[] {
+  return db
+    .prepare(
+      `
+        select id, name from boxes where account_id = ?
+      `
+    )
+    .all(accountId)
 }
 
 export function getThreads(accountId: ID): Thread[] {
@@ -55,7 +59,7 @@ export function getThreads(accountId: ID): Thread[] {
     .all(accountId)
   return threadIds
     .map(({ x_gm_thrid }) => getThread(x_gm_thrid))
-    .filter(<T>(m: T | null): m is T => Boolean(m))
+    .filter(nonNull)
 }
 
 export function getThread(threadId: string): Thread | null {
@@ -97,6 +101,18 @@ export function getThread(threadId: string): Thread | null {
 export function getThreadByMessage(message: Message): Thread {
   const thread = message.x_gm_thrid && getThread(message.x_gm_thrid)
   return thread || { id: "", messages: [message] }
+}
+
+export function getThreadIds({ uids }: { uids: Iterable<number> }): string[] {
+  return db
+    .prepare(
+      `
+        select distinct x_gm_thrid from messages
+        where uid in (${Array.from(uids).join(", ")})
+      `
+    )
+    .all()
+    .map(row => row.x_gm_thrid)
 }
 
 export function getMessages(accountId: ID): Message[] {
@@ -295,15 +311,29 @@ export function getPartByContentId(params: {
     .get(params)
 }
 
+export function isUidPresent(params: {
+  accountId: ID
+  boxId: ID
+  uid: number
+}): boolean {
+  const result = db
+    .prepare(
+      `
+      select id from messages
+      where account_id = @accountId and box_id = @boxId and uid = @uid
+    `
+    )
+    .get(params)
+  return result != null
+}
+
 export function partsMissingBodies({
   accountId,
-  boxId,
-  uids
+  boxId
 }: {
   accountId: ID
   boxId: ID
-  uids?: Collection.Indexed<number>
-}): Array<{ uid: number; boxName: string; part: imap.ImapMessagePart }> {
+}): Array<{ uid: number; part: imap.ImapMessagePart }> {
   return db
     .prepare(
       `
@@ -318,15 +348,13 @@ export function partsMissingBodies({
         where
           box_id = @boxId
           and messages.account_id = @accountId
-          and (bodies.content is null or headers.key is null)
+          and bodies.content is null
           and structs.rgt = structs.lft + 1
-          ${uids ? `and messages.uid in (${uids.join(", ")})` : ""}
       `
     )
     .all({ accountId, boxId })
     .map(row => ({
       uid: row.uid,
-      boxName: row.boxName,
       part: toImapMessagePart(row)
     }))
 }

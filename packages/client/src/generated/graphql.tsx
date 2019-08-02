@@ -18,18 +18,23 @@ export type Account = {
   loggedIn: Scalars["Boolean"]
   conversations: Array<Conversation>
   messages: Array<Message>
+  search: Search
 }
 
 export type AccountConversationsArgs = {
   label?: Maybe<Scalars["String"]>
 }
 
+export type AccountSearchArgs = {
+  query: Scalars["String"]
+}
+
 export type AccountMutations = {
   __typename?: "AccountMutations"
   create: Account
   authenticate: Account
-  sync: Account
   delete: Scalars["Boolean"]
+  sync: Account
 }
 
 export type AccountMutationsCreateArgs = {
@@ -40,11 +45,11 @@ export type AccountMutationsAuthenticateArgs = {
   id: Scalars["ID"]
 }
 
-export type AccountMutationsSyncArgs = {
+export type AccountMutationsDeleteArgs = {
   id: Scalars["ID"]
 }
 
-export type AccountMutationsDeleteArgs = {
+export type AccountMutationsSyncArgs = {
   id: Scalars["ID"]
 }
 
@@ -103,6 +108,7 @@ export type ConversationMutations = {
   __typename?: "ConversationMutations"
   archive: Conversation
   flag: Array<Conversation>
+  flagPresentable: Conversation
   edit: Conversation
   reply: Conversation
   setIsRead: Conversation
@@ -115,6 +121,12 @@ export type ConversationMutationsArchiveArgs = {
 
 export type ConversationMutationsFlagArgs = {
   ids: Array<Scalars["ID"]>
+  isFlagged: Scalars["Boolean"]
+}
+
+export type ConversationMutationsFlagPresentableArgs = {
+  id: Scalars["ID"]
+  conversationId: Scalars["ID"]
   isFlagged: Scalars["Boolean"]
 }
 
@@ -197,6 +209,7 @@ export type Presentable = {
   __typename?: "Presentable"
   id: Scalars["ID"]
   isRead: Scalars["Boolean"]
+  isStarred: Scalars["Boolean"]
   contents: Array<Content>
   date: Scalars["String"]
   from: Address
@@ -229,12 +242,17 @@ export type QueryConversationsArgs = {
   query: Scalars["String"]
   specificityThreshold?: Maybe<Scalars["Int"]>
 }
+
+export type Search = {
+  __typename?: "Search"
+  id: Scalars["ID"]
+  conversations: Array<Conversation>
+  query: Scalars["String"]
+}
 export type GetAllAccountsQueryVariables = {}
 
 export type GetAllAccountsQuery = { __typename?: "Query" } & {
-  accounts: Array<
-    { __typename?: "Account" } & Pick<Account, "id" | "email" | "loggedIn">
-  >
+  accounts: Array<{ __typename?: "Account" } & AccountFieldsFragment>
 }
 
 export type GetAccountQueryVariables = {
@@ -243,25 +261,11 @@ export type GetAccountQueryVariables = {
 
 export type GetAccountQuery = { __typename?: "Query" } & {
   account: Maybe<
-    { __typename?: "Account" } & Pick<Account, "id" | "email" | "loggedIn"> & {
-        conversations: Array<
-          { __typename?: "Conversation" } & Pick<
-            Conversation,
-            | "id"
-            | "date"
-            | "isRead"
-            | "isStarred"
-            | "labels"
-            | "snippet"
-            | "subject"
-          > & {
-              from: { __typename?: "Address" } & Pick<
-                Address,
-                "host" | "mailbox" | "name"
-              >
-            }
-        >
-      }
+    { __typename?: "Account" } & {
+      conversations: Array<
+        { __typename?: "Conversation" } & ConversationFieldsForListViewFragment
+      >
+    } & AccountFieldsFragment
   >
 }
 
@@ -282,10 +286,7 @@ export type AddAccountMutationVariables = {
 
 export type AddAccountMutation = { __typename?: "Mutation" } & {
   accounts: { __typename?: "AccountMutations" } & {
-    create: { __typename?: "Account" } & Pick<
-      Account,
-      "id" | "email" | "loggedIn"
-    >
+    create: { __typename?: "Account" } & AccountFieldsFragment
   }
 }
 
@@ -295,10 +296,7 @@ export type AuthenticateMutationVariables = {
 
 export type AuthenticateMutation = { __typename?: "Mutation" } & {
   accounts: { __typename?: "AccountMutations" } & {
-    authenticate: { __typename?: "Account" } & Pick<
-      Account,
-      "id" | "email" | "loggedIn"
-    >
+    authenticate: { __typename?: "Account" } & AccountFieldsFragment
   }
 }
 
@@ -309,79 +307,37 @@ export type GetConversationQueryVariables = {
 
 export type GetConversationQuery = { __typename?: "Query" } & {
   conversation: Maybe<
-    { __typename?: "Conversation" } & Pick<
-      Conversation,
-      "id" | "isRead" | "isStarred" | "labels" | "snippet" | "subject"
-    > & {
-        presentableElements: Array<
-          { __typename?: "Presentable" } & Pick<
-            Presentable,
-            "id" | "isRead" | "date" | "editedAt"
-          > & {
-              contents: Array<
-                { __typename?: "Content" } & Pick<
-                  Content,
-                  | "type"
-                  | "subtype"
-                  | "content"
-                  | "disposition"
-                  | "filename"
-                  | "name"
-                > & {
-                    revision: { __typename?: "PartSpec" } & Pick<
-                      PartSpec,
-                      "messageId" | "contentId"
-                    >
-                    resource: { __typename?: "PartSpec" } & Pick<
-                      PartSpec,
-                      "messageId" | "contentId"
-                    >
-                  }
-              >
-              from: { __typename?: "Address" } & Pick<
-                Address,
-                "name" | "mailbox" | "host"
-              >
-              editedBy: Maybe<
-                { __typename?: "Address" } & Pick<
-                  Address,
-                  "name" | "mailbox" | "host"
-                >
-              >
-            }
-        >
-        replyRecipients: { __typename?: "Participants" } & {
-          from: Maybe<
-            Array<
-              { __typename?: "Address" } & Pick<
-                Address,
-                "name" | "mailbox" | "host"
-              >
-            >
-          >
-          to: Array<
-            { __typename?: "Address" } & Pick<
-              Address,
-              "name" | "mailbox" | "host"
-            >
-          >
-          cc: Array<
-            { __typename?: "Address" } & Pick<
-              Address,
-              "name" | "mailbox" | "host"
-            >
-          >
-        }
-      }
+    {
+      __typename?: "Conversation"
+    } & ConversationFieldsForConversationViewFragment
   >
 }
 
 export type SearchConversationsQueryVariables = {
+  accountId: Scalars["ID"]
+  query: Scalars["String"]
+}
+
+export type SearchConversationsQuery = { __typename?: "Query" } & {
+  account: Maybe<
+    { __typename?: "Account" } & Pick<Account, "id"> & {
+        search: { __typename?: "Search" } & Pick<Search, "id" | "query"> & {
+            conversations: Array<
+              {
+                __typename?: "Conversation"
+              } & ConversationFieldsForListViewFragment
+            >
+          }
+      }
+  >
+}
+
+export type SearchCachedConversationsQueryVariables = {
   query: Scalars["String"]
   specificityThreshold?: Maybe<Scalars["Int"]>
 }
 
-export type SearchConversationsQuery = { __typename?: "Query" } & {
+export type SearchCachedConversationsQuery = { __typename?: "Query" } & {
   conversations: Array<
     { __typename?: "ConversationSearchResult" } & Pick<
       ConversationSearchResult,
@@ -411,22 +367,11 @@ export type SyncMutationVariables = {
 
 export type SyncMutation = { __typename?: "Mutation" } & {
   accounts: { __typename?: "AccountMutations" } & {
-    sync: { __typename?: "Account" } & Pick<
-      Account,
-      "id" | "email" | "loggedIn"
-    > & {
-        conversations: Array<
-          { __typename?: "Conversation" } & Pick<
-            Conversation,
-            "id" | "date" | "isRead" | "labels" | "snippet" | "subject"
-          > & {
-              from: { __typename?: "Address" } & Pick<
-                Address,
-                "host" | "mailbox" | "name"
-              >
-            }
-        >
-      }
+    sync: { __typename?: "Account" } & {
+      conversations: Array<
+        { __typename?: "Conversation" } & ConversationFieldsForListViewFragment
+      >
+    } & AccountFieldsFragment
   }
 }
 
@@ -439,13 +384,8 @@ export type SetIsReadMutation = { __typename?: "Mutation" } & {
   conversations: { __typename?: "ConversationMutations" } & {
     setIsRead: { __typename?: "Conversation" } & Pick<
       Conversation,
-      "id" | "date" | "isRead" | "labels" | "snippet" | "subject"
-    > & {
-        from: { __typename?: "Address" } & Pick<
-          Address,
-          "host" | "mailbox" | "name"
-        >
-      }
+      "id" | "isRead"
+    >
   }
 }
 
@@ -455,15 +395,9 @@ export type ArchiveMutationVariables = {
 
 export type ArchiveMutation = { __typename?: "Mutation" } & {
   conversations: { __typename?: "ConversationMutations" } & {
-    archive: { __typename?: "Conversation" } & Pick<
-      Conversation,
-      "id" | "date" | "isRead" | "labels" | "snippet" | "subject"
-    > & {
-        from: { __typename?: "Address" } & Pick<
-          Address,
-          "host" | "mailbox" | "name"
-        >
-      }
+    archive: {
+      __typename?: "Conversation"
+    } & ConversationFieldsForListViewFragment
   }
 }
 
@@ -477,20 +411,35 @@ export type FlagMutation = { __typename?: "Mutation" } & {
     flag: Array<
       { __typename?: "Conversation" } & Pick<
         Conversation,
-        | "id"
-        | "date"
-        | "isRead"
-        | "isStarred"
-        | "labels"
-        | "snippet"
-        | "subject"
+        "id" | "isStarred"
       > & {
-          from: { __typename?: "Address" } & Pick<
-            Address,
-            "host" | "mailbox" | "name"
+          presentableElements: Array<
+            { __typename?: "Presentable" } & Pick<
+              Presentable,
+              "id" | "isStarred"
+            >
           >
         }
     >
+  }
+}
+
+export type FlagPresentableMutationVariables = {
+  presentableId: Scalars["ID"]
+  conversationId: Scalars["ID"]
+  isFlagged: Scalars["Boolean"]
+}
+
+export type FlagPresentableMutation = { __typename?: "Mutation" } & {
+  conversations: { __typename?: "ConversationMutations" } & {
+    flagPresentable: { __typename?: "Conversation" } & Pick<
+      Conversation,
+      "id" | "isStarred"
+    > & {
+        presentableElements: Array<
+          { __typename?: "Presentable" } & Pick<Presentable, "id" | "isStarred">
+        >
+      }
   }
 }
 
@@ -501,43 +450,9 @@ export type SendMessageMutationVariables = {
 
 export type SendMessageMutation = { __typename?: "Mutation" } & {
   conversations: { __typename?: "ConversationMutations" } & {
-    sendMessage: { __typename?: "Conversation" } & Pick<
-      Conversation,
-      "id" | "isRead" | "labels" | "snippet" | "subject"
-    > & {
-        presentableElements: Array<
-          { __typename?: "Presentable" } & Pick<
-            Presentable,
-            "id" | "date" | "editedAt"
-          > & {
-              contents: Array<
-                { __typename?: "Content" } & Pick<
-                  Content,
-                  "type" | "subtype" | "content"
-                > & {
-                    revision: { __typename?: "PartSpec" } & Pick<
-                      PartSpec,
-                      "messageId" | "contentId"
-                    >
-                    resource: { __typename?: "PartSpec" } & Pick<
-                      PartSpec,
-                      "messageId" | "contentId"
-                    >
-                  }
-              >
-              from: { __typename?: "Address" } & Pick<
-                Address,
-                "name" | "mailbox" | "host"
-              >
-              editedBy: Maybe<
-                { __typename?: "Address" } & Pick<
-                  Address,
-                  "name" | "mailbox" | "host"
-                >
-              >
-            }
-        >
-      }
+    sendMessage: {
+      __typename?: "Conversation"
+    } & ConversationFieldsForConversationViewFragment
   }
 }
 
@@ -551,43 +466,9 @@ export type EditMutationVariables = {
 
 export type EditMutation = { __typename?: "Mutation" } & {
   conversations: { __typename?: "ConversationMutations" } & {
-    edit: { __typename?: "Conversation" } & Pick<
-      Conversation,
-      "id" | "isRead" | "labels" | "snippet" | "subject"
-    > & {
-        presentableElements: Array<
-          { __typename?: "Presentable" } & Pick<
-            Presentable,
-            "id" | "date" | "editedAt"
-          > & {
-              contents: Array<
-                { __typename?: "Content" } & Pick<
-                  Content,
-                  "type" | "subtype" | "content"
-                > & {
-                    revision: { __typename?: "PartSpec" } & Pick<
-                      PartSpec,
-                      "messageId" | "contentId"
-                    >
-                    resource: { __typename?: "PartSpec" } & Pick<
-                      PartSpec,
-                      "messageId" | "contentId"
-                    >
-                  }
-              >
-              from: { __typename?: "Address" } & Pick<
-                Address,
-                "name" | "mailbox" | "host"
-              >
-              editedBy: Maybe<
-                { __typename?: "Address" } & Pick<
-                  Address,
-                  "name" | "mailbox" | "host"
-                >
-              >
-            }
-        >
-      }
+    edit: {
+      __typename?: "Conversation"
+    } & ConversationFieldsForConversationViewFragment
   }
 }
 
@@ -599,46 +480,609 @@ export type ReplyMutationVariables = {
 
 export type ReplyMutation = { __typename?: "Mutation" } & {
   conversations: { __typename?: "ConversationMutations" } & {
-    reply: { __typename?: "Conversation" } & Pick<
-      Conversation,
-      "id" | "isRead" | "labels" | "snippet" | "subject"
-    > & {
-        presentableElements: Array<
-          { __typename?: "Presentable" } & Pick<
-            Presentable,
-            "id" | "date" | "editedAt"
-          > & {
-              contents: Array<
-                { __typename?: "Content" } & Pick<
-                  Content,
-                  "type" | "subtype" | "content"
-                > & {
-                    revision: { __typename?: "PartSpec" } & Pick<
-                      PartSpec,
-                      "messageId" | "contentId"
-                    >
-                    resource: { __typename?: "PartSpec" } & Pick<
-                      PartSpec,
-                      "messageId" | "contentId"
-                    >
-                  }
-              >
-              from: { __typename?: "Address" } & Pick<
-                Address,
-                "name" | "mailbox" | "host"
-              >
-              editedBy: Maybe<
-                { __typename?: "Address" } & Pick<
-                  Address,
-                  "name" | "mailbox" | "host"
-                >
-              >
-            }
-        >
-      }
+    reply: {
+      __typename?: "Conversation"
+    } & ConversationFieldsForConversationViewFragment
   }
 }
 
+export type AccountFieldsFragment = { __typename?: "Account" } & Pick<
+  Account,
+  "id" | "email" | "loggedIn"
+>
+
+export type ConversationFieldsForListViewFragment = {
+  __typename?: "Conversation"
+} & Pick<
+  Conversation,
+  "id" | "date" | "isRead" | "isStarred" | "labels" | "snippet" | "subject"
+> & {
+    from: { __typename?: "Address" } & Pick<
+      Address,
+      "host" | "mailbox" | "name"
+    >
+  }
+
+export type ConversationFieldsForConversationViewFragment = {
+  __typename?: "Conversation"
+} & Pick<
+  Conversation,
+  "id" | "date" | "isRead" | "isStarred" | "labels" | "snippet" | "subject"
+> & {
+    from: { __typename?: "Address" } & Pick<
+      Address,
+      "host" | "mailbox" | "name"
+    >
+    presentableElements: Array<
+      { __typename?: "Presentable" } & Pick<
+        Presentable,
+        "id" | "isRead" | "isStarred" | "date" | "editedAt"
+      > & {
+          contents: Array<
+            { __typename?: "Content" } & Pick<
+              Content,
+              | "type"
+              | "subtype"
+              | "content"
+              | "disposition"
+              | "filename"
+              | "name"
+            > & {
+                revision: { __typename?: "PartSpec" } & Pick<
+                  PartSpec,
+                  "messageId" | "contentId"
+                >
+                resource: { __typename?: "PartSpec" } & Pick<
+                  PartSpec,
+                  "messageId" | "contentId"
+                >
+              }
+          >
+          from: { __typename?: "Address" } & Pick<
+            Address,
+            "name" | "mailbox" | "host"
+          >
+          editedBy: Maybe<
+            { __typename?: "Address" } & Pick<
+              Address,
+              "name" | "mailbox" | "host"
+            >
+          >
+        }
+    >
+    replyRecipients: { __typename?: "Participants" } & {
+      from: Maybe<
+        Array<
+          { __typename?: "Address" } & Pick<
+            Address,
+            "name" | "mailbox" | "host"
+          >
+        >
+      >
+      to: Array<
+        { __typename?: "Address" } & Pick<Address, "name" | "mailbox" | "host">
+      >
+      cc: Array<
+        { __typename?: "Address" } & Pick<Address, "name" | "mailbox" | "host">
+      >
+    }
+  }
+export const AccountFieldsFragmentDoc: DocumentNode = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "AccountFields" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Account" }
+      },
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "id" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "email" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "loggedIn" },
+            arguments: [],
+            directives: []
+          }
+        ]
+      }
+    }
+  ]
+}
+export const ConversationFieldsForListViewFragmentDoc: DocumentNode = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ConversationFieldsForListView" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Conversation" }
+      },
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "id" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "date" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "from" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "host" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "mailbox" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "name" },
+                  arguments: [],
+                  directives: []
+                }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isRead" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isStarred" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "labels" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "snippet" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "subject" },
+            arguments: [],
+            directives: []
+          }
+        ]
+      }
+    }
+  ]
+}
+export const ConversationFieldsForConversationViewFragmentDoc: DocumentNode = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ConversationFieldsForConversationView" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Conversation" }
+      },
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "id" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "date" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "from" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "host" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "mailbox" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "name" },
+                  arguments: [],
+                  directives: []
+                }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isRead" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isStarred" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "labels" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "snippet" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "subject" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "presentableElements" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "id" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "isRead" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "isStarred" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "contents" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "revision" },
+                        arguments: [],
+                        directives: [],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "messageId" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "contentId" },
+                              arguments: [],
+                              directives: []
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "resource" },
+                        arguments: [],
+                        directives: [],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "messageId" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "contentId" },
+                              arguments: [],
+                              directives: []
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "type" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "subtype" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "content" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "disposition" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "filename" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "date" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "from" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "editedAt" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "editedBy" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "replyRecipients" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "fromAccountId" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "accountId" }
+                }
+              }
+            ],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "from" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "to" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "cc" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
 export const GetAllAccountsDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -660,25 +1104,44 @@ export const GetAllAccountsDocument: DocumentNode = {
               kind: "SelectionSet",
               selections: [
                 {
-                  kind: "Field",
-                  name: { kind: "Name", value: "id" },
-                  arguments: [],
-                  directives: []
-                },
-                {
-                  kind: "Field",
-                  name: { kind: "Name", value: "email" },
-                  arguments: [],
-                  directives: []
-                },
-                {
-                  kind: "Field",
-                  name: { kind: "Name", value: "loggedIn" },
-                  arguments: [],
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "AccountFields" },
                   directives: []
                 }
               ]
             }
+          }
+        ]
+      }
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "AccountFields" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Account" }
+      },
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "id" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "email" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "loggedIn" },
+            arguments: [],
+            directives: []
           }
         ]
       }
@@ -697,6 +1160,9 @@ export function useGetAllAccountsQuery(
     GetAllAccountsQueryVariables
   >(GetAllAccountsDocument, baseOptions)
 }
+export type GetAllAccountsQueryHookResult = ReturnType<
+  typeof useGetAllAccountsQuery
+>
 export const GetAccountDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -740,21 +1206,8 @@ export const GetAccountDocument: DocumentNode = {
               kind: "SelectionSet",
               selections: [
                 {
-                  kind: "Field",
-                  name: { kind: "Name", value: "id" },
-                  arguments: [],
-                  directives: []
-                },
-                {
-                  kind: "Field",
-                  name: { kind: "Name", value: "email" },
-                  arguments: [],
-                  directives: []
-                },
-                {
-                  kind: "Field",
-                  name: { kind: "Name", value: "loggedIn" },
-                  arguments: [],
+                  kind: "FragmentSpread",
+                  name: { kind: "Name", value: "AccountFields" },
                   directives: []
                 },
                 {
@@ -776,74 +1229,11 @@ export const GetAccountDocument: DocumentNode = {
                     kind: "SelectionSet",
                     selections: [
                       {
-                        kind: "Field",
-                        name: { kind: "Name", value: "id" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "date" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "from" },
-                        arguments: [],
-                        directives: [],
-                        selectionSet: {
-                          kind: "SelectionSet",
-                          selections: [
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "host" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "mailbox" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "name" },
-                              arguments: [],
-                              directives: []
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "isRead" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "isStarred" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "labels" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "snippet" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "subject" },
-                        arguments: [],
+                        kind: "FragmentSpread",
+                        name: {
+                          kind: "Name",
+                          value: "ConversationFieldsForListView"
+                        },
                         directives: []
                       }
                     ]
@@ -851,6 +1241,123 @@ export const GetAccountDocument: DocumentNode = {
                 }
               ]
             }
+          }
+        ]
+      }
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "AccountFields" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Account" }
+      },
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "id" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "email" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "loggedIn" },
+            arguments: [],
+            directives: []
+          }
+        ]
+      }
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ConversationFieldsForListView" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Conversation" }
+      },
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "id" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "date" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "from" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "host" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "mailbox" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "name" },
+                  arguments: [],
+                  directives: []
+                }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isRead" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isStarred" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "labels" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "snippet" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "subject" },
+            arguments: [],
+            directives: []
           }
         ]
       }
@@ -869,6 +1376,7 @@ export function useGetAccountQuery(
     baseOptions
   )
 }
+export type GetAccountQueryHookResult = ReturnType<typeof useGetAccountQuery>
 export const DeleteAccountDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -934,6 +1442,9 @@ export function useDeleteAccountMutation(
     DeleteAccountMutationVariables
   >(DeleteAccountDocument, baseOptions)
 }
+export type DeleteAccountMutationHookResult = ReturnType<
+  typeof useDeleteAccountMutation
+>
 export const AddAccountDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -985,21 +1496,8 @@ export const AddAccountDocument: DocumentNode = {
                     kind: "SelectionSet",
                     selections: [
                       {
-                        kind: "Field",
-                        name: { kind: "Name", value: "id" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "email" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "loggedIn" },
-                        arguments: [],
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "AccountFields" },
                         directives: []
                       }
                     ]
@@ -1007,6 +1505,38 @@ export const AddAccountDocument: DocumentNode = {
                 }
               ]
             }
+          }
+        ]
+      }
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "AccountFields" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Account" }
+      },
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "id" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "email" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "loggedIn" },
+            arguments: [],
+            directives: []
           }
         ]
       }
@@ -1025,6 +1555,9 @@ export function useAddAccountMutation(
     AddAccountMutationVariables
   >(AddAccountDocument, baseOptions)
 }
+export type AddAccountMutationHookResult = ReturnType<
+  typeof useAddAccountMutation
+>
 export const AuthenticateDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -1073,21 +1606,8 @@ export const AuthenticateDocument: DocumentNode = {
                     kind: "SelectionSet",
                     selections: [
                       {
-                        kind: "Field",
-                        name: { kind: "Name", value: "id" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "email" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "loggedIn" },
-                        arguments: [],
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "AccountFields" },
                         directives: []
                       }
                     ]
@@ -1095,6 +1615,38 @@ export const AuthenticateDocument: DocumentNode = {
                 }
               ]
             }
+          }
+        ]
+      }
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "AccountFields" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Account" }
+      },
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "id" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "email" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "loggedIn" },
+            arguments: [],
+            directives: []
           }
         ]
       }
@@ -1113,6 +1665,9 @@ export function useAuthenticateMutation(
     AuthenticateMutationVariables
   >(AuthenticateDocument, baseOptions)
 }
+export type AuthenticateMutationHookResult = ReturnType<
+  typeof useAuthenticateMutation
+>
 export const GetConversationDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -1162,196 +1717,114 @@ export const GetConversationDocument: DocumentNode = {
               kind: "SelectionSet",
               selections: [
                 {
+                  kind: "FragmentSpread",
+                  name: {
+                    kind: "Name",
+                    value: "ConversationFieldsForConversationView"
+                  },
+                  directives: []
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ConversationFieldsForConversationView" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Conversation" }
+      },
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "id" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "date" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "from" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
                   kind: "Field",
-                  name: { kind: "Name", value: "id" },
+                  name: { kind: "Name", value: "host" },
                   arguments: [],
                   directives: []
                 },
                 {
                   kind: "Field",
-                  name: { kind: "Name", value: "presentableElements" },
+                  name: { kind: "Name", value: "mailbox" },
                   arguments: [],
-                  directives: [],
-                  selectionSet: {
-                    kind: "SelectionSet",
-                    selections: [
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "id" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "isRead" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "contents" },
-                        arguments: [],
-                        directives: [],
-                        selectionSet: {
-                          kind: "SelectionSet",
-                          selections: [
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "revision" },
-                              arguments: [],
-                              directives: [],
-                              selectionSet: {
-                                kind: "SelectionSet",
-                                selections: [
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "messageId" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "contentId" },
-                                    arguments: [],
-                                    directives: []
-                                  }
-                                ]
-                              }
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "resource" },
-                              arguments: [],
-                              directives: [],
-                              selectionSet: {
-                                kind: "SelectionSet",
-                                selections: [
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "messageId" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "contentId" },
-                                    arguments: [],
-                                    directives: []
-                                  }
-                                ]
-                              }
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "type" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "subtype" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "content" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "disposition" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "filename" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "name" },
-                              arguments: [],
-                              directives: []
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "date" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "from" },
-                        arguments: [],
-                        directives: [],
-                        selectionSet: {
-                          kind: "SelectionSet",
-                          selections: [
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "name" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "mailbox" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "host" },
-                              arguments: [],
-                              directives: []
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "editedAt" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "editedBy" },
-                        arguments: [],
-                        directives: [],
-                        selectionSet: {
-                          kind: "SelectionSet",
-                          selections: [
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "name" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "mailbox" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "host" },
-                              arguments: [],
-                              directives: []
-                            }
-                          ]
-                        }
-                      }
-                    ]
-                  }
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "name" },
+                  arguments: [],
+                  directives: []
+                }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isRead" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isStarred" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "labels" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "snippet" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "subject" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "presentableElements" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "id" },
+                  arguments: [],
+                  directives: []
                 },
                 {
                   kind: "Field",
@@ -1367,30 +1840,15 @@ export const GetConversationDocument: DocumentNode = {
                 },
                 {
                   kind: "Field",
-                  name: { kind: "Name", value: "labels" },
+                  name: { kind: "Name", value: "contents" },
                   arguments: [],
-                  directives: []
-                },
-                {
-                  kind: "Field",
-                  name: { kind: "Name", value: "replyRecipients" },
-                  arguments: [
-                    {
-                      kind: "Argument",
-                      name: { kind: "Name", value: "fromAccountId" },
-                      value: {
-                        kind: "Variable",
-                        name: { kind: "Name", value: "accountId" }
-                      }
-                    }
-                  ],
                   directives: [],
                   selectionSet: {
                     kind: "SelectionSet",
                     selections: [
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "from" },
+                        name: { kind: "Name", value: "revision" },
                         arguments: [],
                         directives: [],
                         selectionSet: {
@@ -1398,19 +1856,13 @@ export const GetConversationDocument: DocumentNode = {
                           selections: [
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "name" },
+                              name: { kind: "Name", value: "messageId" },
                               arguments: [],
                               directives: []
                             },
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "mailbox" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "host" },
+                              name: { kind: "Name", value: "contentId" },
                               arguments: [],
                               directives: []
                             }
@@ -1419,7 +1871,7 @@ export const GetConversationDocument: DocumentNode = {
                       },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "to" },
+                        name: { kind: "Name", value: "resource" },
                         arguments: [],
                         directives: [],
                         selectionSet: {
@@ -1427,19 +1879,13 @@ export const GetConversationDocument: DocumentNode = {
                           selections: [
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "name" },
+                              name: { kind: "Name", value: "messageId" },
                               arguments: [],
                               directives: []
                             },
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "mailbox" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "host" },
+                              name: { kind: "Name", value: "contentId" },
                               arguments: [],
                               directives: []
                             }
@@ -1448,47 +1894,219 @@ export const GetConversationDocument: DocumentNode = {
                       },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "cc" },
+                        name: { kind: "Name", value: "type" },
                         arguments: [],
-                        directives: [],
-                        selectionSet: {
-                          kind: "SelectionSet",
-                          selections: [
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "name" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "mailbox" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "host" },
-                              arguments: [],
-                              directives: []
-                            }
-                          ]
-                        }
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "subtype" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "content" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "disposition" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "filename" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
                       }
                     ]
                   }
                 },
                 {
                   kind: "Field",
-                  name: { kind: "Name", value: "snippet" },
+                  name: { kind: "Name", value: "date" },
                   arguments: [],
                   directives: []
                 },
                 {
                   kind: "Field",
-                  name: { kind: "Name", value: "subject" },
+                  name: { kind: "Name", value: "from" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "editedAt" },
                   arguments: [],
                   directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "editedBy" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "replyRecipients" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "fromAccountId" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "accountId" }
+                }
+              }
+            ],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "from" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "to" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "cc" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
                 }
               ]
             }
@@ -1510,6 +2128,9 @@ export function useGetConversationQuery(
     GetConversationQueryVariables
   >(GetConversationDocument, baseOptions)
 }
+export type GetConversationQueryHookResult = ReturnType<
+  typeof useGetConversationQuery
+>
 export const SearchConversationsDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -1517,6 +2138,225 @@ export const SearchConversationsDocument: DocumentNode = {
       kind: "OperationDefinition",
       operation: "query",
       name: { kind: "Name", value: "searchConversations" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "accountId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } }
+          },
+          directives: []
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "query" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "String" } }
+          },
+          directives: []
+        }
+      ],
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "account" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "id" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "accountId" }
+                }
+              }
+            ],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "id" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "search" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "query" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "query" }
+                      }
+                    }
+                  ],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "id" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "conversations" },
+                        arguments: [],
+                        directives: [],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "FragmentSpread",
+                              name: {
+                                kind: "Name",
+                                value: "ConversationFieldsForListView"
+                              },
+                              directives: []
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "query" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ConversationFieldsForListView" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Conversation" }
+      },
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "id" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "date" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "from" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "host" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "mailbox" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "name" },
+                  arguments: [],
+                  directives: []
+                }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isRead" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isStarred" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "labels" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "snippet" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "subject" },
+            arguments: [],
+            directives: []
+          }
+        ]
+      }
+    }
+  ]
+}
+
+export function useSearchConversationsQuery(
+  baseOptions?: ReactApolloHooks.QueryHookOptions<
+    SearchConversationsQuery,
+    SearchConversationsQueryVariables
+  >
+) {
+  return ReactApolloHooks.useQuery<
+    SearchConversationsQuery,
+    SearchConversationsQueryVariables
+  >(SearchConversationsDocument, baseOptions)
+}
+export type SearchConversationsQueryHookResult = ReturnType<
+  typeof useSearchConversationsQuery
+>
+export const SearchCachedConversationsDocument: DocumentNode = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "searchCachedConversations" },
       variableDefinitions: [
         {
           kind: "VariableDefinition",
@@ -1613,17 +2453,20 @@ export const SearchConversationsDocument: DocumentNode = {
   ]
 }
 
-export function useSearchConversationsQuery(
+export function useSearchCachedConversationsQuery(
   baseOptions?: ReactApolloHooks.QueryHookOptions<
-    SearchConversationsQuery,
-    SearchConversationsQueryVariables
+    SearchCachedConversationsQuery,
+    SearchCachedConversationsQueryVariables
   >
 ) {
   return ReactApolloHooks.useQuery<
-    SearchConversationsQuery,
-    SearchConversationsQueryVariables
-  >(SearchConversationsDocument, baseOptions)
+    SearchCachedConversationsQuery,
+    SearchCachedConversationsQueryVariables
+  >(SearchCachedConversationsDocument, baseOptions)
 }
+export type SearchCachedConversationsQueryHookResult = ReturnType<
+  typeof useSearchCachedConversationsQuery
+>
 export const GetMatchingAddressesDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -1704,6 +2547,9 @@ export function useGetMatchingAddressesQuery(
     GetMatchingAddressesQueryVariables
   >(GetMatchingAddressesDocument, baseOptions)
 }
+export type GetMatchingAddressesQueryHookResult = ReturnType<
+  typeof useGetMatchingAddressesQuery
+>
 export const SyncDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -1755,21 +2601,8 @@ export const SyncDocument: DocumentNode = {
                     kind: "SelectionSet",
                     selections: [
                       {
-                        kind: "Field",
-                        name: { kind: "Name", value: "id" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "email" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "loggedIn" },
-                        arguments: [],
+                        kind: "FragmentSpread",
+                        name: { kind: "Name", value: "AccountFields" },
                         directives: []
                       },
                       {
@@ -1781,68 +2614,11 @@ export const SyncDocument: DocumentNode = {
                           kind: "SelectionSet",
                           selections: [
                             {
-                              kind: "Field",
-                              name: { kind: "Name", value: "id" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "date" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "from" },
-                              arguments: [],
-                              directives: [],
-                              selectionSet: {
-                                kind: "SelectionSet",
-                                selections: [
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "host" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "mailbox" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "name" },
-                                    arguments: [],
-                                    directives: []
-                                  }
-                                ]
-                              }
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "isRead" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "labels" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "snippet" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "subject" },
-                              arguments: [],
+                              kind: "FragmentSpread",
+                              name: {
+                                kind: "Name",
+                                value: "ConversationFieldsForListView"
+                              },
                               directives: []
                             }
                           ]
@@ -1853,6 +2629,123 @@ export const SyncDocument: DocumentNode = {
                 }
               ]
             }
+          }
+        ]
+      }
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "AccountFields" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Account" }
+      },
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "id" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "email" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "loggedIn" },
+            arguments: [],
+            directives: []
+          }
+        ]
+      }
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ConversationFieldsForListView" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Conversation" }
+      },
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "id" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "date" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "from" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "host" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "mailbox" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "name" },
+                  arguments: [],
+                  directives: []
+                }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isRead" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isStarred" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "labels" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "snippet" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "subject" },
+            arguments: [],
+            directives: []
           }
         ]
       }
@@ -1871,6 +2764,7 @@ export function useSyncMutation(
     baseOptions
   )
 }
+export type SyncMutationHookResult = ReturnType<typeof useSyncMutation>
 export const SetIsReadDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -1952,60 +2846,7 @@ export const SetIsReadDocument: DocumentNode = {
                       },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "date" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "from" },
-                        arguments: [],
-                        directives: [],
-                        selectionSet: {
-                          kind: "SelectionSet",
-                          selections: [
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "host" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "mailbox" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "name" },
-                              arguments: [],
-                              directives: []
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        kind: "Field",
                         name: { kind: "Name", value: "isRead" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "labels" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "snippet" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "subject" },
                         arguments: [],
                         directives: []
                       }
@@ -2032,6 +2873,9 @@ export function useSetIsReadMutation(
     SetIsReadMutationVariables
   >(SetIsReadDocument, baseOptions)
 }
+export type SetIsReadMutationHookResult = ReturnType<
+  typeof useSetIsReadMutation
+>
 export const ArchiveDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -2083,68 +2927,11 @@ export const ArchiveDocument: DocumentNode = {
                     kind: "SelectionSet",
                     selections: [
                       {
-                        kind: "Field",
-                        name: { kind: "Name", value: "id" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "date" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "from" },
-                        arguments: [],
-                        directives: [],
-                        selectionSet: {
-                          kind: "SelectionSet",
-                          selections: [
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "host" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "mailbox" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "name" },
-                              arguments: [],
-                              directives: []
-                            }
-                          ]
-                        }
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "isRead" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "labels" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "snippet" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "subject" },
-                        arguments: [],
+                        kind: "FragmentSpread",
+                        name: {
+                          kind: "Name",
+                          value: "ConversationFieldsForListView"
+                        },
                         directives: []
                       }
                     ]
@@ -2152,6 +2939,91 @@ export const ArchiveDocument: DocumentNode = {
                 }
               ]
             }
+          }
+        ]
+      }
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ConversationFieldsForListView" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Conversation" }
+      },
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "id" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "date" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "from" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "host" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "mailbox" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "name" },
+                  arguments: [],
+                  directives: []
+                }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isRead" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isStarred" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "labels" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "snippet" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "subject" },
+            arguments: [],
+            directives: []
           }
         ]
       }
@@ -2170,6 +3042,7 @@ export function useArchiveMutation(
     ArchiveMutationVariables
   >(ArchiveDocument, baseOptions)
 }
+export type ArchiveMutationHookResult = ReturnType<typeof useArchiveMutation>
 export const FlagDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -2251,19 +3124,7 @@ export const FlagDocument: DocumentNode = {
                     selections: [
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "id" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "date" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "from" },
+                        name: { kind: "Name", value: "presentableElements" },
                         arguments: [],
                         directives: [],
                         selectionSet: {
@@ -2271,19 +3132,13 @@ export const FlagDocument: DocumentNode = {
                           selections: [
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "host" },
+                              name: { kind: "Name", value: "id" },
                               arguments: [],
                               directives: []
                             },
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "mailbox" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "name" },
+                              name: { kind: "Name", value: "isStarred" },
                               arguments: [],
                               directives: []
                             }
@@ -2292,31 +3147,13 @@ export const FlagDocument: DocumentNode = {
                       },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "isRead" },
+                        name: { kind: "Name", value: "id" },
                         arguments: [],
                         directives: []
                       },
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "isStarred" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "labels" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "snippet" },
-                        arguments: [],
-                        directives: []
-                      },
-                      {
-                        kind: "Field",
-                        name: { kind: "Name", value: "subject" },
                         arguments: [],
                         directives: []
                       }
@@ -2343,6 +3180,161 @@ export function useFlagMutation(
     baseOptions
   )
 }
+export type FlagMutationHookResult = ReturnType<typeof useFlagMutation>
+export const FlagPresentableDocument: DocumentNode = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "mutation",
+      name: { kind: "Name", value: "flagPresentable" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "presentableId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } }
+          },
+          directives: []
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "conversationId" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "ID" } }
+          },
+          directives: []
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "isFlagged" }
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "Boolean" }
+            }
+          },
+          directives: []
+        }
+      ],
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "conversations" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "flagPresentable" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "id" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "presentableId" }
+                      }
+                    },
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "conversationId" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "conversationId" }
+                      }
+                    },
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "isFlagged" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "isFlagged" }
+                      }
+                    }
+                  ],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "presentableElements" },
+                        arguments: [],
+                        directives: [],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "isStarred" },
+                              arguments: [],
+                              directives: []
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "id" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "isStarred" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+
+export function useFlagPresentableMutation(
+  baseOptions?: ReactApolloHooks.MutationHookOptions<
+    FlagPresentableMutation,
+    FlagPresentableMutationVariables
+  >
+) {
+  return ReactApolloHooks.useMutation<
+    FlagPresentableMutation,
+    FlagPresentableMutationVariables
+  >(FlagPresentableDocument, baseOptions)
+}
+export type FlagPresentableMutationHookResult = ReturnType<
+  typeof useFlagPresentableMutation
+>
 export const SendMessageDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -2417,14 +3409,141 @@ export const SendMessageDocument: DocumentNode = {
                     kind: "SelectionSet",
                     selections: [
                       {
-                        kind: "Field",
-                        name: { kind: "Name", value: "id" },
-                        arguments: [],
+                        kind: "FragmentSpread",
+                        name: {
+                          kind: "Name",
+                          value: "ConversationFieldsForConversationView"
+                        },
                         directives: []
-                      },
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ConversationFieldsForConversationView" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Conversation" }
+      },
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "id" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "date" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "from" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "host" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "mailbox" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "name" },
+                  arguments: [],
+                  directives: []
+                }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isRead" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isStarred" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "labels" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "snippet" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "subject" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "presentableElements" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "id" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "isRead" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "isStarred" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "contents" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "presentableElements" },
+                        name: { kind: "Name", value: "revision" },
                         arguments: [],
                         directives: [],
                         selectionSet: {
@@ -2432,191 +3551,252 @@ export const SendMessageDocument: DocumentNode = {
                           selections: [
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "id" },
+                              name: { kind: "Name", value: "messageId" },
                               arguments: [],
                               directives: []
                             },
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "contents" },
-                              arguments: [],
-                              directives: [],
-                              selectionSet: {
-                                kind: "SelectionSet",
-                                selections: [
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "revision" },
-                                    arguments: [],
-                                    directives: [],
-                                    selectionSet: {
-                                      kind: "SelectionSet",
-                                      selections: [
-                                        {
-                                          kind: "Field",
-                                          name: {
-                                            kind: "Name",
-                                            value: "messageId"
-                                          },
-                                          arguments: [],
-                                          directives: []
-                                        },
-                                        {
-                                          kind: "Field",
-                                          name: {
-                                            kind: "Name",
-                                            value: "contentId"
-                                          },
-                                          arguments: [],
-                                          directives: []
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "resource" },
-                                    arguments: [],
-                                    directives: [],
-                                    selectionSet: {
-                                      kind: "SelectionSet",
-                                      selections: [
-                                        {
-                                          kind: "Field",
-                                          name: {
-                                            kind: "Name",
-                                            value: "messageId"
-                                          },
-                                          arguments: [],
-                                          directives: []
-                                        },
-                                        {
-                                          kind: "Field",
-                                          name: {
-                                            kind: "Name",
-                                            value: "contentId"
-                                          },
-                                          arguments: [],
-                                          directives: []
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "type" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "subtype" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "content" },
-                                    arguments: [],
-                                    directives: []
-                                  }
-                                ]
-                              }
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "date" },
+                              name: { kind: "Name", value: "contentId" },
                               arguments: [],
                               directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "from" },
-                              arguments: [],
-                              directives: [],
-                              selectionSet: {
-                                kind: "SelectionSet",
-                                selections: [
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "name" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "mailbox" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "host" },
-                                    arguments: [],
-                                    directives: []
-                                  }
-                                ]
-                              }
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "editedAt" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "editedBy" },
-                              arguments: [],
-                              directives: [],
-                              selectionSet: {
-                                kind: "SelectionSet",
-                                selections: [
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "name" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "mailbox" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "host" },
-                                    arguments: [],
-                                    directives: []
-                                  }
-                                ]
-                              }
                             }
                           ]
                         }
                       },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "isRead" },
+                        name: { kind: "Name", value: "resource" },
+                        arguments: [],
+                        directives: [],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "messageId" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "contentId" },
+                              arguments: [],
+                              directives: []
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "type" },
                         arguments: [],
                         directives: []
                       },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "labels" },
+                        name: { kind: "Name", value: "subtype" },
                         arguments: [],
                         directives: []
                       },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "snippet" },
+                        name: { kind: "Name", value: "content" },
                         arguments: [],
                         directives: []
                       },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "subject" },
+                        name: { kind: "Name", value: "disposition" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "filename" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "date" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "from" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "editedAt" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "editedBy" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "replyRecipients" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "fromAccountId" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "accountId" }
+                }
+              }
+            ],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "from" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "to" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "cc" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
                         arguments: [],
                         directives: []
                       }
@@ -2643,6 +3823,9 @@ export function useSendMessageMutation(
     SendMessageMutationVariables
   >(SendMessageDocument, baseOptions)
 }
+export type SendMessageMutationHookResult = ReturnType<
+  typeof useSendMessageMutation
+>
 export const EditDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -2783,14 +3966,141 @@ export const EditDocument: DocumentNode = {
                     kind: "SelectionSet",
                     selections: [
                       {
-                        kind: "Field",
-                        name: { kind: "Name", value: "id" },
-                        arguments: [],
+                        kind: "FragmentSpread",
+                        name: {
+                          kind: "Name",
+                          value: "ConversationFieldsForConversationView"
+                        },
                         directives: []
-                      },
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ConversationFieldsForConversationView" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Conversation" }
+      },
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "id" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "date" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "from" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "host" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "mailbox" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "name" },
+                  arguments: [],
+                  directives: []
+                }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isRead" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isStarred" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "labels" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "snippet" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "subject" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "presentableElements" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "id" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "isRead" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "isStarred" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "contents" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "presentableElements" },
+                        name: { kind: "Name", value: "revision" },
                         arguments: [],
                         directives: [],
                         selectionSet: {
@@ -2798,191 +4108,252 @@ export const EditDocument: DocumentNode = {
                           selections: [
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "id" },
+                              name: { kind: "Name", value: "messageId" },
                               arguments: [],
                               directives: []
                             },
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "contents" },
-                              arguments: [],
-                              directives: [],
-                              selectionSet: {
-                                kind: "SelectionSet",
-                                selections: [
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "revision" },
-                                    arguments: [],
-                                    directives: [],
-                                    selectionSet: {
-                                      kind: "SelectionSet",
-                                      selections: [
-                                        {
-                                          kind: "Field",
-                                          name: {
-                                            kind: "Name",
-                                            value: "messageId"
-                                          },
-                                          arguments: [],
-                                          directives: []
-                                        },
-                                        {
-                                          kind: "Field",
-                                          name: {
-                                            kind: "Name",
-                                            value: "contentId"
-                                          },
-                                          arguments: [],
-                                          directives: []
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "resource" },
-                                    arguments: [],
-                                    directives: [],
-                                    selectionSet: {
-                                      kind: "SelectionSet",
-                                      selections: [
-                                        {
-                                          kind: "Field",
-                                          name: {
-                                            kind: "Name",
-                                            value: "messageId"
-                                          },
-                                          arguments: [],
-                                          directives: []
-                                        },
-                                        {
-                                          kind: "Field",
-                                          name: {
-                                            kind: "Name",
-                                            value: "contentId"
-                                          },
-                                          arguments: [],
-                                          directives: []
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "type" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "subtype" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "content" },
-                                    arguments: [],
-                                    directives: []
-                                  }
-                                ]
-                              }
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "date" },
+                              name: { kind: "Name", value: "contentId" },
                               arguments: [],
                               directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "from" },
-                              arguments: [],
-                              directives: [],
-                              selectionSet: {
-                                kind: "SelectionSet",
-                                selections: [
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "name" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "mailbox" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "host" },
-                                    arguments: [],
-                                    directives: []
-                                  }
-                                ]
-                              }
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "editedAt" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "editedBy" },
-                              arguments: [],
-                              directives: [],
-                              selectionSet: {
-                                kind: "SelectionSet",
-                                selections: [
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "name" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "mailbox" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "host" },
-                                    arguments: [],
-                                    directives: []
-                                  }
-                                ]
-                              }
                             }
                           ]
                         }
                       },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "isRead" },
+                        name: { kind: "Name", value: "resource" },
+                        arguments: [],
+                        directives: [],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "messageId" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "contentId" },
+                              arguments: [],
+                              directives: []
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "type" },
                         arguments: [],
                         directives: []
                       },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "labels" },
+                        name: { kind: "Name", value: "subtype" },
                         arguments: [],
                         directives: []
                       },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "snippet" },
+                        name: { kind: "Name", value: "content" },
                         arguments: [],
                         directives: []
                       },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "subject" },
+                        name: { kind: "Name", value: "disposition" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "filename" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "date" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "from" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "editedAt" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "editedBy" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "replyRecipients" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "fromAccountId" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "accountId" }
+                }
+              }
+            ],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "from" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "to" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "cc" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
                         arguments: [],
                         directives: []
                       }
@@ -3009,6 +4380,7 @@ export function useEditMutation(
     baseOptions
   )
 }
+export type EditMutationHookResult = ReturnType<typeof useEditMutation>
 export const ReplyDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -3103,14 +4475,141 @@ export const ReplyDocument: DocumentNode = {
                     kind: "SelectionSet",
                     selections: [
                       {
-                        kind: "Field",
-                        name: { kind: "Name", value: "id" },
-                        arguments: [],
+                        kind: "FragmentSpread",
+                        name: {
+                          kind: "Name",
+                          value: "ConversationFieldsForConversationView"
+                        },
                         directives: []
-                      },
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      kind: "FragmentDefinition",
+      name: { kind: "Name", value: "ConversationFieldsForConversationView" },
+      typeCondition: {
+        kind: "NamedType",
+        name: { kind: "Name", value: "Conversation" }
+      },
+      directives: [],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "id" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "date" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "from" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "host" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "mailbox" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "name" },
+                  arguments: [],
+                  directives: []
+                }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isRead" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "isStarred" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "labels" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "snippet" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "subject" },
+            arguments: [],
+            directives: []
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "presentableElements" },
+            arguments: [],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "id" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "isRead" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "isStarred" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "contents" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "presentableElements" },
+                        name: { kind: "Name", value: "revision" },
                         arguments: [],
                         directives: [],
                         selectionSet: {
@@ -3118,191 +4617,252 @@ export const ReplyDocument: DocumentNode = {
                           selections: [
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "id" },
+                              name: { kind: "Name", value: "messageId" },
                               arguments: [],
                               directives: []
                             },
                             {
                               kind: "Field",
-                              name: { kind: "Name", value: "contents" },
-                              arguments: [],
-                              directives: [],
-                              selectionSet: {
-                                kind: "SelectionSet",
-                                selections: [
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "revision" },
-                                    arguments: [],
-                                    directives: [],
-                                    selectionSet: {
-                                      kind: "SelectionSet",
-                                      selections: [
-                                        {
-                                          kind: "Field",
-                                          name: {
-                                            kind: "Name",
-                                            value: "messageId"
-                                          },
-                                          arguments: [],
-                                          directives: []
-                                        },
-                                        {
-                                          kind: "Field",
-                                          name: {
-                                            kind: "Name",
-                                            value: "contentId"
-                                          },
-                                          arguments: [],
-                                          directives: []
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "resource" },
-                                    arguments: [],
-                                    directives: [],
-                                    selectionSet: {
-                                      kind: "SelectionSet",
-                                      selections: [
-                                        {
-                                          kind: "Field",
-                                          name: {
-                                            kind: "Name",
-                                            value: "messageId"
-                                          },
-                                          arguments: [],
-                                          directives: []
-                                        },
-                                        {
-                                          kind: "Field",
-                                          name: {
-                                            kind: "Name",
-                                            value: "contentId"
-                                          },
-                                          arguments: [],
-                                          directives: []
-                                        }
-                                      ]
-                                    }
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "type" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "subtype" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "content" },
-                                    arguments: [],
-                                    directives: []
-                                  }
-                                ]
-                              }
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "date" },
+                              name: { kind: "Name", value: "contentId" },
                               arguments: [],
                               directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "from" },
-                              arguments: [],
-                              directives: [],
-                              selectionSet: {
-                                kind: "SelectionSet",
-                                selections: [
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "name" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "mailbox" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "host" },
-                                    arguments: [],
-                                    directives: []
-                                  }
-                                ]
-                              }
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "editedAt" },
-                              arguments: [],
-                              directives: []
-                            },
-                            {
-                              kind: "Field",
-                              name: { kind: "Name", value: "editedBy" },
-                              arguments: [],
-                              directives: [],
-                              selectionSet: {
-                                kind: "SelectionSet",
-                                selections: [
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "name" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "mailbox" },
-                                    arguments: [],
-                                    directives: []
-                                  },
-                                  {
-                                    kind: "Field",
-                                    name: { kind: "Name", value: "host" },
-                                    arguments: [],
-                                    directives: []
-                                  }
-                                ]
-                              }
                             }
                           ]
                         }
                       },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "isRead" },
+                        name: { kind: "Name", value: "resource" },
+                        arguments: [],
+                        directives: [],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "messageId" },
+                              arguments: [],
+                              directives: []
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "contentId" },
+                              arguments: [],
+                              directives: []
+                            }
+                          ]
+                        }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "type" },
                         arguments: [],
                         directives: []
                       },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "labels" },
+                        name: { kind: "Name", value: "subtype" },
                         arguments: [],
                         directives: []
                       },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "snippet" },
+                        name: { kind: "Name", value: "content" },
                         arguments: [],
                         directives: []
                       },
                       {
                         kind: "Field",
-                        name: { kind: "Name", value: "subject" },
+                        name: { kind: "Name", value: "disposition" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "filename" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "date" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "from" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "editedAt" },
+                  arguments: [],
+                  directives: []
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "editedBy" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "replyRecipients" },
+            arguments: [
+              {
+                kind: "Argument",
+                name: { kind: "Name", value: "fromAccountId" },
+                value: {
+                  kind: "Variable",
+                  name: { kind: "Name", value: "accountId" }
+                }
+              }
+            ],
+            directives: [],
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "from" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "to" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
+                        arguments: [],
+                        directives: []
+                      }
+                    ]
+                  }
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "cc" },
+                  arguments: [],
+                  directives: [],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "mailbox" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "host" },
                         arguments: [],
                         directives: []
                       }
@@ -3329,3 +4889,4 @@ export function useReplyMutation(
     baseOptions
   )
 }
+export type ReplyMutationHookResult = ReturnType<typeof useReplyMutation>
