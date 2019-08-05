@@ -1,6 +1,6 @@
 {
   "name": "poodle-main",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Main Electron process for Poodle",
   "main": "lib/index.js",
   "author": {
@@ -10,7 +10,7 @@
   "license": "Apache-2.0",
   "private": true,
   "config": {
-    "force": {
+    "forge": {
       "packagerConfig": {},
       "makers": [
         {
@@ -58,7 +58,7 @@
     "@types/kefir": "^3.8.1",
     "@types/lodash": "^4.14.136",
     "@types/mailparser": "^2.4.0",
-    "@types/node": "^11.11.8",
+    "@types/node": "12",
     "@types/node-fetch": "^2.1.7",
     "@types/node-uuid": "^0.0.28",
     "@types/nodemailer": "^4.6.7",
@@ -68,8 +68,7 @@
     "better-sqlite3": "^5.4.0",
     "better-sqlite3-helper": "^2.0.2",
     "buildmail": "^4.0.1",
-    "concat-stream": "^2.0.0",
-    "electron": "6",
+    "concat-stream": "^1.6.0",
     "electron-context-menu": "^0.13.0",
     "electron-is-dev": "^1.1.0",
     "electron-squirrel-startup": "^1.0.0",
@@ -87,7 +86,7 @@
     "kefir": "^3.8.6",
     "keytar": "^5.0.0-beta.0",
     "libqp": "^1.1.0",
-    "lodash": "^4.17.15",
+    "lodash": "4.17.14",
     "mailparser": "^2.6.0",
     "mkdirp": "^0.5.1",
     "moment": "^2.24.0",
@@ -112,6 +111,7 @@
     "@types/jest": "^24.0.14",
     "buffer-to-stream": "^1.0.0",
     "cross-env": "^5.2.0",
+    "electron": "6",
     "electron-devtools-installer": "^2.2.4",
     "eol": "^0.9.1",
     "fast-deep-equal": "^2.0.1",

@@ -1,6 +1,5 @@
 {
   "license": "Apache-2.0",
-  "version": "0.0.1",
   "private": true,
   "workspaces": [
     "packages/client",
@@ -27,5 +26,8 @@
     "prettier": "^1.16.4",
     "typescript": "^3.5.2",
     "wait-on": "^3.2.0"
+  },
+  "resolutions": {
+    "@types/node": "12"
   }
 }
