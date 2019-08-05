@@ -3,17 +3,49 @@
   "version": "1.0.0",
   "description": "Main Electron process for Poodle",
   "main": "lib/index.js",
-  "author": "Jesse Hallett <jesse@sitr.us>",
+  "author": {
+    "name": "Jesse Hallett",
+    "email": "jesse@sitr.us"
+  },
   "license": "Apache-2.0",
   "private": true,
+  "config": {
+    "force": {
+      "packagerConfig": {},
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "Poodle"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {}
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {}
+        }
+      ]
+    }
+  },
   "scripts": {
     "build": "tsc -b",
     "codegen": "graphql-codegen --config codegen.yml",
     "codegen:watch": "watch 'yarn codegen' schema",
     "lint": "eslint . --ext .ts,.tsx",
-    "postinstall": "cross-env FORCE_YARN=true electron-builder install-app-deps && cd ../.. && yarn postinstall",
+    "prepare": "cd ../.. && scripts/postinstall",
+    "prepackage": "yarn run build",
+    "package": "electron-forge package",
     "prestart": "yarn run build",
-    "start": "electron .",
+    "start": "electron-forge start",
     "test": "jest --runInBand"
   },
   "dependencies": {
@@ -40,6 +72,7 @@
     "electron": "6",
     "electron-context-menu": "^0.13.0",
     "electron-is-dev": "^1.1.0",
+    "electron-squirrel-startup": "^1.0.0",
     "email-addresses": "^3.0.3",
     "encoding": "^0.1.12",
     "googleapis": "^40.0.0",
@@ -66,6 +99,11 @@
     "xoauth2": "^1.2.0"
   },
   "devDependencies": {
+    "@electron-forge/cli": "^6.0.0-beta.43",
+    "@electron-forge/maker-deb": "^6.0.0-beta.43",
+    "@electron-forge/maker-rpm": "^6.0.0-beta.43",
+    "@electron-forge/maker-squirrel": "^6.0.0-beta.43",
+    "@electron-forge/maker-zip": "^6.0.0-beta.43",
     "@graphql-codegen/add": "^1.4.0",
     "@graphql-codegen/cli": "^1.4.0",
     "@graphql-codegen/typescript": "^1.4.0",
@@ -74,7 +112,6 @@
     "@types/jest": "^24.0.14",
     "buffer-to-stream": "^1.0.0",
     "cross-env": "^5.2.0",
-    "electron-builder": "^21.2.0",
     "electron-devtools-installer": "^2.2.4",
     "eol": "^0.9.1",
     "fast-deep-equal": "^2.0.1",

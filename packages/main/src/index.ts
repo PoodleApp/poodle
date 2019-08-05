@@ -1,6 +1,7 @@
 import { app, BrowserWindow, ipcMain } from "electron"
 import contextMenu from "electron-context-menu"
 import isDev from "electron-is-dev"
+import isFirstRun from "electron-squirrel-startup"
 import { createIpcExecutor, createSchemaLink } from "graphql-transport-electron"
 import schema from "./schema"
 
@@ -35,6 +36,11 @@ function createWindow() {
     // when you should delete the corresponding element.
     mainWindow = null
   })
+}
+
+// Handle creating/removing shortcuts on Windows when installing/uninstalling.
+if (isFirstRun) {
+  app.quit()
 }
 
 // Provide a right-click menu in the UI.

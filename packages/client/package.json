@@ -10,17 +10,17 @@
     "start": "cross-env BROWSER=none react-scripts start",
     "prebuild": "cd ../common && yarn build",
     "build": "react-scripts build",
+    "prepare": "cd ../.. && scripts/postinstall",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "codegen": "graphql-codegen --config codegen.yml && scripts/patch-generated-graphql",
-    "codegen:watch": "watch 'yarn codegen' ../main/schema src/documents",
-    "postinstall": "cd ../.. && yarn postinstall"
+    "codegen:watch": "watch 'yarn codegen' ../main/schema src/documents"
   },
   "eslintConfig": {
     "extends": "react-app"
   },
   "browserslist": [
-    "electron >= 4"
+    "electron >= 6"
   ],
   "dependencies": {
     "@material-ui/core": "^4.0.0",
