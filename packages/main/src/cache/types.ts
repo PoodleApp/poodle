@@ -33,6 +33,8 @@ export interface Message {
 export interface MessagePart {
   id: ID
   message_id: ID
+  lft: number
+  rgt: number
   content_id?: string
   description?: string
   disposition_filename?: string

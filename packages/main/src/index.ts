@@ -5,7 +5,9 @@ import isDev from "electron-is-dev"
 import { createIpcExecutor, createSchemaLink } from "graphql-transport-electron"
 import schema from "./schema"
 import * as cache from "./cache"
-import { Readable } from "stream"
+import { parseBodyUri } from "poodle-common/lib/models/uri"
+import { contentType, filename } from "./models/MessagePart"
+import { PassThrough } from "stream"
 // Provide a right-click menu in the UI.
 contextMenu()
 
@@ -39,26 +41,37 @@ function createWindow() {
 }
 
 function handleContentDownloads() {
-  protocol.registerStreamProtocol("mid", async (request, callback) => {
+  protocol.registerStreamProtocol("body", async (request, callback) => {
     try {
-      const parsed = parseMidUri(request.url)
-      const messageId = parsed && parsed.messageId
-      const partId = parsed && parsed.partId
-      const buffer = cache.getBody(messageId, request.part_id)
+      const parsed = parseBodyUri(request.url)
+      if (!parsed) {
+        throw new Error(
+          `Unable to parse messageId and partId from URI: ${request.url}`
+        )
+      }
+      const messageId = parsed.messageId
+      const partId = parsed.partId
+      const buffer = cache.getBody(messageId, { part_id: partId })
       const stream = createStream(buffer)
+      const part = cache.getPartByPartId({ messageId, partId })
+      const imapPart = part && cache.toImapMessagePart(part)
+      const type = imapPart && contentType(imapPart)
+      const file = imapPart && filename(imapPart)
       callback({
         statusCode: 200,
         headers: {
-          "Content-Disposition": "attachment"
+          "content-type": type,
+          "content-disposition": `attachment; filename= ${file}`
         },
         data: stream
       })
+      stream.resume()
     } catch (err) {
       console.error("error serving part content:", err)
       callback({
         statusCode: 500,
         headers: {
-          "Content-Disposition": "attachment"
+          "content-type": "text/plain; charset=utf8"
         },
         data: createStream(err.message)
       })
@@ -66,22 +79,12 @@ function handleContentDownloads() {
   })
 }
 
-function createStream(input: string | Buffer | null) {
-  const stream = new Readable()
+function createStream(input: string | Buffer | null): PassThrough {
+  const stream = new PassThrough()
+  stream.pause()
   stream.push(input)
+  stream.push(null)
   return stream
-}
-
-function parseMidUri(
-  uri: string
-): { messageId: string | null; partId: string | null } {
-  const midExp = /(mid:|cid:)([^/]+)(?:\/(.+))?$/
-  const matches = uri.match(midExp)
-  if (matches) {
-    const messageId = decodeURIComponent(matches[2])
-    const partId = decodeURIComponent(matches[3])
-    return { messageId, partId }
-  }
 }
 
 // This method will be called when Electron has finished
@@ -99,8 +102,8 @@ app.on("ready", async () => {
     await installExtension(REACT_DEVELOPER_TOOLS)
     await installExtension(IMMUTABLE_JS_OBJECT_FORMATTER)
   }
-  handleContentDownloads()
   createWindow()
+  handleContentDownloads()
 })
 
 // Quit when all windows are closed.

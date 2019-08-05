@@ -224,6 +224,7 @@ fragment ConversationFieldsForConversationView on Conversation {
       disposition
       filename
       name
+      uri
     }
     date
     from {

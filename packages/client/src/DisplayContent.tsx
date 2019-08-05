@@ -3,7 +3,7 @@ import PhotoIcon from "@material-ui/icons/Photo"
 import { Location } from "@reach/router"
 import clsx from "clsx"
 import marked from "marked"
-import { parseMidUri } from "poodle-common/lib/models/uri"
+import { parseMidUri, bodyUri } from "poodle-common/lib/models/uri"
 import * as React from "react"
 import repa from "repa"
 import * as graphql from "./generated/graphql"
@@ -32,6 +32,7 @@ export default function DisplayContent({
   disposition,
   filename,
   name,
+  uri,
   className
 }: Props) {
   const classes = useStyles()
@@ -47,7 +48,7 @@ export default function DisplayContent({
           }
         }
         if (disposition === "attachment") {
-          return displayAttachment(filename, subtype, {
+          return displayAttachment(filename, subtype, uri, {
             ...props,
             className: clsx(className, "attachment-content", classes.attachment)
           })
@@ -107,6 +108,7 @@ function displayMarkdown(text: string, props: object) {
 function displayAttachment(
   filename: string | null | undefined,
   subtype: string,
+  uri: string,
   props: object
 ) {
   const name = filename ? (
@@ -115,10 +117,10 @@ function displayAttachment(
     <div {...props}>[Attachment.{subtype}]</div>
   )
   return (
-    <div>
+    <a href={uri}>
       <PhotoIcon />
       {name}
-    </div>
+    </a>
   )
 }
 
