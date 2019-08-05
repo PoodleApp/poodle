@@ -12,6 +12,8 @@
 
 set -e
 
+## Install custom type definitions
+
 link_type () {
   local t="$1"
   local l="node_modules/@types/${t##*/}"
@@ -23,3 +25,25 @@ link_type () {
 for t in types/*; do
   link_type "$t"
 done
+
+## Set necessary permissions for the Electron sandbox helper binary
+
+sandbox_helper_bin=node_modules/electron/dist/chrome-sandbox
+
+check_sandbox_helper_permissions () {
+  user=$(stat -c '%U' $sandbox_helper_bin)
+  perms=$(stat -c '%a' $sandbox_helper_bin)
+  [[ "$user" == "root" && "$perms" == "4755" ]]
+}
+
+set_sandbox_helper_permissions () {
+  echo "The Electron sandbox helper binary will now have ownershep set to 'root' with permissions 4755."
+  echo "You may be prompted for your sudo password at this point."
+  echo
+  echo "running: sudo chown root:root $sandbox_helper_bin && chmod 4755 $sandbox_helper_bin"
+  sudo chown root:root $sandbox_helper_bin && sudo chmod 4755 $sandbox_helper_bin
+}
+
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+  check_sandbox_helper_permissions || set_sandbox_helper_permissions
+fi
