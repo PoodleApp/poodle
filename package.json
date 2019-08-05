@@ -1,11 +1,21 @@
 {
   "license": "Apache-2.0",
   "private": true,
-  "workspaces": [
-    "packages/client",
-    "packages/common",
-    "packages/main"
-  ],
+  "workspaces": {
+    "packages": [
+      "packages/client",
+      "packages/common",
+      "packages/main"
+    ],
+    "nohoist": [
+      "**/react-native",
+      "**/react-native/**",
+      "**/electron",
+      "**/electron/**",
+      "**/jest",
+      "**/jest/**"
+    ]
+  },
   "scripts": {
     "diagram": "unflatten -l 3 assets/architecture.dot | dot -Tsvg -o assets/architecture.svg",
     "postinstall": "scripts/postinstall",
