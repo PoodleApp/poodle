@@ -44,6 +44,6 @@ set_sandbox_helper_permissions () {
   sudo chown root:root $sandbox_helper_bin && sudo chmod 4755 $sandbox_helper_bin
 }
 
-if [[ "$OSTYPE" == "linux-gnu" ]]; then
+if [[ "$OSTYPE" == "linux-gnu" && -f $sandbox_helper_bin ]]; then
   check_sandbox_helper_permissions || set_sandbox_helper_permissions
 fi
