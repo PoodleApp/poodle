@@ -19,7 +19,11 @@ const useStyles = makeStyles(_theme => ({
     whiteSpace: "pre-wrap"
   },
 
-  attachment: {}
+  attachment: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center"
+  }
 }))
 
 type Props = graphql.Content & { accountId: string; className?: string }
@@ -111,15 +115,13 @@ function displayAttachment(
   uri: string,
   props: object
 ) {
-  const name = filename ? (
-    <div {...props}>{filename}</div>
-  ) : (
-    <div {...props}>[Attachment.{subtype}]</div>
-  )
+  const name = filename ? filename : `Attachment.${subtype}`
   return (
     <a href={uri}>
-      <PhotoIcon />
-      {name}
+      <span {...props}>
+        <PhotoIcon />
+        {name}
+      </span>
     </a>
   )
 }
