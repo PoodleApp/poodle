@@ -3,8 +3,10 @@ import {
   Card,
   CardActions,
   CardContent,
-  CardHeader
+  CardHeader,
+  IconButton
 } from "@material-ui/core"
+import AttachFileIcon from "@material-ui/icons/AttachFile"
 import ReplyIcon from "@material-ui/icons/Reply"
 import * as React from "react"
 import { Value } from "slate"
@@ -71,6 +73,7 @@ export default function ReplyForm({
           title={<>Reply to {to}</>}
           subheader={cc.length > 0 ? <>Cc {cc}</> : null}
         />
+
         <CardContent>
           <Editor
             onChange={({ value }: { value: Value }) => {
@@ -84,6 +87,12 @@ export default function ReplyForm({
           <Button type="submit" disabled={replyResult.loading}>
             Send Reply
           </Button>
+          <input accept="image/*" id="icon-button-file" multiple type="file" />
+          <label htmlFor="icon-button-file">
+            <IconButton component="span">
+              <AttachFileIcon />
+            </IconButton>
+          </label>
         </CardActions>
       </Card>
     </form>
