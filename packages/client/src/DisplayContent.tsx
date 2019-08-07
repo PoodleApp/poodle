@@ -115,13 +115,13 @@ function displayAttachment(
   uri: string,
   props: object
 ) {
-  const name = filename ? filename : `Attachment.${subtype}`
+  const name = filename || `Attachment.${subtype}`
   return (
     <a href={uri}>
-      <span {...props}>
+      <div {...props}>
         <PhotoIcon />
         {name}
-      </span>
+      </div>
     </a>
   )
 }

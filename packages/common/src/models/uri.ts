@@ -39,20 +39,18 @@ export function parseMidUri(
 }
 
 export function bodyUri(cacheId: string, partId: string): URI {
-  const cId = idFromHeaderValue(cacheId)
-  const pId = idFromHeaderValue(partId)
-  return `body:${encodeURIComponent(cId)}/${encodeURIComponent(pId)}`
+  return `body:${encodeURIComponent(cacheId)}/${encodeURIComponent(partId)}`
 }
 
-const bodyExp = /(body:)([^/]+)(?:\/(.+))?$/
+const bodyExp = /body:([^/]+)\/(.+)$/
 
 export function parseBodyUri(
   uri: URI
 ): { messageId: string; partId: string } | undefined {
   const matches = uri.match(bodyExp)
   if (matches) {
-    const messageId = decodeURIComponent(matches[2])
-    const partId = decodeURIComponent(matches[3])
+    const messageId = decodeURIComponent(matches[1])
+    const partId = decodeURIComponent(matches[2])
     return { messageId, partId }
   }
 }

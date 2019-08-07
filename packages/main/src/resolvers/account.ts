@@ -34,7 +34,7 @@ export const Account: AccountResolvers = {
     const params = { accountId: account.id, boxId: box.id, query }
     const search = cache.getSearch(params) || cache.initSearch(params)
     if (!cache.isSearchFresh(search)) {
-      await schedule(actions.search(search))
+      schedule(actions.search(search))
     }
     return search
   }

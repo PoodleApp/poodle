@@ -13,6 +13,14 @@ import * as kefirUtil from "./util/kefir"
 
 type R<T> = kefir.Observable<T, Error>
 
+interface BatchParams {
+  uids: Collection.Indexed<number>
+  batchSize?: number
+  filter?: (event: request.FetchResponse) => boolean
+  afterEachBatch?: (batch: Iterable<number>) => void
+  fetchOptions?: imap.FetchOptions
+}
+
 const cachePolicy = {
   boxes: [{ attribute: "\\All" }],
   since:
@@ -95,8 +103,10 @@ class BoxSync {
         .toPromise()
     )
       // Returned uids appear to be in ascending order, which should mean that
-      // the most recent search results are at the end of the list.
-      .slice(0 - MAX_SEARCH_RESULTS)
+      // the most recent search results are at the end of the list. We want to
+      // download most recent messages first.
+      .reverse()
+      .take(MAX_SEARCH_RESULTS)
       .map(uid => parseInt(uid, 10))
 
     // Add messages that have already been downloaded to result set
@@ -114,7 +124,8 @@ class BoxSync {
           uids: batch,
           updatedAt: this.updatedAt
         })
-      }
+      },
+      batchSize: 1
     })
     cache.removeStaleSearchResults(searchRecord, this.updatedAt)
 
@@ -210,11 +221,8 @@ class BoxSync {
 
   private async downloadMissingMessages({
     uids,
-    afterEachBatch
-  }: {
-    uids: Collection.Indexed<number>
-    afterEachBatch?: (batch: Iterable<number>) => void
-  }) {
+    ...rest
+  }: Omit<BatchParams, "fetchOptions">) {
     const filteredUids = uids.filter(
       uid =>
         !cache.isUidPresent({
@@ -225,28 +233,24 @@ class BoxSync {
     )
     return this.downloadMessagesInBatches({
       uids: filteredUids,
-      afterEachBatch,
       fetchOptions: {
         bodies: "HEADER",
         envelope: true,
         struct: true
-      }
+      },
+      ...rest
     })
   }
 
   private async downloadMessagesInBatches({
     uids,
+    batchSize = BATCH_SIZE,
     filter = () => true,
     afterEachBatch,
     fetchOptions
-  }: {
-    uids: Collection.Indexed<number>
-    filter?: (event: request.FetchResponse) => boolean
-    afterEachBatch?: (batch: Iterable<number>) => void
-    fetchOptions?: imap.FetchOptions
-  }): Promise<void> {
-    const batch = uids.take(BATCH_SIZE)
-    const rest = uids.skip(BATCH_SIZE)
+  }: BatchParams): Promise<void> {
+    const batch = uids.take(batchSize)
+    const rest = uids.skip(batchSize)
     if (batch.isEmpty()) {
       return
     }
@@ -259,13 +263,14 @@ class BoxSync {
     )
 
     await this.captureResponses(fetchResponses.filter(filter))
+    await this.fetchMissingBodiesAndPartHeaders()
     if (afterEachBatch) {
       afterEachBatch(batchSnapshot)
     }
-    await this.fetchMissingBodiesAndPartHeaders()
 
     await this.downloadMessagesInBatches({
       uids: rest,
+      batchSize,
       filter,
       afterEachBatch,
       fetchOptions

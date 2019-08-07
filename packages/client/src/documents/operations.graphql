@@ -49,6 +49,7 @@ query searchConversations($accountId: ID!, $query: String!) {
       conversations {
         ...ConversationFieldsForListView
       }
+      loading
       query
     }
   }
