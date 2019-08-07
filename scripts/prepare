@@ -22,6 +22,7 @@ link_type () {
   fi
 }
 
+mkdir -p node_modules/@types
 for t in types/*; do
   link_type "$t"
 done

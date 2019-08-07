@@ -8,12 +8,7 @@
       "packages/main"
     ],
     "nohoist": [
-      "**/react-native",
-      "**/react-native/**",
-      "**/electron",
-      "**/electron/**",
-      "**/jest",
-      "**/jest/**"
+      "**/*"
     ]
   },
   "scripts": {
