@@ -11,7 +11,12 @@ export interface Handler<EnqueueParams, Result, ProcessParams = unknown> {
   enqueue(actionPayload: EnqueueParams): ProcessParams
   process(task: ProcessParams): Promise<Result>
   failure?: (error: Error, task: ProcessParams) => void
+  merge?: (
+    oldTask: ProcessParams,
+    newTask: ProcessParams
+  ) => Promise<ProcessParams>
   priority?: number
+  unique?: boolean
 }
 
 type Handlers = Record<string, Handler<any, any, any>>
@@ -38,7 +43,7 @@ type ActionTypes<HM extends Handlers> = ActionTypeMap<HM>[keyof HM]
 
 type TaskTypeMap<HM extends Handlers> = {
   [K in keyof HM]: HM[K] extends Handler<any, any, infer ProcessParams>
-    ? { type: K; params: ProcessParams }
+    ? { type: K; params: ProcessParams; id?: string }
     : never
 }
 
@@ -55,12 +60,9 @@ export const DEFAULT_PRIORITY = 50
 export const HIGH_PRIORITY = 80
 export const LOW_PRIORITY = 20
 
-export function handler<EnqueueParams, Result, ProcessParams>(h: {
-  enqueue: (params: EnqueueParams) => ProcessParams
-  process: (params: ProcessParams) => Promise<Result>
-  failure?: (error: Error, params: ProcessParams) => void
-  priority?: number // higher numbers run first
-}): Handler<EnqueueParams, Result, ProcessParams> {
+export function handler<EnqueueParams, Result, ProcessParams>(
+  h: Handler<EnqueueParams, Result, ProcessParams>
+): Handler<EnqueueParams, Result, ProcessParams> {
   return h
 }
 
@@ -73,10 +75,45 @@ export function combineHandlers<HM extends Handlers>(
 ): {
   actions: ActionCreators<HM>
   queue: BetterQueue<Task<HM>>
-  schedule: <T>(action: Action<T> & ActionTypes<HM>) => Promise<T>
+  schedule: <T>(action: Action<T> & ActionTypes<HM>) => Promise<T | undefined>
 } {
   const queue = new BetterQueue(process(handlers), {
     ...queueOptions,
+    async filter(task, cb) {
+      try {
+        const unique = task.type && handlers[task.type].unique
+        const store = queueOptions.store
+        if (
+          unique &&
+          task.id &&
+          typeof store === "object" &&
+          "getTask" in store
+        ) {
+          const existing = await promises.lift1(cb => {
+            store.getTask(task.id, cb)
+          })
+          if (existing) {
+            return cb(null, null as any)
+          }
+        }
+        return cb(null, task)
+      } catch (error) {
+        return cb(error, null as any)
+      }
+    },
+    async merge(oldTask, newTask, cb) {
+      try {
+        const mergFunc = oldTask.type && handlers[oldTask.type].merge
+        if (mergFunc && oldTask.params && newTask.params) {
+          const mergedParams = await mergFunc(oldTask.params, newTask.params)
+          cb(null, { ...oldTask, params: mergedParams })
+        } else {
+          cb(null, newTask)
+        }
+      } catch (error) {
+        cb(error, null as any)
+      }
+    },
     priority(task, cb) {
       const priority = handlers[task.type].priority || DEFAULT_PRIORITY
       cb(null, priority)
@@ -93,7 +130,7 @@ export function combineHandlers<HM extends Handlers>(
 function schedule<HM extends Handlers>(
   handlers: HM,
   queue: BetterQueue<{ type: keyof HM; params: unknown }>
-): <T>(action: Action<T> & ActionTypes<HM>) => Promise<T> {
+): <T>(action: Action<T> & ActionTypes<HM>) => Promise<T | undefined> {
   return async action => {
     const type = action.type
     const handler = handlers[type].enqueue
@@ -101,7 +138,20 @@ function schedule<HM extends Handlers>(
       throw new Error(`No handler for action type, ${type}`)
     }
     const processParams = handler(action.payload)
-    return promises.lift1(cb => queue.push({ type, params: processParams }, cb))
+    const id = processParams.id && { id: processParams.id }
+    return new Promise((resolve, reject) => {
+      queue.push({ type, params: processParams, ...id }, (error, result) => {
+        // If filter rejects the task the error here will be the string,
+        // "input_rejected".
+        if (error === "input_rejected") {
+          return resolve()
+        }
+        if (error) {
+          return reject(error)
+        }
+        return resolve(result)
+      })
+    })
   }
 }
 

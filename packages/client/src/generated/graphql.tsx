@@ -249,6 +249,7 @@ export type Search = {
   __typename?: "Search"
   id: Scalars["ID"]
   conversations: Array<Conversation>
+  loading: Scalars["Boolean"]
   query: Scalars["String"]
 }
 export type GetAllAccountsQueryVariables = {}
@@ -323,7 +324,10 @@ export type SearchConversationsQueryVariables = {
 export type SearchConversationsQuery = { __typename?: "Query" } & {
   account: Maybe<
     { __typename?: "Account" } & Pick<Account, "id"> & {
-        search: { __typename?: "Search" } & Pick<Search, "id" | "query"> & {
+        search: { __typename?: "Search" } & Pick<
+          Search,
+          "id" | "loading" | "query"
+        > & {
             conversations: Array<
               {
                 __typename?: "Conversation"
@@ -2247,6 +2251,12 @@ export const SearchConversationsDocument: DocumentNode = {
                             }
                           ]
                         }
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "loading" },
+                        arguments: [],
+                        directives: []
                       },
                       {
                         kind: "Field",

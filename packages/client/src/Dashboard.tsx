@@ -7,16 +7,17 @@ import {
   Drawer,
   IconButton,
   InputBase,
+  LinearProgress,
   List,
   ListItem,
   ListItemAvatar,
   ListItemText,
+  makeStyles,
   Paper,
   Toolbar,
   Typography
 } from "@material-ui/core"
 import { red } from "@material-ui/core/colors"
-import { makeStyles } from "@material-ui/core/styles"
 import ArchiveIcon from "@material-ui/icons/Archive"
 import CheckIcon from "@material-ui/icons/Check"
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft"
@@ -142,6 +143,13 @@ export default function Dashboard({ accountId, navigate }: Props) {
 
   const [selected, dispatch] = Sel.useSelectedConversations(conversations)
 
+  const searchLoading =
+    searchResult.loading ||
+    (searchResult.data &&
+      searchResult.data.account &&
+      searchResult.data.account.search.loading)
+  const stillLoading = skipSearch ? getAccountResult.loading : searchLoading
+
   //if not all selected star, we want to star instead of unstar
   const isStarred =
     !!conversations &&
@@ -207,11 +215,12 @@ export default function Dashboard({ accountId, navigate }: Props) {
             dispatch={dispatch}
             navigate={navigate}
           />
-        ) : conversations ? (
-          "No conversations to display"
-        ) : (
+        ) : stillLoading ? (
           "Loading..."
+        ) : (
+          "No conversations to display"
         )}
+        {stillLoading ? <LinearProgress /> : null}
       </main>
       <ComposeButton accountId={accountId} />
       <DisplayErrors results={[getAccountResult, searchResult]} />
