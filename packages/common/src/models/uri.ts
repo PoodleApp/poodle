@@ -38,6 +38,23 @@ export function parseMidUri(
   }
 }
 
+export function bodyUri(cacheId: string, partId: string): URI {
+  return `body:${encodeURIComponent(cacheId)}/${encodeURIComponent(partId)}`
+}
+
+const bodyExp = /body:([^/]+)\/(.+)$/
+
+export function parseBodyUri(
+  uri: URI
+): { messageId: string; partId: string } | undefined {
+  const matches = uri.match(bodyExp)
+  if (matches) {
+    const messageId = decodeURIComponent(matches[1])
+    const partId = decodeURIComponent(matches[2])
+    return { messageId, partId }
+  }
+}
+
 export function sameUri(x: URI | undefined, y: URI | undefined): boolean {
   // TODO: normalization
   return !!x && !!y && x === y

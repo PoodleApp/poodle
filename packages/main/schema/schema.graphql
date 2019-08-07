@@ -116,6 +116,10 @@ type Content {
   type: String!
   subtype: String!
   content: String
+  """
+  uri is used internally to retrieve the content for the part
+  """
+  uri: String!
 }
 
 input ContentInput {
