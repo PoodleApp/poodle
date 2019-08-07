@@ -30,7 +30,6 @@
     "@types/node-fetch": "^2.1.7",
     "@types/node-uuid": "^0.0.28",
     "@types/nodemailer": "^4.6.7",
-    "@types/tmp": "^0.1.0",
     "@types/xdg-basedir": "^2.0.0",
     "base64-stream": "^1.0.0",
     "better-queue": "^3.8.10",

@@ -50,7 +50,7 @@ export function parseBodyUri(
   uri: URI
 ): { messageId: string; partId: string } | undefined {
   const matches = uri.match(bodyExp)
-  if (matches) {
+  if (matches && matches.length === 4) {
     const messageId = decodeURIComponent(matches[2])
     const partId = decodeURIComponent(matches[3])
     return { messageId, partId }
