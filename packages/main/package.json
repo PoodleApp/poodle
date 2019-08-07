@@ -28,10 +28,6 @@
         {
           "name": "@electron-forge/maker-deb",
           "config": {}
-        },
-        {
-          "name": "@electron-forge/maker-rpm",
-          "config": {}
         }
       ]
     }
@@ -40,12 +36,16 @@
     "build": "tsc -b",
     "codegen": "graphql-codegen --config codegen.yml",
     "codegen:watch": "watch 'yarn codegen' schema",
-    "lint": "eslint . --ext .ts,.tsx",
+    "lint": "eslint src/ --ext .ts,.tsx",
+    "premake": "yarn run build",
+    "make": "electron-forge make",
     "prepare": "cd ../.. && yarn prepare",
     "prepackage": "yarn run build",
     "package": "electron-forge package",
+    "publish": "electron-forge publish",
     "prestart": "yarn run build",
     "start": "electron-forge start",
+    "pretest": "electron-rebuild",
     "test": "jest --runInBand"
   },
   "dependencies": {
@@ -68,7 +68,7 @@
     "html-to-text": "^5.1.1",
     "iconv": "^2.3.4",
     "imap": "signpost/node-imap#master",
-    "immutable": "^3.8.2",
+    "immutable": "^4.0.0-rc.12",
     "kefir": "^3.8.6",
     "keytar": "^5.0.0-beta.0",
     "libqp": "^1.1.0",
@@ -109,11 +109,17 @@
     "@types/node-uuid": "^0.0.28",
     "@types/nodemailer": "^4.6.7",
     "@types/xdg-basedir": "^2.0.0",
+    "@typescript-eslint/eslint-plugin": "^1.13.0",
+    "@typescript-eslint/parser": "^1.13.0",
+    "babel-eslint": "^10.0.2",
     "buffer-to-stream": "^1.0.0",
     "cross-env": "^5.2.0",
     "electron": "6",
     "electron-devtools-installer": "^2.2.4",
     "eol": "^0.9.1",
+    "eslint": "^5.16.0",
+    "eslint-config-react-app": "^4.0.1",
+    "eslint-plugin-import": "^2.18.2",
     "fast-deep-equal": "^2.0.1",
     "jest": "24.7.1",
     "ts-jest": "^24.0.2",
