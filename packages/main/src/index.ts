@@ -13,6 +13,15 @@ import schema from "./schema"
 // service
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
+// TODO: Is there a better way to either load frontend assets from the asar, or
+// to reference unpacked assets?
+const appUrl = isDev
+  ? "http://localhost:3000"
+  : `file://${__dirname.replace(
+      "app.asar/lib",
+      "app.asar.unpacked"
+    )}/build/index.html`
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow: BrowserWindow | null
@@ -28,7 +37,7 @@ function createWindow() {
   })
 
   // and load the index.html of the app.
-  mainWindow.loadURL("http://localhost:3000/")
+  mainWindow.loadURL(appUrl)
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
