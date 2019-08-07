@@ -76,6 +76,8 @@ export type Content = {
   type: Scalars["String"]
   subtype: Scalars["String"]
   content?: Maybe<Scalars["String"]>
+  /** uri is used internally to retrieve the content for the part */
+  uri: Scalars["String"]
 }
 
 export type ContentInput = {
@@ -531,6 +533,7 @@ export type ConversationFieldsForConversationViewFragment = {
               | "disposition"
               | "filename"
               | "name"
+              | "uri"
             > & {
                 revision: { __typename?: "PartSpec" } & Pick<
                   PartSpec,
@@ -896,6 +899,12 @@ export const ConversationFieldsForConversationViewFragmentDoc: DocumentNode = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "uri" },
                         arguments: [],
                         directives: []
                       }
@@ -1929,6 +1938,12 @@ export const GetConversationDocument: DocumentNode = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "uri" },
                         arguments: [],
                         directives: []
                       }
@@ -3632,6 +3647,12 @@ export const SendMessageDocument: DocumentNode = {
                         name: { kind: "Name", value: "name" },
                         arguments: [],
                         directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "uri" },
+                        arguments: [],
+                        directives: []
                       }
                     ]
                   }
@@ -4189,6 +4210,12 @@ export const EditDocument: DocumentNode = {
                         name: { kind: "Name", value: "name" },
                         arguments: [],
                         directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "uri" },
+                        arguments: [],
+                        directives: []
                       }
                     ]
                   }
@@ -4696,6 +4723,12 @@ export const ReplyDocument: DocumentNode = {
                       {
                         kind: "Field",
                         name: { kind: "Name", value: "name" },
+                        arguments: [],
+                        directives: []
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "uri" },
                         arguments: [],
                         directives: []
                       }

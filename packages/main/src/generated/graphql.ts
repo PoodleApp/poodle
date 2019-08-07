@@ -84,6 +84,8 @@ export type Content = {
   type: Scalars["String"]
   subtype: Scalars["String"]
   content?: Maybe<Scalars["String"]>
+  /** uri is used internally to retrieve the content for the part */
+  uri: Scalars["String"]
 }
 
 export type ContentInput = {
@@ -461,6 +463,7 @@ export type ContentResolvers<
   type?: Resolver<ResolversTypes["String"], ParentType, ContextType>
   subtype?: Resolver<ResolversTypes["String"], ParentType, ContextType>
   content?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
+  uri?: Resolver<ResolversTypes["String"], ParentType, ContextType>
 }
 
 export type ConversationResolvers<

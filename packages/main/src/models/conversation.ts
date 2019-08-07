@@ -1,6 +1,10 @@
 import { convert } from "encoding"
 import { Collection, is, List, Seq } from "immutable"
-import { idFromHeaderValue, parseMidUri } from "poodle-common/lib/models/uri"
+import {
+  idFromHeaderValue,
+  parseMidUri,
+  bodyUri
+} from "poodle-common/lib/models/uri"
 import * as cache from "../cache"
 import {
   Content,
@@ -284,7 +288,11 @@ function getPresentableContent({
     filename: part.disposition_filename,
     name: part.disposition_name,
     resource: partSpec(resource),
-    revision: partSpec(revision)
+    revision: partSpec(revision),
+    uri: bodyUri(
+      String(revision.part.message_id),
+      String(revision.part.part_id)
+    )
   }
 }
 

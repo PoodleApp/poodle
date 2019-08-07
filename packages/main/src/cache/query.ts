@@ -164,27 +164,8 @@ export function getLabels(messageId: ID): string[] {
     .map(({ label }) => label)
 }
 
-interface CachedMessagePart {
-  id: ID
-  message_id: ID
-  lft: number
-  rgt: number
-  content_id?: string
-  description?: string
-  disposition_filename?: string
-  disposition_name?: string
-  disposition_type?: string
-  encoding?: string
-  md5?: string
-  params_charset: string
-  part_id?: string
-  size: number
-  subtype: string
-  type: string
-}
-
 export function getStruct(messageId: ID): imap.ImapMessageStruct {
-  const parts: CachedMessagePart[] = db
+  const parts: MessagePart[] = db
     .prepare(
       `
       select * from message_structs
@@ -195,8 +176,8 @@ export function getStruct(messageId: ID): imap.ImapMessageStruct {
     .all(messageId)
 
   function go(
-    parts: CachedMessagePart[]
-  ): { tree: imap.ImapMessageStruct; rest: CachedMessagePart[] } {
+    parts: MessagePart[]
+  ): { tree: imap.ImapMessageStruct; rest: MessagePart[] } {
     const root = parts[0]
     const subtrees: imap.ImapMessageStruct[] = []
     let [nested, notNested] = partition(
@@ -395,7 +376,7 @@ function ftsEscape(query: string): string {
   return `"${query}"`
 }
 
-function toImapMessagePart(part: CachedMessagePart): imap.ImapMessagePart {
+export function toImapMessagePart(part: MessagePart): imap.ImapMessagePart {
   const dispositionParams: Record<string, string> = {}
   if (part.disposition_filename) {
     dispositionParams.filename = part.disposition_filename

@@ -1,10 +1,13 @@
 // Modules to control application life and create native browser window
-import { app, BrowserWindow, ipcMain } from "electron"
+import { app, BrowserWindow, ipcMain, protocol } from "electron"
 import contextMenu from "electron-context-menu"
 import isDev from "electron-is-dev"
 import { createIpcExecutor, createSchemaLink } from "graphql-transport-electron"
+import { parseBodyUri } from "poodle-common/lib/models/uri"
+import { PassThrough } from "stream"
+import * as cache from "./cache"
+import { contentType, filename } from "./models/MessagePart"
 import schema from "./schema"
-
 // Provide a right-click menu in the UI.
 contextMenu()
 
@@ -37,6 +40,60 @@ function createWindow() {
   })
 }
 
+function handleContentDownloads() {
+  let errorCode: number
+  protocol.registerStreamProtocol("body", async (request, callback) => {
+    try {
+      const parsed = parseBodyUri(request.url)
+      if (!parsed) {
+        errorCode = 400
+        throw new Error(
+          `Unable to parse messageId and partId from URI: ${request.url}`
+        )
+      }
+      const { messageId, partId } = parsed
+      const buffer = cache.getBody(messageId, { part_id: partId })
+      const stream = createStream(buffer)
+      const part = cache.getPartByPartId({ messageId, partId })
+      const imapPart = part && cache.toImapMessagePart(part)
+      if (!imapPart) {
+        errorCode = 404
+        throw new Error(
+          `No data found for messageId: ${messageId} with partID: ${partId}`
+        )
+      }
+      const type = contentType(imapPart)
+      const file = filename(imapPart)
+      callback({
+        statusCode: 200,
+        headers: {
+          "content-type": type,
+          "content-disposition": `attachment; filename= ${file}`
+        },
+        data: stream
+      })
+      stream.resume()
+    } catch (err) {
+      console.error("error serving part content:", err)
+      callback({
+        statusCode: errorCode || 500,
+        headers: {
+          "content-type": "text/plain; charset=utf8"
+        },
+        data: createStream(err.message)
+      })
+    }
+  })
+}
+
+function createStream(input: string | Buffer | null): PassThrough {
+  const stream = new PassThrough()
+  stream.pause()
+  stream.push(input)
+  stream.push(null)
+  return stream
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -53,6 +110,7 @@ app.on("ready", async () => {
     await installExtension(IMMUTABLE_JS_OBJECT_FORMATTER)
   }
   createWindow()
+  handleContentDownloads()
 })
 
 // Quit when all windows are closed.

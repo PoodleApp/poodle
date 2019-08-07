@@ -19,7 +19,11 @@ const useStyles = makeStyles(_theme => ({
     whiteSpace: "pre-wrap"
   },
 
-  attachment: {}
+  attachment: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center"
+  }
 }))
 
 type Props = graphql.Content & { accountId: string; className?: string }
@@ -32,6 +36,7 @@ export default function DisplayContent({
   disposition,
   filename,
   name,
+  uri,
   className
 }: Props) {
   const classes = useStyles()
@@ -47,7 +52,7 @@ export default function DisplayContent({
           }
         }
         if (disposition === "attachment") {
-          return displayAttachment(filename, subtype, {
+          return displayAttachment(filename, subtype, uri, {
             ...props,
             className: clsx(className, "attachment-content", classes.attachment)
           })
@@ -107,18 +112,17 @@ function displayMarkdown(text: string, props: object) {
 function displayAttachment(
   filename: string | null | undefined,
   subtype: string,
+  uri: string,
   props: object
 ) {
-  const name = filename ? (
-    <div {...props}>{filename}</div>
-  ) : (
-    <div {...props}>[Attachment.{subtype}]</div>
-  )
+  const name = filename || `Attachment.${subtype}`
   return (
-    <div>
-      <PhotoIcon />
-      {name}
-    </div>
+    <a href={uri}>
+      <div {...props}>
+        <PhotoIcon />
+        {name}
+      </div>
+    </a>
   )
 }
 
