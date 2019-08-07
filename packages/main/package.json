@@ -68,7 +68,7 @@
     "html-to-text": "^5.1.1",
     "iconv": "^2.3.4",
     "imap": "signpost/node-imap#master",
-    "immutable": "^4.0.0-rc.12",
+    "immutable": "^3.8.2",
     "kefir": "^3.8.6",
     "keytar": "^5.0.0-beta.0",
     "libqp": "^1.1.0",
