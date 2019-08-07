@@ -3,11 +3,11 @@ import { app, BrowserWindow, ipcMain, protocol } from "electron"
 import contextMenu from "electron-context-menu"
 import isDev from "electron-is-dev"
 import { createIpcExecutor, createSchemaLink } from "graphql-transport-electron"
-import schema from "./schema"
-import * as cache from "./cache"
 import { parseBodyUri } from "poodle-common/lib/models/uri"
-import { contentType, filename } from "./models/MessagePart"
 import { PassThrough } from "stream"
+import * as cache from "./cache"
+import { contentType, filename } from "./models/MessagePart"
+import schema from "./schema"
 // Provide a right-click menu in the UI.
 contextMenu()
 
@@ -41,22 +41,29 @@ function createWindow() {
 }
 
 function handleContentDownloads() {
+  let errorCode: number
   protocol.registerStreamProtocol("body", async (request, callback) => {
     try {
       const parsed = parseBodyUri(request.url)
       if (!parsed) {
+        errorCode = 400
         throw new Error(
           `Unable to parse messageId and partId from URI: ${request.url}`
         )
       }
-      const messageId = parsed.messageId
-      const partId = parsed.partId
+      const { messageId, partId } = parsed
       const buffer = cache.getBody(messageId, { part_id: partId })
       const stream = createStream(buffer)
       const part = cache.getPartByPartId({ messageId, partId })
       const imapPart = part && cache.toImapMessagePart(part)
-      const type = imapPart && contentType(imapPart)
-      const file = imapPart && filename(imapPart)
+      if (!imapPart) {
+        errorCode = 404
+        throw new Error(
+          `No data found for messageId: ${messageId} with partID: ${partId}`
+        )
+      }
+      const type = contentType(imapPart)
+      const file = filename(imapPart)
       callback({
         statusCode: 200,
         headers: {
@@ -69,7 +76,7 @@ function handleContentDownloads() {
     } catch (err) {
       console.error("error serving part content:", err)
       callback({
-        statusCode: 500,
+        statusCode: errorCode || 500,
         headers: {
           "content-type": "text/plain; charset=utf8"
         },

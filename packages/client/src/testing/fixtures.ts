@@ -51,7 +51,7 @@ export const conversation: graphql.Conversation = {
           disposition: graphql.Disposition.Inline,
           filename: null,
           name: null,
-          uri: ""
+          uri: "body:11/1"
         }
       ],
       date: "2019-06-17T17:20:20.806Z",
@@ -90,7 +90,7 @@ export const conversation: graphql.Conversation = {
           disposition: graphql.Disposition.Inline,
           filename: null,
           name: null,
-          uri: ""
+          uri: "body:12/2"
         }
       ],
       date: "2019-07-17T17:20:20.806Z",
@@ -127,7 +127,7 @@ export const conversation: graphql.Conversation = {
           disposition: graphql.Disposition.Attachment,
           filename: "cat.jpg",
           name: null,
-          uri: ""
+          uri: "body:13/3"
         }
       ],
       date: "2019-07-26T15:57:24.301Z",
@@ -198,7 +198,7 @@ export const conversation2: graphql.Conversation = {
           disposition: graphql.Disposition.Inline,
           filename: null,
           name: null,
-          uri: ""
+          uri: "body:11/4"
         }
       ],
       date: "2019-07-19T12:03:11.114Z",
@@ -235,7 +235,7 @@ export const conversation2: graphql.Conversation = {
           disposition: graphql.Disposition.Inline,
           filename: null,
           name: null,
-          uri: ""
+          uri: "body:12/5"
         }
       ],
       date: "2019-07-19T12:21:00.002Z",
