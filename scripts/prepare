@@ -28,7 +28,7 @@ done
 
 ## Set necessary permissions for the Electron sandbox helper binary
 
-sandbox_helper_bin=node_modules/electron/dist/chrome-sandbox
+sandbox_helper_bin=packages/main/node_modules/electron/dist/chrome-sandbox
 
 check_sandbox_helper_permissions () {
   user=$(stat -c '%U' $sandbox_helper_bin)

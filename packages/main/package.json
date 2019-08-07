@@ -41,7 +41,7 @@
     "codegen": "graphql-codegen --config codegen.yml",
     "codegen:watch": "watch 'yarn codegen' schema",
     "lint": "eslint . --ext .ts,.tsx",
-    "prepare": "cd ../.. && scripts/postinstall",
+    "prepare": "cd ../.. && yarn prepare",
     "prepackage": "yarn run build",
     "package": "electron-forge package",
     "prestart": "yarn run build",
