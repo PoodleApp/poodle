@@ -56,13 +56,12 @@
  *              `enqueue` stage.)
  */
 
+import electronIsDev from "electron-is-dev"
 import * as fs from "fs"
 import { Transporter } from "nodemailer"
-import * as path from "path"
-import xdgBasedir from "xdg-basedir"
 import * as cache from "../cache"
 import { ComposedMessage, serialize } from "../compose"
-import db from "../db"
+import db, { getDbPath } from "../db"
 import AccountManager from "../managers/AccountManager"
 import ConnectionManager from "../managers/ConnectionManager"
 import * as M from "../models/Message"
@@ -338,15 +337,16 @@ const handlers = {
 }
 
 const isTest = process.env.NODE_ENV
+const dbPath = getDbPath("queue.sqlite", electronIsDev)
 
 const store = isTest
   ? new SqliteStore<Task<typeof handlers>>({ memory: true })
   : new SqliteStore<Task<typeof handlers>>({
-      path: getDbPath()
+      path: dbPath
     })
 
 if (process.env.NODE_ENV !== "test") {
-  fs.chmodSync(getDbPath(), 0o600)
+  fs.chmodSync(dbPath, 0o600)
 }
 
 const queueOptions = {
@@ -391,14 +391,4 @@ async function withSmtpTransporter<T>(
 
 export function getQueuedTasks(): Array<Task<typeof handlers>> {
   return store.getAll()
-}
-
-function getDbPath() {
-  const cacheDir = xdgBasedir.cache
-  if (!cacheDir) {
-    throw new Error(
-      "Could not locate XDG cache location! Are you running without a home directory?"
-    )
-  }
-  return path.join(cacheDir, "poodle", "queue.sqlite")
 }
