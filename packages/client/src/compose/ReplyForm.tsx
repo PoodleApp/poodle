@@ -15,6 +15,20 @@ import Editor from "../editor/Editor"
 import serializer from "../editor/serializer"
 import * as graphql from "../generated/graphql"
 import ParticipantChip from "../ParticipantChip"
+import { makeStyles } from "@material-ui/styles"
+import Tooltip from "../Tooltip"
+
+const useStyles = makeStyles(_theme => ({
+  input: {
+    display: "none"
+  },
+  attachButton: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
+  }
+}))
 
 const initialValue = serializer.deserialize("")
 
@@ -30,6 +44,7 @@ export default function ReplyForm({
   replyRecipients,
   ...rest
 }: Props) {
+  const classes = useStyles()
   const [reply, replyResult] = graphql.useReplyMutation()
   const [value, setValue] = React.useState(initialValue)
 
@@ -83,15 +98,23 @@ export default function ReplyForm({
             placeholder="Write your reply here."
           />
         </CardContent>
-        <CardActions>
+        <CardActions className={classes.attachButton}>
           <Button type="submit" disabled={replyResult.loading}>
             Send Reply
           </Button>
-          <input accept="image/*" id="icon-button-file" multiple type="file" />
-          <label htmlFor="icon-button-file">
-            <IconButton component="span">
-              <AttachFileIcon />
-            </IconButton>
+          <input
+            accept="image/*"
+            className={classes.input}
+            id="add-attachment-button"
+            multiple
+            type="file"
+          />
+          <label htmlFor="add-attachment-button">
+            <Tooltip title={"Add Attachment"}>
+              <IconButton component="span">
+                <AttachFileIcon />
+              </IconButton>
+            </Tooltip>
           </label>
         </CardActions>
       </Card>
