@@ -5,7 +5,7 @@ const path = require("path")
 module.exports = {
   packagerConfig: {
     afterCopy: [installFrontendAssets, installPoodleCommon],
-    asar: { unpackDir: "build" }
+    asar: true
   },
   plugins: [["@electron-forge/plugin-auto-unpack-natives"]],
   makers: [
@@ -39,7 +39,7 @@ async function installFrontendAssets(
   await exec("yarn build", { cwd: path.join("..", "client") })
   await fs.copy(
     path.join("..", "client", "build"),
-    path.join(buildPath, "build")
+    path.join(buildPath, "public")
   )
   callback()
 }

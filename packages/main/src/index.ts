@@ -8,6 +8,7 @@ import { PassThrough } from "stream"
 import * as cache from "./cache"
 import { contentType, filename } from "./models/MessagePart"
 import schema from "./schema"
+import * as path from "path"
 
 // TODO: We're having an issue checking the TLS certificate for Google's IMAP
 // service
@@ -17,10 +18,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 // to reference unpacked assets?
 const appUrl = isDev
   ? "http://localhost:3000"
-  : `file://${__dirname.replace(
-      "app.asar/lib",
-      "app.asar.unpacked"
-    )}/build/index.html`
+  : "file://" + path.join(__dirname, "..", "public", "index.html")
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
