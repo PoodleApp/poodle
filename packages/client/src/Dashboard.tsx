@@ -32,6 +32,7 @@ import clsx from "clsx"
 import moment from "moment"
 import * as React from "react"
 import stringHash from "string-hash"
+import { BooleanParam, StringParam, useQueryParam } from "use-query-params"
 import AccountSwitcher from "./AccountSwitcher"
 import Avatar from "./Avatar"
 import ComposeButton from "./ComposeButton"
@@ -123,8 +124,16 @@ const useStyles = makeStyles(theme => ({
 export default function Dashboard({ accountId, navigate }: Props) {
   const classes = useStyles()
   const [open, setOpen] = React.useState(false)
-  const [isSearching, setIsSearching] = React.useState(false)
-  const [searchQuery, setSearchQuery] = React.useState("")
+
+  const [searchQuery = "", setSearchQuery] = useQueryParam(
+    "searchQuery",
+    StringParam
+  )
+  const [isSearching = false, setIsSearching] = useQueryParam(
+    "isSearching",
+    BooleanParam
+  )
+
   const getAccountResult = graphql.useGetAccountQuery({
     variables: { accountId: accountId! }
   })
@@ -175,9 +184,12 @@ export default function Dashboard({ accountId, navigate }: Props) {
         />
       ) : isSearching ? (
         <SearchBar
-          onChange={setSearchQuery}
+          onChange={(q: string) => {
+            setSearchQuery(q, "replace")
+            setIsSearching(true, "replace")
+          }}
           onClose={() => {
-            setIsSearching(false)
+            setIsSearching(false, "replace")
           }}
           query={searchQuery}
         />
@@ -185,7 +197,7 @@ export default function Dashboard({ accountId, navigate }: Props) {
         <MainBar
           accountId={accountId}
           onSearch={() => {
-            setIsSearching(true)
+            setIsSearching(true, "replace")
           }}
           open={open}
           setOpen={setOpen}
@@ -483,8 +495,10 @@ function ConversationRow({
   } = conversation
 
   const classes = useConversationRowStyles()
+
   const isSelected = selected.some(i => i === id)
   const rowId = "conversation-row-" + id
+
   return (
     <ListItem
       className={clsx(isRead && classes.read, classes.message)}
