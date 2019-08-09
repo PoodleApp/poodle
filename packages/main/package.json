@@ -1,5 +1,5 @@
 {
-  "name": "poodle-main",
+  "name": "poodle",
   "version": "0.0.1",
   "description": "Main Electron process for Poodle",
   "main": "lib/index.js",
