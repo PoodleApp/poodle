@@ -14,8 +14,6 @@ import * as path from "path"
 // service
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
-// TODO: Is there a better way to either load frontend assets from the asar, or
-// to reference unpacked assets?
 const appUrl = isDev
   ? "http://localhost:3000"
   : "file://" + path.join(__dirname, "..", "public", "index.html")
