@@ -3,12 +3,12 @@ import contextMenu from "electron-context-menu"
 import isDev from "electron-is-dev"
 import isFirstRun from "electron-squirrel-startup"
 import { createIpcExecutor, createSchemaLink } from "graphql-transport-electron"
+import * as path from "path"
 import { parseBodyUri } from "poodle-common/lib/models/uri"
 import { PassThrough } from "stream"
 import * as cache from "./cache"
 import { contentType, filename } from "./models/MessagePart"
 import schema from "./schema"
-import * as path from "path"
 
 // TODO: We're having an issue checking the TLS certificate for Google's IMAP
 // service
