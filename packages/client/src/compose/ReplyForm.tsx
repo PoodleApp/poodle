@@ -92,29 +92,6 @@ export default function ReplyForm({
     />
   ))
 
-  const dropbox = document.getElementById("add-attachment-button")
-  // if (!dropbox) {
-  //   throw new Error("")
-  // }
-  // dropbox.addEventListener("dragenter", dragenter, false)
-  // dropbox.addEventListener("dragover", dragover, false)
-  // dropbox.addEventListener("drop", drop, false)
-  //
-  // function dragenter(e: DragEvent) {
-  //   e.stopPropagation()
-  //   e.preventDefault()
-  // }
-  // function dragover(e: DragEvent) {
-  //   e.stopPropagation()
-  //   e.preventDefault()
-  // }
-  // function drop(e: DragEvent) {
-  //   e.stopPropagation()
-  //   e.preventDefault()
-  //   const files = Array.from(e.dataTransfer ? e.dataTransfer.files : [])
-  //   setAttachments([...attachments, ...files])
-  // }
-
   return (
     <form onSubmit={onSubmit} {...rest}>
       <DisplayErrors results={[replyResult]} />
