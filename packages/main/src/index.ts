@@ -1,15 +1,17 @@
-// Modules to control application life and create native browser window
 import { app, BrowserWindow, ipcMain, protocol } from "electron"
 import contextMenu from "electron-context-menu"
 import isDev from "electron-is-dev"
+import isFirstRun from "electron-squirrel-startup"
 import { createIpcExecutor, createSchemaLink } from "graphql-transport-electron"
 import { parseBodyUri } from "poodle-common/lib/models/uri"
 import { PassThrough } from "stream"
 import * as cache from "./cache"
 import { contentType, filename } from "./models/MessagePart"
 import schema from "./schema"
-// Provide a right-click menu in the UI.
-contextMenu()
+
+// TODO: We're having an issue checking the TLS certificate for Google's IMAP
+// service
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -93,6 +95,14 @@ function createStream(input: string | Buffer | null): PassThrough {
   stream.push(null)
   return stream
 }
+
+// Handle creating/removing shortcuts on Windows when installing/uninstalling.
+if (isFirstRun) {
+  app.quit()
+}
+
+// Provide a right-click menu in the UI.
+contextMenu()
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

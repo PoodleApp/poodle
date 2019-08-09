@@ -1,16 +1,24 @@
 const path = require("path")
+const reactAppConfig = require("eslint-config-react-app")
 
 module.exports = {
-  extends: ["eslint-config-react-app"],
+  ...reactAppConfig,
+  plugins: ["import"],
   overrides: {
-    files: ["**/*.ts", "**/*.tsx"],
+    ...reactAppConfig.overrides,
     parserOptions: {
+      ...reactAppConfig.overrides.parserOptions,
       project: path.join(__dirname, "tsconfig.json"),
       tsconfigRootDir: __dirname,
       warnOnUnsupportedTypeScriptVersion: false
-    },
-    rules: {
-      "default-case": "off"
     }
-  }
+  },
+  rules: Object.fromEntries(
+    Object.entries(reactAppConfig.rules).filter(
+      ([rule]) =>
+        !rule.startsWith("flowtype/") &&
+        !rule.startsWith("jsx") &&
+        !rule.startsWith("react")
+    )
+  )
 }

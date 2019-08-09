@@ -1,4 +1,5 @@
 lib/
+out/
 
 # Misc
 .DS_Store
