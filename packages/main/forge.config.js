@@ -26,6 +26,19 @@ module.exports = {
         homepage: "https://poodleapp.com/"
       }
     }
+  ],
+  publishers: [
+    {
+      name: "@electron-forge/publisher-github",
+      config: {
+        repository: {
+          owner: "PoodleApp",
+          name: "poodle"
+        },
+        draft: true,
+        prerelease: true
+      }
+    }
   ]
 }
 
