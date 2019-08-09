@@ -1,7 +1,7 @@
 {
-  "name": "poodle",
+  "name": "Poodle",
   "version": "0.0.1",
-  "description": "Main Electron process for Poodle",
+  "description": "Email client & collaboration suite",
   "main": "lib/index.js",
   "author": {
     "name": "Jesse Hallett",
