@@ -102,7 +102,7 @@ export default function ReplyForm({
           subheader={cc.length > 0 ? <>Cc {cc}</> : null}
         />
 
-        <CardContent id="card-content">
+        <CardContent>
           <Editor
             onChange={({ value }: { value: Value }) => {
               setValue(value)
@@ -117,7 +117,6 @@ export default function ReplyForm({
             Send Reply
           </Button>
           <input
-            accept="image/*"
             className={classes.input}
             id="add-attachment-button"
             multiple
