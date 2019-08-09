@@ -7,6 +7,7 @@ import {
   IconButton
 } from "@material-ui/core"
 import AttachFileIcon from "@material-ui/icons/AttachFile"
+import PhotoIcon from "@material-ui/icons/Photo"
 import ReplyIcon from "@material-ui/icons/Reply"
 import * as React from "react"
 import { Value } from "slate"
@@ -22,7 +23,12 @@ const useStyles = makeStyles(_theme => ({
   input: {
     display: "none"
   },
-  attachButton: {
+  attachment: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center"
+  },
+  actionRow: {
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
@@ -47,6 +53,7 @@ export default function ReplyForm({
   const classes = useStyles()
   const [reply, replyResult] = graphql.useReplyMutation()
   const [value, setValue] = React.useState(initialValue)
+  const [attachments, setAttachments] = React.useState<File[]>([])
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -64,6 +71,12 @@ export default function ReplyForm({
     setValue(initialValue)
   }
 
+  function handleAttachments(event: React.FormEvent<HTMLInputElement>) {
+    const files = Array.from(event.currentTarget.files || [])
+    const updatedFiles = [...attachments, ...files]
+    setAttachments(updatedFiles)
+  }
+
   const to = replyRecipients.to.map(address => (
     <ParticipantChip
       key={`${address.mailbox}@${address.host}`}
@@ -79,6 +92,29 @@ export default function ReplyForm({
     />
   ))
 
+  const dropbox = document.getElementById("add-attachment-button")
+  // if (!dropbox) {
+  //   throw new Error("")
+  // }
+  // dropbox.addEventListener("dragenter", dragenter, false)
+  // dropbox.addEventListener("dragover", dragover, false)
+  // dropbox.addEventListener("drop", drop, false)
+  //
+  // function dragenter(e: DragEvent) {
+  //   e.stopPropagation()
+  //   e.preventDefault()
+  // }
+  // function dragover(e: DragEvent) {
+  //   e.stopPropagation()
+  //   e.preventDefault()
+  // }
+  // function drop(e: DragEvent) {
+  //   e.stopPropagation()
+  //   e.preventDefault()
+  //   const files = Array.from(e.dataTransfer ? e.dataTransfer.files : [])
+  //   setAttachments([...attachments, ...files])
+  // }
+
   return (
     <form onSubmit={onSubmit} {...rest}>
       <DisplayErrors results={[replyResult]} />
@@ -89,7 +125,7 @@ export default function ReplyForm({
           subheader={cc.length > 0 ? <>Cc {cc}</> : null}
         />
 
-        <CardContent>
+        <CardContent id="card-content">
           <Editor
             onChange={({ value }: { value: Value }) => {
               setValue(value)
@@ -97,8 +133,9 @@ export default function ReplyForm({
             value={value}
             placeholder="Write your reply here."
           />
+          {Attachments(attachments, classes.attachment)}
         </CardContent>
-        <CardActions className={classes.attachButton}>
+        <CardActions className={classes.actionRow}>
           <Button type="submit" disabled={replyResult.loading}>
             Send Reply
           </Button>
@@ -108,6 +145,7 @@ export default function ReplyForm({
             id="add-attachment-button"
             multiple
             type="file"
+            onChange={handleAttachments}
           />
           <label htmlFor="add-attachment-button">
             <Tooltip title={"Add Attachment"}>
@@ -120,4 +158,15 @@ export default function ReplyForm({
       </Card>
     </form>
   )
+}
+
+function Attachments(attachments: File[], style: string) {
+  return attachments.map(attachment => {
+    return (
+      <div className={style}>
+        <PhotoIcon />
+        {attachment.name}
+      </div>
+    )
+  })
 }
