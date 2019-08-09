@@ -24,7 +24,14 @@ function addCspHtmlWebpackPlugin(config) {
     process.env.NODE_ENV === "production"
       ? cspConfigPolicy
       : cspConfigPolicy_dev
-  config.plugins.push(new cspHtmlWebpackPlugin(policy))
+  config.plugins.push(new cspHtmlWebpackPlugin(policy, {
+    nonceEnabled: {
+      // We need to disable nonces for styles because we want to use the
+      // `unsafe-inline` option, and if any nonces or hashes are included in
+      // a CSP policy then `unsafe-inline` is ignored.
+      'style-src': false
+    }
+  }))
   return config
 }
 
