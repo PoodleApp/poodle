@@ -3,6 +3,7 @@ import contextMenu from "electron-context-menu"
 import isDev from "electron-is-dev"
 import isFirstRun from "electron-squirrel-startup"
 import { createIpcExecutor, createSchemaLink } from "graphql-transport-electron"
+import * as path from "path"
 import { parseBodyUri } from "poodle-common/lib/models/uri"
 import { PassThrough } from "stream"
 import * as cache from "./cache"
@@ -12,6 +13,10 @@ import schema from "./schema"
 // TODO: We're having an issue checking the TLS certificate for Google's IMAP
 // service
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+
+const appUrl = isDev
+  ? "http://localhost:3000"
+  : "file://" + path.join(__dirname, "..", "public", "index.html")
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -28,7 +33,7 @@ function createWindow() {
   })
 
   // and load the index.html of the app.
-  mainWindow.loadURL("http://localhost:3000/")
+  mainWindow.loadURL(appUrl)
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
