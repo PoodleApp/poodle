@@ -1,13 +1,54 @@
-language: node_js
-node_js:
-  - "12"
 dist: xenial
+sudo: false
+
+language: node_js
+node_js: "12"
+
+env:
+  global:
+    - ELECTRON_CACHE=$HOME/.cache/electron
+    - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
+
+cache:
+  yarn: true
+  directories:
+    - $HOME/.cache/electron
+    - $HOME/.cache/electron-builder
+    - $HOME/.electron
+    - $HOME/.electron-gyp
+    - $HOME/.node-gyp
+    - $HOME/.npm/_prebuilds
+
 os:
   - linux
+  - osx
+  - windows
+
 addons:
   apt:
     packages:
       - libgnome-keyring-dev
       - libsecret-1-dev
+      - wine32
       - xvfb  
+
 script: xvfb-run yarn test
+
+before_cache:
+  - rm -rf $HOME/.cache/electron-builder/wine
+
+jobs:
+  include:
+    - stage: build
+      os:
+        - linux
+        - osx
+        - windows
+      script: "cd packages/main && yarn make"
+
+    - stage: release
+      script: skip
+      deploy:
+        provider: script
+        skip_cleanup: true
+        script: "cd packages/main && npx semantic-release"
