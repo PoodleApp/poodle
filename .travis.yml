@@ -31,18 +31,20 @@ addons:
       - libsecret-1-dev
       - xvfb  
 
-script: xvfb-run yarn test
-
-before_cache:
-  - rm -rf $HOME/.cache/electron-builder/wine
+script: if [ "$TRAVIS_OS_NAME" = "linux" ]; then xvfb-run yarn test; else yarn test; fi
 
 jobs:
   include:
     - stage: build
-      os:
-        - linux
-        - osx
-        - windows
+      os: linux
+      script: "cd packages/main && yarn make"
+
+    - stage: build
+      os: osx
+      script: "cd packages/main && yarn make"
+
+    - stage: build
+      os: windows
       script: "cd packages/main && yarn make"
 
     - stage: release
