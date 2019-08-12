@@ -18,9 +18,9 @@ addons:
       - libsecret-1-dev
       - xvfb  
 
-# Workaround for timeout problems when installing packages.
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then scripts/disable_window_defender; fi
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then yarn config set script-shell "C:\\Program Files\\git\\bin\\bash.exe"; fi
 
 script: if [ "$TRAVIS_OS_NAME" = "linux" ]; then xvfb-run yarn test; else yarn test; fi
 
