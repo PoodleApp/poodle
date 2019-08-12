@@ -9,6 +9,7 @@ import {
 import AttachFileIcon from "@material-ui/icons/AttachFile"
 import PhotoIcon from "@material-ui/icons/Photo"
 import ReplyIcon from "@material-ui/icons/Reply"
+import { makeStyles } from "@material-ui/styles"
 import * as React from "react"
 import { Value } from "slate"
 import DisplayErrors from "../DisplayErrors"
@@ -16,7 +17,6 @@ import Editor from "../editor/Editor"
 import serializer from "../editor/serializer"
 import * as graphql from "../generated/graphql"
 import ParticipantChip from "../ParticipantChip"
-import { makeStyles } from "@material-ui/styles"
 import Tooltip from "../Tooltip"
 
 const useStyles = makeStyles(_theme => ({

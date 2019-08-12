@@ -8,7 +8,9 @@ import {
   Toolbar,
   Typography
 } from "@material-ui/core"
+import AttachFileIcon from "@material-ui/icons/AttachFile"
 import CloseIcon from "@material-ui/icons/Close"
+import PhotoIcon from "@material-ui/icons/Photo"
 import { navigate } from "@reach/router"
 import clsx from "clsx"
 import * as React from "react"
@@ -17,6 +19,7 @@ import DisplayErrors from "../DisplayErrors"
 import { serializer } from "../editor"
 import Editor from "../editor/Editor"
 import * as graphql from "../generated/graphql"
+import Tooltip from "../Tooltip"
 import RecipientsInput, { Address } from "./RecipientsInput"
 
 const initialValue = serializer.deserialize("")
@@ -65,6 +68,22 @@ const useStyles = makeStyles(theme => ({
     flexGrow: 1,
     justifyContent: "stretch"
   },
+  attachment: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start"
+  },
+  input: {
+    display: "none"
+  },
+  actionRow: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%"
+  },
   formInput: {
     marginBottom: theme.spacing(1)
   },
@@ -80,6 +99,7 @@ export default function Compose({ accountId }: Props) {
   const [recipients, setRecipients] = React.useState<Address[]>([])
   const [content, setContent] = React.useState(initialValue)
   const [sendMessage, sendMessageResult] = graphql.useSendMessageMutation()
+  const [attachments, setAttachments] = React.useState<File[]>([])
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -105,6 +125,12 @@ export default function Compose({ accountId }: Props) {
         navigate(`/accounts/${accountId}/conversations/${conversationId}`)
       }
     } catch (error) {}
+  }
+
+  function handleAttachments(event: React.FormEvent<HTMLInputElement>) {
+    const files = Array.from(event.currentTarget.files || [])
+    const updatedFiles = [...attachments, ...files]
+    setAttachments(updatedFiles)
   }
 
   return (
@@ -167,11 +193,39 @@ export default function Compose({ accountId }: Props) {
             placeholder="Write your message here."
             value={content}
           />
-          <Button color="primary" variant="contained" type="submit">
-            Send
-          </Button>
+          {Attachments(attachments, classes.attachment)}
+          <span className={classes.actionRow}>
+            <input
+              className={classes.input}
+              id="add-attachment-button"
+              multiple
+              type="file"
+              onChange={handleAttachments}
+            />
+            <label htmlFor="add-attachment-button">
+              <Tooltip title={"Add Attachment"}>
+                <IconButton component="span">
+                  <AttachFileIcon />
+                </IconButton>
+              </Tooltip>
+            </label>
+            <Button color="primary" variant="contained" type="submit">
+              Send
+            </Button>
+          </span>
         </form>
       </main>
     </div>
   )
+}
+
+function Attachments(attachments: File[], style: string) {
+  return attachments.map(attachment => {
+    return (
+      <div className={style}>
+        <PhotoIcon />
+        {attachment.name}
+      </div>
+    )
+  })
 }
