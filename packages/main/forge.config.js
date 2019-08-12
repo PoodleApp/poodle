@@ -5,7 +5,8 @@ const path = require("path")
 module.exports = {
   packagerConfig: {
     afterCopy: [installFrontendAssets, installPoodleCommon],
-    asar: true
+    asar: true,
+    name: "Poodle"
   },
   plugins: [["@electron-forge/plugin-auto-unpack-natives"]],
   makers: [
