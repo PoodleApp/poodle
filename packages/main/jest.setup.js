@@ -1,1 +1,3 @@
-jest.setTimeout(120000);
+if (process.env.CI) {
+  jest.setTimeout(120000)
+}
