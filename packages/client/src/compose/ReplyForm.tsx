@@ -110,7 +110,7 @@ export default function ReplyForm({
             value={value}
             placeholder="Write your reply here."
           />
-          {Attachments(attachments, classes.attachment)}
+          <Attachments attachments={attachments} style={classes.attachment} />
         </CardContent>
         <CardActions className={classes.actionRow}>
           <Button type="submit" disabled={replyResult.loading}>
@@ -136,13 +136,20 @@ export default function ReplyForm({
   )
 }
 
-function Attachments(attachments: File[], style: string) {
-  return attachments.map(attachment => {
+function Attachments({
+  attachments,
+  style
+}: {
+  attachments: File[]
+  style: string
+}) {
+  const elements = attachments.map((attachment, index) => {
     return (
-      <div className={style}>
+      <div className={style} id={`${attachment.name}.${index}`}>
         <PhotoIcon />
         {attachment.name}
       </div>
     )
   })
+  return <>{elements}</>
 }
