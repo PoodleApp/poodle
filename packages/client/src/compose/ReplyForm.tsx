@@ -3,11 +3,8 @@ import {
   Card,
   CardActions,
   CardContent,
-  CardHeader,
-  IconButton
+  CardHeader
 } from "@material-ui/core"
-import AttachFileIcon from "@material-ui/icons/AttachFile"
-import PhotoIcon from "@material-ui/icons/Photo"
 import ReplyIcon from "@material-ui/icons/Reply"
 import { makeStyles } from "@material-ui/styles"
 import * as React from "react"
@@ -17,7 +14,7 @@ import Editor from "../editor/Editor"
 import serializer from "../editor/serializer"
 import * as graphql from "../generated/graphql"
 import ParticipantChip from "../ParticipantChip"
-import Tooltip from "../Tooltip"
+import WithAttachments from "./WithAttachments"
 
 const useStyles = makeStyles(_theme => ({
   input: {
@@ -53,7 +50,6 @@ export default function ReplyForm({
   const classes = useStyles()
   const [reply, replyResult] = graphql.useReplyMutation()
   const [value, setValue] = React.useState(initialValue)
-  const [attachments, setAttachments] = React.useState<File[]>([])
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -69,12 +65,6 @@ export default function ReplyForm({
       }
     })
     setValue(initialValue)
-  }
-
-  function handleAttachments(event: React.FormEvent<HTMLInputElement>) {
-    const files = Array.from(event.currentTarget.files || [])
-    const updatedFiles = [...attachments, ...files]
-    setAttachments(updatedFiles)
   }
 
   const to = replyRecipients.to.map(address => (
@@ -101,55 +91,25 @@ export default function ReplyForm({
           title={<>Reply to {to}</>}
           subheader={cc.length > 0 ? <>Cc {cc}</> : null}
         />
-
-        <CardContent>
-          <Editor
-            onChange={({ value }: { value: Value }) => {
-              setValue(value)
-            }}
-            value={value}
-            placeholder="Write your reply here."
-          />
-          <Attachments attachments={attachments} style={classes.attachment} />
-        </CardContent>
-        <CardActions className={classes.actionRow}>
-          <Button type="submit" disabled={replyResult.loading}>
-            Send Reply
-          </Button>
-          <input
-            className={classes.input}
-            id="add-attachment-button"
-            multiple
-            type="file"
-            onChange={handleAttachments}
-          />
-          <label htmlFor="add-attachment-button">
-            <Tooltip title={"Add Attachment"}>
-              <IconButton component="span">
-                <AttachFileIcon />
-              </IconButton>
-            </Tooltip>
-          </label>
-        </CardActions>
+        <WithAttachments>
+          <CardContent>
+            <Editor
+              onChange={({ value }: { value: Value }) => {
+                setValue(value)
+              }}
+              value={value}
+              placeholder="Write your reply here."
+            />
+            <WithAttachments.Attachments />
+          </CardContent>
+          <CardActions className={classes.actionRow}>
+            <Button type="submit" disabled={replyResult.loading}>
+              Send Reply
+            </Button>
+            <WithAttachments.AddAttachmentButton />
+          </CardActions>
+        </WithAttachments>
       </Card>
     </form>
   )
-}
-
-function Attachments({
-  attachments,
-  style
-}: {
-  attachments: File[]
-  style: string
-}) {
-  const elements = attachments.map((attachment, index) => {
-    return (
-      <div className={style} id={`${attachment.name}.${index}`}>
-        <PhotoIcon />
-        {attachment.name}
-      </div>
-    )
-  })
-  return <>{elements}</>
 }

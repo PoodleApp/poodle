@@ -1,12 +1,14 @@
 import { makeStyles, IconButton } from "@material-ui/core"
 import AttachFileIcon from "@material-ui/icons/AttachFile"
 import PhotoIcon from "@material-ui/icons/Photo"
+import ClearIcon from "@material-ui/icons/Clear"
 import * as React from "react"
 import Tooltip from "../Tooltip"
 
 const Context = React.createContext<ReturnType<typeof useAttachments>>({
   attachments: [],
-  handleAttachments() {}
+  handleAttachments() {},
+  deleteAttachment() {}
 })
 
 const useStyles = makeStyles(_theme => ({
@@ -24,6 +26,7 @@ const useStyles = makeStyles(_theme => ({
 function useAttachments(): {
   attachments: File[]
   handleAttachments: React.FormEventHandler
+  deleteAttachment: Function
 } {
   const [attachments, setAttachments] = React.useState<File[]>([])
 
@@ -34,7 +37,12 @@ function useAttachments(): {
       setAttachments(updatedFiles)
     }
 
-    return { attachments, handleAttachments }
+    function deleteAttachment(attachment: File) {
+      const updatedFiles = attachments.filter(file => file !== attachment)
+      setAttachments(updatedFiles)
+    }
+
+    return { attachments, handleAttachments, deleteAttachment }
   }, [attachments, setAttachments])
 }
 
@@ -50,6 +58,12 @@ function Attachments() {
   const elements = context.attachments.map((attachment, i) => {
     return (
       <div className={classes.attachment} key={`${attachment.name}-${i}`}>
+        <IconButton
+          size="small"
+          onClick={() => context.deleteAttachment(attachment)}
+        >
+          <ClearIcon fontSize="small" />
+        </IconButton>
         <PhotoIcon />
         {attachment.name}
       </div>
