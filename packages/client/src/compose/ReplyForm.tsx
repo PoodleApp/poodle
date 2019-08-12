@@ -17,14 +17,6 @@ import ParticipantChip from "../ParticipantChip"
 import WithAttachments from "./WithAttachments"
 
 const useStyles = makeStyles(_theme => ({
-  input: {
-    display: "none"
-  },
-  attachment: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "center"
-  },
   actionRow: {
     display: "flex",
     flexDirection: "row",
