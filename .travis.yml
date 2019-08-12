@@ -29,7 +29,6 @@ addons:
     packages:
       - libgnome-keyring-dev
       - libsecret-1-dev
-      - wine32
       - xvfb  
 
 script: xvfb-run yarn test
