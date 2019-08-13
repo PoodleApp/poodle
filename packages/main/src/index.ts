@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, protocol } from "electron"
+import { app, BrowserWindow, ipcMain, protocol, shell } from "electron"
 import contextMenu from "electron-context-menu"
 import isDev from "electron-is-dev"
 import isFirstRun from "electron-squirrel-startup"
@@ -38,6 +38,17 @@ function createWindow() {
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
 
+  // mainWindow.webContents.on("new-window", (event, url) => {
+  //   event.preventDefault()
+  //   console.log(url)
+  //   try{
+  //     shell.openExternal(url)
+  //   } catch {
+  //     console.log("oops")
+  //   }
+  //
+  // })
+
   // Emitted when the window is closed.
   mainWindow.on("closed", () => {
     // Dereference the window object, usually you would store windows
@@ -75,7 +86,7 @@ function handleContentDownloads() {
         statusCode: 200,
         headers: {
           "content-type": type,
-          "content-disposition": `attachment; filename= ${file}`
+          "content-disposition": `inline; filename= ${file}`
         },
         data: stream
       })

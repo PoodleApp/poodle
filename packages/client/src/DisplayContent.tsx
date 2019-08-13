@@ -117,7 +117,7 @@ function displayAttachment(
 ) {
   const name = filename || `Attachment.${subtype}`
   return (
-    <a href={uri}>
+    <a href={uri} target="_blank">
       <div {...props}>
         <PhotoIcon />
         {name}
