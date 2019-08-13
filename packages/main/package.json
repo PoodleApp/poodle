@@ -1,5 +1,5 @@
 {
-  "name": "Poodle",
+  "name": "poodle-main",
   "version": "0.0.1",
   "description": "Email client & collaboration suite",
   "main": "lib/index.js",
