@@ -55,16 +55,12 @@ export function mockConnection({
   )
 
   mock(Connection.prototype.search).mockImplementation((criteria, cb) => {
-    console.log("mock search", criteria)
-
     const match = searchResults.find(([c]) => equal(c, criteria))
     if (match) {
       const [, uids] = match
       cb(null, uids.map(String))
       return
     }
-
-    console.log("mock search, match", match)
 
     const allUids = Set<number>(
       thread.map(({ attributes }) => attributes.uid).filter(nonNull)
@@ -111,8 +107,6 @@ export function mockConnection({
 
       return accum
     }, allUids)
-
-    console.log("mock search, uids", uids)
 
     cb(
       null,
@@ -177,15 +171,12 @@ export function mockFetchImplementation({
   options: imap.FetchOptions
 ) => EventEmitter {
   return (source, options) => {
-    console.log("mock fetch")
     const messages = messagesMatchingSource(thread, source)
-    console.log("mock fetch, matching messages", messages)
     const withEmitters = messages.map(
       message => [message, new EventEmitter()] as const
     )
 
     setTimeout(() => {
-      console.log("mock fetch, in setTimeout")
       for (const [message, emitter] of withEmitters) {
         const attributes = { ...message.attributes } as any
         if (!options.envelope) {
@@ -194,12 +185,9 @@ export function mockFetchImplementation({
         if (!options.struct) {
           attributes.struct = null
         }
-
-        console.log("emit attributes", attributes)
         emitter.emit("attributes", attributes)
 
         if (getBodies(options).includes("HEADER")) {
-          console.log("emit headers")
           emitter.emit("body", headersStream(message.headers), {
             which: "HEADER"
           })
@@ -211,7 +199,6 @@ export function mockFetchImplementation({
               content.toString("utf8").length > 0
                 ? toStream(content)
                 : neverEndingReadable()
-            console.log("emit body", key)
             emitter.emit("body", readable, {
               which: key,
               size: content.toString("utf8").length
@@ -222,12 +209,9 @@ export function mockFetchImplementation({
         for (const [key, headers] of Object.entries(message.partHeaders)) {
           const which = `${key}.MIME`
           if (getBodies(options).includes(which)) {
-            console.log("emit mime", which)
             emitter.emit("body", headersStream(headers), { which })
           }
         }
-
-        console.log("mock fetch, end")
 
         emitter.emit("end")
       }
@@ -236,13 +220,10 @@ export function mockFetchImplementation({
     const messagesEmitter = new EventEmitter()
     setTimeout(() => {
       for (const [, emitter] of withEmitters) {
-        console.log("mock fetch, emit message")
         messagesEmitter.emit("message", emitter)
       }
-      console.log("mock fetch, messages end")
       messagesEmitter.emit("end")
     }, 5)
-    console.log("mock fetch, end")
     return messagesEmitter
   }
 }

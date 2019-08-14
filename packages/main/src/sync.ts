@@ -39,7 +39,6 @@ export async function search(
   searchRecord: cache.Search,
   manager: ConnectionManager
 ) {
-  console.log("begin search", searchRecord)
   const accountId = searchRecord.account_id
   const boxRecord = cache.getSearchedBox(searchRecord)
   const box = await manager
@@ -96,7 +95,6 @@ class BoxSync {
   }
 
   async search(searchRecord: cache.Search) {
-    console.log("in search", searchRecord)
     const uids = List(
       await this.manager
         .request(
@@ -111,16 +109,12 @@ class BoxSync {
       .take(MAX_SEARCH_RESULTS)
       .map(uid => parseInt(uid, 10))
 
-    console.log("got uids", uids)
-
     // Add messages that have already been downloaded to result set
     cache.addSearchResults({
       search: searchRecord,
       uids,
       updatedAt: this.updatedAt
     })
-
-    console.log("added first search results")
 
     await this.downloadMissingMessages({
       uids,
@@ -133,12 +127,7 @@ class BoxSync {
       },
       batchSize: 1
     })
-
-    console.log("downloaded messages")
-
     cache.removeStaleSearchResults(searchRecord, this.updatedAt)
-
-    console.log("removed stale search results")
 
     // Get complete conversations
     for (const threadId of cache.getThreadIds({ uids })) {
@@ -150,12 +139,8 @@ class BoxSync {
       await this.downloadMissingMessages({ uids: threadUids })
     }
 
-    console.log("got complete conversations")
-
     // Make a record of the point when the search was fresh
     cache.setSearchUidLastSeen(searchRecord, this.box.uidnext - 1)
-
-    console.log("set search last seen")
 
     publishMessageUpdates(null)
   }

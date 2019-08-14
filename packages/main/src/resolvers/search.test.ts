@@ -13,54 +13,62 @@ jest.mock("imap")
 let accountId: cache.ID
 
 beforeEach(async () => {
-  const { lastInsertRowid } = db
-    .prepare("insert into accounts (email) values (?)")
-    .run("jesse@sitr.us")
-  accountId = lastInsertRowid
+  try {
+    const { lastInsertRowid } = db
+      .prepare("insert into accounts (email) values (?)")
+      .run("jesse@sitr.us")
+    accountId = lastInsertRowid
 
-  db.prepare(
-    `
+    db.prepare(
+      `
       insert into boxes
       (account_id, name, uidvalidity) values
       (@accountId, @name, @uidvalidity)
     `
-  ).run({ ...allMail, accountId })
+    ).run({ ...allMail, accountId })
 
-  const connectionManager = mockConnection({
-    thread: testThread,
-    searchResults: [[[["X-GM-RAW", "test"]], [testThread[0].attributes.uid!]]]
-  })
-  AccountManager.connectionManagers[String(accountId)] = connectionManager
+    const connectionManager = mockConnection({
+      thread: testThread,
+      searchResults: [[[["X-GM-RAW", "test"]], [testThread[0].attributes.uid!]]]
+    })
+    AccountManager.connectionManagers[String(accountId)] = connectionManager
+  } catch (error) {
+    console.error("error in setup", error)
+  }
 })
 
 it("searches for conversations", async () => {
-  const result = await waitForSearchResults({ accountId, query: "test" })
-  expect(result).toMatchObject({
-    data: {
-      account: {
-        search: {
-          conversations: [
-            {
-              presentableElements: [
-                {
-                  from: { mailbox: "hallettj", host: "gmail.com" },
-                  contents: [
-                    { content: "<p>This is a test.</p>" },
-                    { content: "" }
-                  ]
-                },
-                {
-                  from: { mailbox: "jesse", host: "sitr.us" },
-                  contents: [{ content: "A reply appears." }]
-                }
-              ],
-              subject: "Test thread 2019-02"
-            }
-          ]
+  try {
+    const result = await waitForSearchResults({ accountId, query: "test" })
+    expect(result).toMatchObject({
+      data: {
+        account: {
+          search: {
+            conversations: [
+              {
+                presentableElements: [
+                  {
+                    from: { mailbox: "hallettj", host: "gmail.com" },
+                    contents: [
+                      { content: "<p>This is a test.</p>" },
+                      { content: "" }
+                    ]
+                  },
+                  {
+                    from: { mailbox: "jesse", host: "sitr.us" },
+                    contents: [{ content: "A reply appears." }]
+                  }
+                ],
+                subject: "Test thread 2019-02"
+              }
+            ]
+          }
         }
       }
-    }
-  })
+    })
+  } catch (error) {
+    console.error("error in test", error)
+  }
 })
 
 it("uses cached results on subsequent requests", async () => {
