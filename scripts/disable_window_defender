@@ -7,15 +7,19 @@
 
 set -e
 
-export NODEPATH=$(where.exe node.exe)
-export PROJECTDIR=$(pwd)
-export YARNCACHE=$(yarn cache dir)
-export TEMPDIR=$LOCALAPPDATA\\Temp
+NODEPATH=$(where.exe node.exe)
+PROJECTDIR=$(pwd)
+YARNCACHE=$(yarn cache dir)
+TEMPDIR=$LOCALAPPDATA\\Temp
+
+echo "*** electron cache: $LOCALAPPDATA\\electron\\Cache"
 
 powershell Add-MpPreference -ExclusionProcess ${NODEPATH}
+powershell Add-MpPreference -ExclusionProcess $(where.exe yarn.exe)
 powershell Add-MpPreference -ExclusionPath ${YARNCACHE}
 powershell Add-MpPreference -ExclusionPath ${PROJECTDIR}
 powershell Add-MpPreference -ExclusionPath ${TEMPDIR}
+powershell Add-MpPreference -ExclusionPath $LOCALAPPDATA\\electron\\Cache
 
 echo "DisableArchiveScanning..."
 powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableArchiveScanning \$true'"
