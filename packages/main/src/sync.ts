@@ -116,6 +116,8 @@ class BoxSync {
       updatedAt: this.updatedAt
     })
 
+    console.log("added search results")
+
     await this.downloadMissingMessages({
       uids,
       afterEachBatch: batch => {
@@ -127,6 +129,9 @@ class BoxSync {
       },
       batchSize: 1
     })
+
+    console.log("downloaded missing messages")
+
     cache.removeStaleSearchResults(searchRecord, this.updatedAt)
 
     console.log("removed stale search resaults", searchRecord)

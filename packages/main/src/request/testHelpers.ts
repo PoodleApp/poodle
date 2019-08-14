@@ -66,7 +66,7 @@ export function mockConnection({
       thread.map(({ attributes }) => attributes.uid).filter(nonNull)
     )
 
-    console.log("gathering search results")
+    console.log("gathering search results", criteria)
 
     const uids = criteria.reduce((accum: Set<number>, c) => {
       if (c instanceof Array && c[0] === "HEADER" && c[1] === "Message-ID") {
@@ -111,7 +111,7 @@ export function mockConnection({
       return accum
     }, allUids)
 
-    console.log("search results", uids)
+    console.log("search results", uids.toArray())
 
     cb(
       null,
