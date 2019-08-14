@@ -12,10 +12,6 @@ jest.mock("imap")
 
 let accountId: cache.ID
 
-process.on("unhandledRejection", up => {
-  throw up
-})
-
 beforeEach(async () => {
   const { lastInsertRowid } = db
     .prepare("insert into accounts (email) values (?)")
