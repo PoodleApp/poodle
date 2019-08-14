@@ -1,5 +1,6 @@
 import { makeStyles } from "@material-ui/styles"
 import PhotoIcon from "@material-ui/icons/Photo"
+import PublishIcon from "@material-ui/icons/Publish"
 import { Location } from "@reach/router"
 import clsx from "clsx"
 import marked from "marked"
@@ -9,6 +10,7 @@ import repa from "repa"
 import * as graphql from "./generated/graphql"
 
 const { shell } = window.require("electron")
+const { ipcRenderer } = window.require("electron")
 
 const useStyles = makeStyles(_theme => ({
   body: {
@@ -117,12 +119,17 @@ function displayAttachment(
 ) {
   const name = filename || `Attachment.${subtype}`
   return (
-    <a href={uri} target="_blank">
-      <div {...props}>
-        <PhotoIcon />
-        {name}
-      </div>
-    </a>
+    <span {...props}>
+      <a href={uri}>
+        <PublishIcon style={{ transform: "rotate(180deg)" }} />
+      </a>
+      <a href={uri} onClick={event => openAttachment(event, uri)}>
+        <span {...props}>
+          <PhotoIcon />
+          {name}
+        </span>
+      </a>
+    </span>
   )
 }
 
@@ -177,4 +184,12 @@ function handleLink(
 
     shell.openExternal(target.href)
   }
+}
+
+function openAttachment(
+  event: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
+  uri: string
+) {
+  event.preventDefault()
+  ipcRenderer.send("open_attachment", uri)
 }

@@ -9,6 +9,8 @@ import { PassThrough } from "stream"
 import * as cache from "./cache"
 import { contentType, filename } from "./models/MessagePart"
 import schema from "./schema"
+import tmp from "tmp"
+import * as fs from "fs"
 
 // TODO: We're having an issue checking the TLS certificate for Google's IMAP
 // service
@@ -38,17 +40,6 @@ function createWindow() {
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
 
-  // mainWindow.webContents.on("new-window", (event, url) => {
-  //   event.preventDefault()
-  //   console.log(url)
-  //   try{
-  //     shell.openExternal(url)
-  //   } catch {
-  //     console.log("oops")
-  //   }
-  //
-  // })
-
   // Emitted when the window is closed.
   mainWindow.on("closed", () => {
     // Dereference the window object, usually you would store windows
@@ -57,6 +48,33 @@ function createWindow() {
     mainWindow = null
   })
 }
+
+ipcMain.on("open_attachment", (event, uri) => {
+  const parsed = parseBodyUri(uri)
+  if (!parsed) {
+    //errorCode = 400
+    throw new Error(`Unable to parse messageId and partId from URI: ${uri}`)
+  }
+  const { messageId, partId } = parsed
+  const buffer = cache.getBody(messageId, { part_id: partId })
+  const stream = createStream(buffer)
+  stream.resume()
+  const part = cache.getPartByPartId({ messageId, partId })
+  const imapPart = part && cache.toImapMessagePart(part)
+  if (!imapPart) {
+    //errorCode = 404
+    throw new Error(
+      `No data found for messageId: ${messageId} with partID: ${partId}`
+    )
+  }
+  //const type = contentType(imapPart)
+  const file = filename(imapPart)
+  const tempDir = tmp.dirSync()
+  const tempFile = `${tempDir.name}/${file}`
+  const wstream = fs.createWriteStream(tempFile)
+  stream.pipe(wstream)
+  shell.openItem(tempFile)
+})
 
 function handleContentDownloads() {
   let errorCode: number
@@ -86,7 +104,7 @@ function handleContentDownloads() {
         statusCode: 200,
         headers: {
           "content-type": type,
-          "content-disposition": `inline; filename= ${file}`
+          "content-disposition": `attachment; filename= ${file}`
         },
         data: stream
       })
