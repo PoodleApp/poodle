@@ -1,7 +1,7 @@
-import { makeStyles } from "@material-ui/styles"
 import { IconButton } from "@material-ui/core"
 import PhotoIcon from "@material-ui/icons/Photo"
 import PublishIcon from "@material-ui/icons/Publish"
+import { makeStyles } from "@material-ui/styles"
 import { Location } from "@reach/router"
 import clsx from "clsx"
 import marked from "marked"

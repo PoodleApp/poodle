@@ -49,57 +49,24 @@ function createWindow() {
   })
 }
 
-ipcMain.on("open_attachment", (event, uri) => {
-  const parsed = parseBodyUri(uri)
-  if (!parsed) {
-    //errorCode = 400
-    throw new Error(`Unable to parse messageId and partId from URI: ${uri}`)
-  }
-  const { messageId, partId } = parsed
-  const buffer = cache.getBody(messageId, { part_id: partId })
-  const stream = createStream(buffer)
-  stream.resume()
-  const part = cache.getPartByPartId({ messageId, partId })
-  const imapPart = part && cache.toImapMessagePart(part)
-  if (!imapPart) {
-    //errorCode = 404
-    throw new Error(
-      `No data found for messageId: ${messageId} with partID: ${partId}`
-    )
-  }
-  //const type = contentType(imapPart)
-  const file = filename(imapPart)
+ipcMain.on("open_attachment", (event, uri: string) => {
+  const { messageId, partId } = getIds(uri)
+  const { file } = getDataSpecs(messageId, partId)
   const tempDir = tmp.dirSync()
   const tempFile = `${tempDir.name}/${file}`
   const wstream = fs.createWriteStream(tempFile)
-  stream.pipe(wstream)
+  const rstream = getDataStream(messageId, partId)
+  rstream.pipe(wstream)
+  rstream.resume()
   shell.openItem(tempFile)
 })
 
 function handleContentDownloads() {
-  let errorCode: number
   protocol.registerStreamProtocol("body", async (request, callback) => {
     try {
-      const parsed = parseBodyUri(request.url)
-      if (!parsed) {
-        errorCode = 400
-        throw new Error(
-          `Unable to parse messageId and partId from URI: ${request.url}`
-        )
-      }
-      const { messageId, partId } = parsed
-      const buffer = cache.getBody(messageId, { part_id: partId })
-      const stream = createStream(buffer)
-      const part = cache.getPartByPartId({ messageId, partId })
-      const imapPart = part && cache.toImapMessagePart(part)
-      if (!imapPart) {
-        errorCode = 404
-        throw new Error(
-          `No data found for messageId: ${messageId} with partID: ${partId}`
-        )
-      }
-      const type = contentType(imapPart)
-      const file = filename(imapPart)
+      const { messageId, partId } = getIds(request.url)
+      const stream = getDataStream(messageId, partId)
+      const { type, file } = getDataSpecs(messageId, partId)
       callback({
         statusCode: 200,
         headers: {
@@ -112,7 +79,7 @@ function handleContentDownloads() {
     } catch (err) {
       console.error("error serving part content:", err)
       callback({
-        statusCode: errorCode || 500,
+        statusCode: 500,
         headers: {
           "content-type": "text/plain; charset=utf8"
         },
@@ -120,6 +87,36 @@ function handleContentDownloads() {
       })
     }
   })
+}
+
+function getIds(uri: string): { messageId: string; partId: string } {
+  const parsed = parseBodyUri(uri)
+  if (!parsed) {
+    throw new Error(`Unable to parse messageId and partId from URI: ${uri}`)
+  }
+  return parsed
+}
+
+function getDataStream(messageId: string, partId: string): PassThrough {
+  const buffer = cache.getBody(messageId, { part_id: partId })
+  const stream = createStream(buffer)
+  return stream
+}
+
+function getDataSpecs(
+  messageId: string,
+  partId: string
+): { type: string; file: string | undefined } {
+  const part = cache.getPartByPartId({ messageId, partId })
+  const imapPart = part && cache.toImapMessagePart(part)
+  if (!imapPart) {
+    throw new Error(
+      `No data found for messageId: ${messageId} with partID: ${partId}`
+    )
+  }
+  const type = contentType(imapPart)
+  const file = filename(imapPart)
+  return { type, file }
 }
 
 function createStream(input: string | Buffer | null): PassThrough {
