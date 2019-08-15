@@ -24,7 +24,8 @@ const useStyles = makeStyles(_theme => ({
   attachment: {
     display: "flex",
     flexDirection: "row",
-    alignItems: "center"
+    alignItems: "center",
+    textDecoration: "none"
   }
 }))
 
@@ -128,7 +129,7 @@ function displayAttachment(
           />
         </IconButton>
       </a>
-      <a href={uri} onClick={event => openAttachment(event, uri)}>
+      <a href={uri} onClick={event => openAttachment(event, uri)} {...props}>
         <span {...props}>
           <PhotoIcon />
           {name}
