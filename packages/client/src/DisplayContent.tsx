@@ -1,5 +1,7 @@
-import { makeStyles } from "@material-ui/styles"
+import { IconButton } from "@material-ui/core"
 import PhotoIcon from "@material-ui/icons/Photo"
+import PublishIcon from "@material-ui/icons/Publish"
+import { makeStyles } from "@material-ui/styles"
 import { Location } from "@reach/router"
 import clsx from "clsx"
 import marked from "marked"
@@ -7,8 +9,8 @@ import { parseMidUri } from "poodle-common/lib/models/uri"
 import * as React from "react"
 import repa from "repa"
 import * as graphql from "./generated/graphql"
-
 const { shell } = window.require("electron")
+const { ipcRenderer } = window.require("electron")
 
 const useStyles = makeStyles(_theme => ({
   body: {
@@ -117,12 +119,26 @@ function displayAttachment(
 ) {
   const name = filename || `Attachment.${subtype}`
   return (
-    <a href={uri}>
-      <div {...props}>
-        <PhotoIcon />
-        {name}
-      </div>
-    </a>
+    <span {...props}>
+      <a href={uri} {...props}>
+        <IconButton size="small">
+          <PublishIcon
+            style={{ transform: "rotate(180deg)" }}
+            fontSize="small"
+          />
+        </IconButton>
+      </a>
+      <a
+        href={uri}
+        onClick={event => openAttachment(event, uri)}
+        style={{ textDecoration: "none" }}
+      >
+        <span {...props}>
+          <PhotoIcon />
+          {name}
+        </span>
+      </a>
+    </span>
   )
 }
 
@@ -177,4 +193,12 @@ function handleLink(
 
     shell.openExternal(target.href)
   }
+}
+
+function openAttachment(
+  event: React.MouseEvent<HTMLAnchorElement, MouseEvent>,
+  uri: string
+) {
+  event.preventDefault()
+  ipcRenderer.send("open_attachment", uri)
 }

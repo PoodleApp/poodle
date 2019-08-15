@@ -1,5 +1,5 @@
 {
-  "name": "Poodle",
+  "name": "poodle-main",
   "version": "0.0.1",
   "description": "Email client & collaboration suite",
   "main": "lib/index.js",
@@ -29,6 +29,7 @@
     "test": "jest --runInBand"
   },
   "dependencies": {
+    "@types/tmp": "^0.1.0",
     "base64-stream": "^1.0.0",
     "better-queue": "^3.8.10",
     "better-sqlite3": "^5.4.0",
