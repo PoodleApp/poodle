@@ -1,4 +1,5 @@
 import { makeStyles } from "@material-ui/styles"
+import { IconButton } from "@material-ui/core"
 import PhotoIcon from "@material-ui/icons/Photo"
 import PublishIcon from "@material-ui/icons/Publish"
 import { Location } from "@reach/router"
@@ -8,7 +9,6 @@ import { parseMidUri } from "poodle-common/lib/models/uri"
 import * as React from "react"
 import repa from "repa"
 import * as graphql from "./generated/graphql"
-
 const { shell } = window.require("electron")
 const { ipcRenderer } = window.require("electron")
 
@@ -120,8 +120,13 @@ function displayAttachment(
   const name = filename || `Attachment.${subtype}`
   return (
     <span {...props}>
-      <a href={uri}>
-        <PublishIcon style={{ transform: "rotate(180deg)" }} />
+      <a href={uri} {...props}>
+        <IconButton size="small">
+          <PublishIcon
+            style={{ transform: "rotate(180deg)" }}
+            fontSize="small"
+          />
+        </IconButton>
       </a>
       <a href={uri} onClick={event => openAttachment(event, uri)}>
         <span {...props}>
