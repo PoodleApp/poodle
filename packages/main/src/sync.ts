@@ -116,8 +116,6 @@ class BoxSync {
       updatedAt: this.updatedAt
     })
 
-    console.log("added search results")
-
     await this.downloadMissingMessages({
       uids,
       afterEachBatch: batch => {
@@ -129,30 +127,20 @@ class BoxSync {
       },
       batchSize: 1
     })
-
-    console.log("downloaded missing messages")
-
     cache.removeStaleSearchResults(searchRecord, this.updatedAt)
-
-    console.log("removed stale search resaults", searchRecord)
 
     // Get complete conversations
     for (const threadId of cache.getThreadIds({ uids })) {
-      const threadUids = List(
+      const threadUids = Seq(
         await this.manager
           .request(request.actions.search(this.box, [["X-GM-THRID", threadId]]))
           .toPromise()
       ).map(uid => parseInt(uid, 10))
-      console.log("threadUids", threadUids)
       await this.downloadMissingMessages({ uids: threadUids })
     }
 
-    console.log("got complete conversations", searchRecord)
-
     // Make a record of the point when the search was fresh
     cache.setSearchUidLastSeen(searchRecord, this.box.uidnext - 1)
-
-    console.log("search done", searchRecord)
 
     publishMessageUpdates(null)
   }
