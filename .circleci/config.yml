@@ -15,7 +15,15 @@ jobs:
     steps:
       - checkout
       - run: sudo apt update
-      - run: sudo apt install -y libgnome-keyring-dev libnss3-dev libsecret-1-dev xvfb
+      - run: >
+          sudo apt install -y
+          libasound-dev
+          libgtk-3-dev
+          libgnome-keyring-dev
+          libnss3-dev
+          libsecret-1-dev
+          libxss-dev
+          xvfb
 
       # Download and cache dependencies
       - restore_cache:
