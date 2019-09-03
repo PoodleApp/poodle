@@ -6,6 +6,7 @@ module.exports = {
   packagerConfig: {
     afterCopy: [installFrontendAssets, installPoodleCommon],
     asar: true,
+    executableName: "poodle",
     name: "Poodle"
   },
   plugins: [["@electron-forge/plugin-auto-unpack-natives"]],
