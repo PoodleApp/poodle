@@ -18,6 +18,7 @@ import { serializer } from "../editor"
 import Editor from "../editor/Editor"
 import * as graphql from "../generated/graphql"
 import RecipientsInput, { Address } from "./RecipientsInput"
+import WithAttachments from "./WithAttachments"
 
 const initialValue = serializer.deserialize("")
 
@@ -64,6 +65,13 @@ const useStyles = makeStyles(theme => ({
     flexFlow: "column",
     flexGrow: 1,
     justifyContent: "stretch"
+  },
+  actionRow: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%"
   },
   formInput: {
     marginBottom: theme.spacing(1)
@@ -167,9 +175,15 @@ export default function Compose({ accountId }: Props) {
             placeholder="Write your message here."
             value={content}
           />
-          <Button color="primary" variant="contained" type="submit">
-            Send
-          </Button>
+          <WithAttachments>
+            <WithAttachments.Attachments />
+            <span className={classes.actionRow}>
+              <WithAttachments.AddAttachmentButton />
+              <Button color="primary" variant="contained" type="submit">
+                Send
+              </Button>
+            </span>
+          </WithAttachments>
         </form>
       </main>
     </div>
