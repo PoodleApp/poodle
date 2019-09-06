@@ -17,6 +17,15 @@ addons:
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then scripts/disable_window_defender; fi
 
+deploy: &deploy_base
+  provider: releases
+  draft: true
+  api_key: $GITHUB_TOKEN
+  file_glob: true
+  file: out/make/*
+  overwrite: true
+  skip_cleanup: true
+
 jobs:
   include:
     - stage: test
@@ -26,16 +35,22 @@ jobs:
     - stage: build
       os: linux
       script: "cd packages/main && yarn make"
+      deploy:
+        <<: *deploy_base
 
     - stage: build
       os: osx
       script: "cd packages/main && yarn make"
+      deploy:
+        <<: *deploy_base
 
     - stage: build
       os: windows
       env:
         - YARN_GPG=no # avoids GPG subprocess that prevents Travis build from completing
       script: "cd packages/main && yarn make"
+      deploy:
+        <<: *deploy_base
 
     - stage: release
       script: skip

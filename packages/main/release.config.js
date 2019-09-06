@@ -7,7 +7,7 @@ module.exports = {
     [
       "@semantic-release/github",
       {
-        assets: ["out/make"]
+        assets: [] // assets are attached to release draft in a separate step
       }
     ],
   ]
