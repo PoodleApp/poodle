@@ -133,8 +133,7 @@ export default function Conversation({
     labels,
     presentableElements,
     replyRecipients,
-    subject,
-    isStarred
+    subject
   } = data.conversation
 
   return (
