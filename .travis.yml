@@ -30,6 +30,13 @@ deploy: &deploy_base
   overwrite: true
   skip_cleanup: true
 
+stages:
+  - test
+  - name: build
+    if: branch = master
+  - name: release
+    if: branch = master
+
 jobs:
   include:
     - stage: test
