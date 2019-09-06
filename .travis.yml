@@ -9,6 +9,7 @@ cache: yarn
 addons:
   apt:
     packages:
+      - fakeroot
       - libgnome-keyring-dev
       - libsecret-1-dev
       - xvfb  
