@@ -9,7 +9,7 @@ Poodle is in very early stages of development, so functionality is limited!
 ### Prerequisites
 
 Running from source is supported on macOS and Linux.
-You might have success with the Linux Subsystem on Windows.
+You might have success with the Linux Subsystem on Windows..
 
 You must have these programs installed:
 
