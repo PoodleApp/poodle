@@ -31,6 +31,8 @@ jobs:
 
     - stage: build
       os: windows
+      env:
+        - YARN_GPG=no # avoids GPG subprocess that prevents Travis build from completing
       script: "cd packages/main && yarn make"
 
     - stage: release
