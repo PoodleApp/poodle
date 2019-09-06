@@ -64,6 +64,10 @@ function exec(cmd, options) {
   return new Promise((resolve, reject) => {
     child_process.exec(cmd, options, (error, stdout, stderr) => {
       if (error) {
+        console.log(`\nAn error occurred running command, ${cmd}. Displaying stdout:`)
+        console.log(stdout.toString("utf8"))
+        console.log("\n\nand stderr:")
+        console.log(stderr.toString("utf8"))
         reject(error)
       }
       resolve({ stdout, stderr })
