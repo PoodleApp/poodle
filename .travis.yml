@@ -21,7 +21,7 @@ addons:
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "windows" ]; then scripts/disable_window_defender; fi
 
-deploy: &deploy_base
+deploy_config: &deploy_base
   provider: releases
   draft: true
   api_key: $GITHUB_TOKEN
