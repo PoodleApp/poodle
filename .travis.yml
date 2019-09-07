@@ -1,13 +1,71 @@
-language: node_js
-node_js:
-  - "12"
+os: linux
 dist: xenial
-os:
-  - linux
+
+language: node_js
+node_js: "12"
+
+branches:
+  only:
+    - master
+
+cache: yarn
+
 addons:
   apt:
     packages:
+      - fakeroot
       - libgnome-keyring-dev
       - libsecret-1-dev
       - xvfb  
-script: xvfb-run yarn test
+
+before_install:
+  - if [ "$TRAVIS_OS_NAME" = "windows" ]; then scripts/disable_window_defender; fi
+
+deploy_config: &deploy_base
+  provider: releases
+  draft: true
+  api_key: $GITHUB_TOKEN
+  file_glob: true
+  file: out/make/*
+  overwrite: true
+  skip_cleanup: true
+
+stages:
+  - test
+  - name: build
+    if: branch = master AND type = push
+  - name: release
+    if: branch = master AND type = push
+
+jobs:
+  include:
+    - stage: test
+      os: linux
+      script: xvfb-run yarn test
+
+    - stage: build
+      os: linux
+      script: "cd packages/main && yarn make"
+      deploy:
+        <<: *deploy_base
+
+    - stage: build
+      os: osx
+      script: "cd packages/main && yarn make"
+      deploy:
+        <<: *deploy_base
+
+    - stage: build
+      os: windows
+      env:
+        - YARN_GPG=no # avoids GPG subprocess that prevents Travis build from completing
+      script: "cd packages/main && yarn make"
+      deploy:
+        <<: *deploy_base
+
+    - stage: release
+      script: skip
+      deploy:
+        provider: script
+        skip_cleanup: true
+        script: "cd packages/main && npx semantic-release"

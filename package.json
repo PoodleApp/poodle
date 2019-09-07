@@ -13,9 +13,9 @@
   },
   "scripts": {
     "diagram": "unflatten -l 3 assets/architecture.dot | dot -Tsvg -o assets/architecture.svg",
-    "prepare": "scripts/prepare",
-    "start": "./scripts/dev",
-    "test": "./scripts/tests"
+    "prepare": "bash scripts/prepare",
+    "start": "bash scripts/dev",
+    "test": "bash scripts/tests"
   },
   "prettier": {
     "semi": false
@@ -27,7 +27,7 @@
   },
   "devDependencies": {
     "git-format-staged": "^2.1.0",
-    "husky": "^1.3.1",
+    "husky": "^3.0.3",
     "prettier": "^1.16.4",
     "typescript": "^3.5.2",
     "wait-on": "^3.2.0"
