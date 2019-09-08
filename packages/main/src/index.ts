@@ -6,7 +6,6 @@ import { createIpcExecutor, createSchemaLink } from "graphql-transport-electron"
 import * as path from "path"
 import { parseBodyUri } from "poodle-common/lib/models/uri"
 import { PassThrough } from "stream"
-import { updater } from "update-electron-app"
 import * as cache from "./cache"
 import { contentType, filename } from "./models/MessagePart"
 import schema from "./schema"
@@ -106,7 +105,6 @@ function createStream(input: string | Buffer | null): PassThrough {
 if (isFirstRun) {
   app.quit()
 }
-updater()
 
 // Provide a right-click menu in the UI.
 contextMenu()
