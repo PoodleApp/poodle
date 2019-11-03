@@ -3,18 +3,15 @@
 import * as colors from "@material-ui/core/colors"
 import { createMuiTheme } from "@material-ui/core/styles"
 import { ThemeProvider } from "@material-ui/styles"
-import {
-  createHistory,
-  createMemorySource,
-  LocationProvider
-} from "@reach/router"
 import { InMemoryCache } from "apollo-cache-inmemory"
 import { ApolloClient } from "apollo-client"
 import * as electronImports from "electron"
 import { createIpcLink } from "graphql-transport-electron"
+import { createBrowserHistory, createHashHistory } from "history"
 import React from "react"
 import { ApolloProvider } from "react-apollo"
 import ReactDOM from "react-dom"
+import { Router } from "react-router-dom"
 import "typeface-roboto"
 import App from "./App"
 import "./index.css"
@@ -51,21 +48,21 @@ const theme = createMuiTheme({
 })
 
 // HTML5 history push state does not work in a packaged Electron app when HTML
-// is served over the `file://` protocol; so we need to use memory-based routing
+// is served over the `file://` protocol; so we need to use hash-based routing
 // instead. But it would be really inconvenient if we could not reload the page
 // and keep routing state in development; so we use the default HTML5 history
 // implementation in development.
 const history =
   process.env.NODE_ENV === "production"
-    ? createHistory(createMemorySource("/"))
-    : undefined
+    ? createHashHistory()
+    : createBrowserHistory()
 
 ReactDOM.render(
   <ApolloProvider client={client}>
     <ThemeProvider theme={theme}>
-      <LocationProvider history={history}>
+      <Router history={history}>
         <App />
-      </LocationProvider>
+      </Router>
     </ThemeProvider>
   </ApolloProvider>,
   document.getElementById("root")

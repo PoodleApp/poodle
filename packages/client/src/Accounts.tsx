@@ -15,8 +15,8 @@ import { makeStyles } from "@material-ui/core/styles"
 import AddIcon from "@material-ui/icons/Add"
 import CloseIcon from "@material-ui/icons/Close"
 import DeleteIcon from "@material-ui/icons/Delete"
-import { Link, RouteComponentProps } from "@reach/router"
 import * as React from "react"
+import { Link } from "react-router-dom"
 import DisplayErrors from "./DisplayErrors"
 import * as graphql from "./generated/graphql"
 
@@ -62,7 +62,7 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function Accounts(_props: RouteComponentProps) {
+export default function Accounts() {
   const classes = useStyles()
   const [addAccount, addAccountResult] = graphql.useAddAccountMutation({
     refetchQueries: [{ query: graphql.GetAllAccountsDocument }]

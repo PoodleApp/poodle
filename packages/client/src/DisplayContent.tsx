@@ -1,10 +1,11 @@
-import { makeStyles } from "@material-ui/styles"
 import PhotoIcon from "@material-ui/icons/Photo"
-import { Location } from "@reach/router"
+import { makeStyles } from "@material-ui/styles"
 import clsx from "clsx"
+import { History } from "history"
 import marked from "marked"
 import { parseMidUri } from "poodle-common/lib/models/uri"
 import * as React from "react"
+import { useHistory } from "react-router"
 import repa from "repa"
 import * as graphql from "./generated/graphql"
 
@@ -35,56 +36,47 @@ export default function DisplayContent({
   content,
   disposition,
   filename,
-  name,
   uri,
   className
 }: Props) {
+  const history = useHistory()
   const classes = useStyles()
-  return (
-    <Location>
-      {({ navigate }) => {
-        const props: React.DetailedHTMLProps<
-          React.HTMLProps<HTMLDivElement>,
-          HTMLDivElement
-        > = {
-          onClick: event => {
-            handleLink(accountId, navigate, event)
-          }
-        }
-        if (disposition === "attachment") {
-          return displayAttachment(filename, subtype, uri, {
-            ...props,
-            className: clsx(className, "attachment-content", classes.attachment)
-          })
-        }
-        if (content && type === "text" && subtype === "html") {
-          return displayHtml(content, {
-            ...props,
-            className: clsx(className, "html-content", classes.body)
-          })
-        } else if (content && type === "text" && subtype === "markdown") {
-          return displayMarkdown(content, {
-            ...props,
-            className: clsx(className, "markdown-content", classes.body)
-          })
-        } else if (content && type === "text") {
-          return displayText(content, {
-            ...props,
-            className: clsx(
-              className,
-              "text-content",
-              clsx(classes.body, classes.textContent)
-            )
-          })
-        } else {
-          return displayUnknown(
-            { type, subtype, content, disposition },
-            { className: clsx(className, classes.body) }
-          )
-        }
-      }}
-    </Location>
-  )
+  const props: React.HTMLProps<HTMLDivElement> = {
+    onClick: event => {
+      handleLink(accountId, history, event)
+    }
+  }
+  if (disposition === "attachment") {
+    return displayAttachment(filename, subtype, uri, {
+      ...props,
+      className: clsx(className, "attachment-content", classes.attachment)
+    })
+  }
+  if (content && type === "text" && subtype === "html") {
+    return displayHtml(content, {
+      ...props,
+      className: clsx(className, "html-content", classes.body)
+    })
+  } else if (content && type === "text" && subtype === "markdown") {
+    return displayMarkdown(content, {
+      ...props,
+      className: clsx(className, "markdown-content", classes.body)
+    })
+  } else if (content && type === "text") {
+    return displayText(content, {
+      ...props,
+      className: clsx(
+        className,
+        "text-content",
+        clsx(classes.body, classes.textContent)
+      )
+    })
+  } else {
+    return displayUnknown(
+      { type, subtype, content, disposition },
+      { className: clsx(className, classes.body) }
+    )
+  }
 }
 
 // TODO: remove quoted replies from HTML content
@@ -159,7 +151,7 @@ function displayUnknown(
 
 function handleLink(
   accountId: string,
-  navigate: (location: string) => unknown,
+  history: History<unknown>,
   event: React.MouseEvent<HTMLElement, MouseEvent>
 ) {
   const target = event.target
@@ -169,7 +161,7 @@ function handleLink(
     const parsed = parseMidUri(target.href)
     const messageId = parsed && parsed.messageId
     if (messageId) {
-      navigate(
+      history.push(
         `/accounts/${accountId}/conversations/${encodeURIComponent(messageId)}`
       )
       return

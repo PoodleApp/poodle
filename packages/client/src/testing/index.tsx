@@ -1,13 +1,9 @@
 import { MockedProvider } from "@apollo/react-testing"
 import { MockedProviderProps } from "@apollo/react-testing/lib/mocks/MockedProvider"
-import {
-  createHistory,
-  createMemorySource,
-  History,
-  LocationProvider
-} from "@reach/router"
 import * as enzyme from "enzyme"
+import { createMemoryHistory, History } from "history"
 import * as React from "react"
+import { Router } from "react-router-dom"
 
 let mounts: enzyme.ReactWrapper[] = []
 
@@ -23,16 +19,16 @@ export function mount(
   {
     mocks = [],
     route = "/",
-    history = createHistory(createMemorySource(route))
+    history = createMemoryHistory({ initialEntries: [route] })
   }: {
-    history?: History
+    history?: History<unknown>
     mocks?: MockedProviderProps["mocks"]
     route?: string
   } = {}
 ): enzyme.ReactWrapper {
   const wrapper = enzyme.mount(
     <MockedProvider mocks={mocks}>
-      <LocationProvider history={history}>{element}</LocationProvider>
+      <Router history={history}>{element}</Router>
     </MockedProvider>
   )
   mounts.push(wrapper)
