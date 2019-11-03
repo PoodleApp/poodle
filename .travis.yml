@@ -7,6 +7,7 @@ node_js: "12"
 branches:
   only:
     - master
+    - /^v\d+\.\d+(\.\d+)?(-\S*)?$/
 
 cache: yarn
 
@@ -23,49 +24,45 @@ before_install:
 
 deploy_config: &deploy_base
   provider: releases
-  draft: true
   api_key: $GITHUB_TOKEN
   file_glob: true
-  file: out/make/*
+  file: packages/main/out/make/*
   overwrite: true
   skip_cleanup: true
+  on:
+    tags: true
 
 stages:
-  - test
-  - name: build
-    if: branch = master AND type = push
-  - name: release
-    if: branch = master AND type = push
+  - test_and_release
+  - name: build_and_deploy
+    if: tag IS present
 
 jobs:
   include:
-    - stage: test
+    - stage: test_and_release
       os: linux
       script: xvfb-run yarn test
-
-    - stage: build
-      os: linux
-      script: "cd packages/main && yarn make"
-      deploy:
-        <<: *deploy_base
-
-    - stage: build
-      os: osx
-      script: "cd packages/main && yarn make"
-      deploy:
-        <<: *deploy_base
-
-    - stage: build
-      os: windows
-      env:
-        - YARN_GPG=no # avoids GPG subprocess that prevents Travis build from completing
-      script: "cd packages/main && yarn make"
-      deploy:
-        <<: *deploy_base
-
-    - stage: release
-      script: skip
       deploy:
         provider: script
         skip_cleanup: true
         script: "cd packages/main && npx semantic-release"
+
+    - stage: build_and_deploy
+      os: linux
+      script: scripts/release
+      deploy:
+        <<: *deploy_base
+
+    - stage: build_and_deploy
+      os: osx
+      script: scripts/release
+      deploy:
+        <<: *deploy_base
+
+    - stage: build_and_deploy
+      os: windows
+      env:
+        - YARN_GPG=no # avoids GPG subprocess that prevents Travis build from completing
+      script: scripts/release
+      deploy:
+        <<: *deploy_base

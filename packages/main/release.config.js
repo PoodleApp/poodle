@@ -1,5 +1,4 @@
 module.exports = {
-  dryRun: "true",
   branch: "master",
   plugins: [
     "@semantic-release/commit-analyzer",
@@ -7,7 +6,7 @@ module.exports = {
     [
       "@semantic-release/github",
       {
-        assets: [] // assets are attached to release draft in a separate step
+        assets: [] // assets are built and uploaded in a separate step
       }
     ],
   ]
