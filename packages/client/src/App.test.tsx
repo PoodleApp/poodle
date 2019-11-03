@@ -1,6 +1,6 @@
 import { ListItem } from "@material-ui/core"
-import { createHistory, createMemorySource } from "@reach/router"
 import { ReactWrapper } from "enzyme"
+import { createMemoryHistory } from "history"
 import * as React from "react"
 import App from "./App"
 import Avatar from "./Avatar"
@@ -10,7 +10,7 @@ import * as $ from "./testing/fixtures"
 it("displays a list of conversations", async () => {
   const app = mount(<App />, {
     mocks: [$.getAccountMock],
-    route: "accounts/1/dashboard"
+    route: "/accounts/1/dashboard"
   })
   await updates(app)
   expect(app.find(ListItem)).toIncludeText("Hello from test")
@@ -26,7 +26,7 @@ it("archives a conversation from the list view", async () => {
         result: { data: { account: { ...$.account, conversations: [] } } }
       }
     ],
-    route: `accounts/${$.account.id}/dashboard`
+    route: `/accounts/${$.account.id}/dashboard`
   })
   await updates(app)
   const row = findConversationRow(app, $.conversation)
@@ -38,11 +38,11 @@ it("archives a conversation from the list view", async () => {
 })
 
 it("archives a conversation from the conversation view", async () => {
-  const history = createHistory(
-    createMemorySource(
-      `accounts/${$.account.id}/conversations/${$.conversation.id}`
-    )
-  )
+  const history = createMemoryHistory({
+    initialEntries: [
+      `/accounts/${$.account.id}/conversations/${$.conversation.id}`
+    ]
+  })
   const app = mount(<App />, {
     mocks: [
       $.getConversationMock,
@@ -65,11 +65,11 @@ it("archives a conversation from the conversation view", async () => {
 })
 
 it("opens another conversation when a link is clicked", async () => {
-  const history = createHistory(
-    createMemorySource(
-      `accounts/${$.account.id}/conversations/${$.conversation.id}`
-    )
-  )
+  const history = createMemoryHistory({
+    initialEntries: [
+      `/accounts/${$.account.id}/conversations/${$.conversation.id}`
+    ]
+  })
   const getConversationMock = {
     ...$.getConversationMock,
     result: {

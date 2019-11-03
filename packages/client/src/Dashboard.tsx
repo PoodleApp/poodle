@@ -27,10 +27,10 @@ import RefreshIcon from "@material-ui/icons/Refresh"
 import SearchIcon from "@material-ui/icons/Search"
 import StarIcon from "@material-ui/icons/Star"
 import StarBorder from "@material-ui/icons/StarBorder"
-import { Redirect, RouteComponentProps } from "@reach/router"
 import clsx from "clsx"
 import moment from "moment"
 import * as React from "react"
+import { useHistory } from "react-router-dom"
 import stringHash from "string-hash"
 import AccountSwitcher from "./AccountSwitcher"
 import Avatar from "./Avatar"
@@ -42,7 +42,7 @@ import * as Sel from "./hooks/useSelectedConversations"
 import useSync from "./hooks/useSync"
 import Tooltip from "./Tooltip"
 
-type Props = RouteComponentProps & { accountId?: string }
+type Props = { accountId: string }
 
 const drawerWidth = 240
 
@@ -120,17 +120,17 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function Dashboard({ accountId, navigate }: Props) {
+export default function Dashboard({ accountId }: Props) {
   const classes = useStyles()
   const [open, setOpen] = React.useState(false)
   const [isSearching, setIsSearching] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState("")
   const getAccountResult = graphql.useGetAccountQuery({
-    variables: { accountId: accountId! }
+    variables: { accountId }
   })
   const skipSearch = !isSearching || searchQuery.length < 3
   const searchResult = graphql.useSearchConversationsQuery({
-    variables: { accountId: accountId!, query: searchQuery },
+    variables: { accountId, query: searchQuery },
     skip: skipSearch
   })
   const conversations = skipSearch
@@ -158,11 +158,6 @@ export default function Dashboard({ accountId, navigate }: Props) {
         selected.some(conversationId => conversation.id === conversationId)
       )
       .every(conversation => conversation.isStarred)
-
-  // TODO: is there a way to guarantee that `accountId` is available?
-  if (!accountId) {
-    return <Redirect to="/accounts" />
-  }
 
   return (
     <div className={classes.root}>
@@ -213,7 +208,6 @@ export default function Dashboard({ accountId, navigate }: Props) {
             conversations={conversations}
             selected={selected}
             dispatch={dispatch}
-            navigate={navigate}
           />
         ) : stillLoading ? (
           "Loading..."
@@ -434,7 +428,6 @@ function Conversations({
   conversations: Conversation[]
   selected: string[]
   dispatch: (action: Sel.Action) => void
-  navigate: RouteComponentProps["navigate"]
 }) {
   const classes = useConversationRowStyles()
 
@@ -462,14 +455,12 @@ function ConversationRow({
   accountId,
   conversation,
   selected,
-  dispatch,
-  navigate
+  dispatch
 }: {
   accountId: string
   conversation: Conversation
   selected: string[]
   dispatch: (action: Sel.Action) => void
-  navigate: RouteComponentProps["navigate"]
 }) {
   const {
     from,
@@ -482,6 +473,7 @@ function ConversationRow({
     isStarred
   } = conversation
 
+  const history = useHistory()
   const classes = useConversationRowStyles()
   const isSelected = selected.some(i => i === id)
   const rowId = "conversation-row-" + id
@@ -489,7 +481,7 @@ function ConversationRow({
     <ListItem
       className={clsx(isRead && classes.read, classes.message)}
       alignItems="flex-start"
-      onClick={() => navigate!(`/accounts/${accountId}/conversations/${id}`)}
+      onClick={() => history.push(`/accounts/${accountId}/conversations/${id}`)}
       selected={isSelected}
     >
       <ListItemAvatar>

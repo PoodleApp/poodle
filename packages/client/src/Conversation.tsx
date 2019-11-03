@@ -18,10 +18,10 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore"
 import MoreVertIcon from "@material-ui/icons/MoreVert"
 import StarIcon from "@material-ui/icons/Star"
 import StarBorder from "@material-ui/icons/StarBorder"
-import { Redirect, RouteComponentProps } from "@reach/router"
 import clsx from "clsx"
 import moment from "moment"
 import * as React from "react"
+import { useHistory } from "react-router-dom"
 import Avatar from "./Avatar"
 import EditForm from "./compose/EditForm"
 import ReplyForm from "./compose/ReplyForm"
@@ -33,9 +33,9 @@ import useSetIsRead from "./hooks/useSetIsRead"
 import { displayParticipant } from "./Participant"
 import Tooltip from "./Tooltip"
 
-type Props = RouteComponentProps & {
-  accountId?: string
-  conversationId?: string
+type Props = {
+  accountId: string
+  conversationId: string
 }
 
 const useStyles = makeStyles(theme => ({
@@ -92,26 +92,15 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function Conversation({
-  accountId,
-  conversationId,
-  navigate
-}: Props) {
+export default function Conversation({ accountId, conversationId }: Props) {
   const classes = useStyles()
+  const history = useHistory()
   const { data, error, loading } = graphql.useGetConversationQuery({
-    variables: { id: conversationId!, accountId: accountId! }
+    variables: { id: conversationId, accountId }
   })
-  const [archive, archiveResult] = useArchive({
-    accountId: accountId!,
-    conversationId: conversationId!
-  })
+  const [archive, archiveResult] = useArchive({ accountId, conversationId })
 
   const setIsReadResult = useSetIsRead(data && data.conversation)
-
-  // TODO: is there a way to guarantee that `accountId` and `conversationId` are available?
-  if (!accountId || !conversationId) {
-    return <Redirect to="/accounts" />
-  }
 
   if (error) {
     return <div>Error! {error.message}</div>
@@ -126,7 +115,7 @@ export default function Conversation({
 
   async function onArchive() {
     await archive()
-    navigate!(`/accounts/${accountId}/dashboard`)
+    history.push(`/accounts/${accountId}/dashboard`)
   }
 
   const {
@@ -145,7 +134,9 @@ export default function Conversation({
             edge="start"
             color="inherit"
             aria-label="close view"
-            onClick={() => navigate!(`/accounts/${accountId}/dashboard`)}
+            onClick={() => {
+              history.goBack()
+            }}
           >
             <CloseIcon />
           </IconButton>
