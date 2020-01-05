@@ -70,10 +70,10 @@
     "@electron-forge/maker-squirrel": "^6.0.0-beta.43",
     "@electron-forge/maker-zip": "^6.0.0-beta.43",
     "@electron-forge/plugin-auto-unpack-natives": "^6.0.0-beta.43",
-    "@graphql-codegen/add": "^1.4.0",
-    "@graphql-codegen/cli": "^1.4.0",
-    "@graphql-codegen/typescript": "^1.4.0",
-    "@graphql-codegen/typescript-resolvers": "^1.4.0",
+    "@graphql-codegen/add": "^1.10.0",
+    "@graphql-codegen/cli": "^1.10.0",
+    "@graphql-codegen/typescript": "^1.10.0",
+    "@graphql-codegen/typescript-resolvers": "^1.10.0",
     "@jest-runner/electron": "^2.0.2",
     "@types/better-queue": "^3.8.0",
     "@types/better-sqlite3": "^5.2.3",
@@ -106,7 +106,7 @@
     "jest": "24.7.1",
     "semantic-release": "^15.13.19",
     "ts-jest": "^24.0.2",
-    "typescript": "^3.5.2",
+    "typescript": "^3.7.4",
     "watch": "^1.0.2"
   }
 }

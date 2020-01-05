@@ -1,7 +1,9 @@
 /* eslint-disable */
 import { DocumentNode } from "graphql"
-import * as ReactApolloHooks from "@apollo/react-hooks"
+import * as ApolloReactCommon from "@apollo/react-common"
+import * as ApolloReactHooks from "@apollo/react-hooks"
 export type Maybe<T> = T | null
+
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string
@@ -252,6 +254,7 @@ export type Search = {
   loading: Scalars["Boolean"]
   query: Scalars["String"]
 }
+
 export type GetAllAccountsQueryVariables = {}
 
 export type GetAllAccountsQuery = { __typename?: "Query" } & {
@@ -574,6 +577,7 @@ export type ConversationFieldsForConversationViewFragment = {
       >
     }
   }
+
 export const AccountFieldsFragmentDoc: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -1162,19 +1166,52 @@ export const GetAllAccountsDocument: DocumentNode = {
   ]
 }
 
+/**
+ * __useGetAllAccountsQuery__
+ *
+ * To run a query within a React component, call `useGetAllAccountsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetAllAccountsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetAllAccountsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
 export function useGetAllAccountsQuery(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<
+  baseOptions?: ApolloReactHooks.QueryHookOptions<
     GetAllAccountsQuery,
     GetAllAccountsQueryVariables
   >
 ) {
-  return ReactApolloHooks.useQuery<
+  return ApolloReactHooks.useQuery<
+    GetAllAccountsQuery,
+    GetAllAccountsQueryVariables
+  >(GetAllAccountsDocument, baseOptions)
+}
+export function useGetAllAccountsLazyQuery(
+  baseOptions?: ApolloReactHooks.LazyQueryHookOptions<
+    GetAllAccountsQuery,
+    GetAllAccountsQueryVariables
+  >
+) {
+  return ApolloReactHooks.useLazyQuery<
     GetAllAccountsQuery,
     GetAllAccountsQueryVariables
   >(GetAllAccountsDocument, baseOptions)
 }
 export type GetAllAccountsQueryHookResult = ReturnType<
   typeof useGetAllAccountsQuery
+>
+export type GetAllAccountsLazyQueryHookResult = ReturnType<
+  typeof useGetAllAccountsLazyQuery
+>
+export type GetAllAccountsQueryResult = ApolloReactCommon.QueryResult<
+  GetAllAccountsQuery,
+  GetAllAccountsQueryVariables
 >
 export const GetAccountDocument: DocumentNode = {
   kind: "Document",
@@ -1232,7 +1269,7 @@ export const GetAccountDocument: DocumentNode = {
                       name: { kind: "Name", value: "label" },
                       value: {
                         kind: "StringValue",
-                        value: "\\Inbox",
+                        value: "\\\\Inbox",
                         block: false
                       }
                     }
@@ -1378,18 +1415,52 @@ export const GetAccountDocument: DocumentNode = {
   ]
 }
 
+/**
+ * __useGetAccountQuery__
+ *
+ * To run a query within a React component, call `useGetAccountQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetAccountQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetAccountQuery({
+ *   variables: {
+ *      accountId: // value for 'accountId'
+ *   },
+ * });
+ */
 export function useGetAccountQuery(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<
+  baseOptions?: ApolloReactHooks.QueryHookOptions<
     GetAccountQuery,
     GetAccountQueryVariables
   >
 ) {
-  return ReactApolloHooks.useQuery<GetAccountQuery, GetAccountQueryVariables>(
+  return ApolloReactHooks.useQuery<GetAccountQuery, GetAccountQueryVariables>(
     GetAccountDocument,
     baseOptions
   )
 }
+export function useGetAccountLazyQuery(
+  baseOptions?: ApolloReactHooks.LazyQueryHookOptions<
+    GetAccountQuery,
+    GetAccountQueryVariables
+  >
+) {
+  return ApolloReactHooks.useLazyQuery<
+    GetAccountQuery,
+    GetAccountQueryVariables
+  >(GetAccountDocument, baseOptions)
+}
 export type GetAccountQueryHookResult = ReturnType<typeof useGetAccountQuery>
+export type GetAccountLazyQueryHookResult = ReturnType<
+  typeof useGetAccountLazyQuery
+>
+export type GetAccountQueryResult = ApolloReactCommon.QueryResult<
+  GetAccountQuery,
+  GetAccountQueryVariables
+>
 export const DeleteAccountDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -1443,20 +1514,48 @@ export const DeleteAccountDocument: DocumentNode = {
     }
   ]
 }
+export type DeleteAccountMutationFn = ApolloReactCommon.MutationFunction<
+  DeleteAccountMutation,
+  DeleteAccountMutationVariables
+>
 
+/**
+ * __useDeleteAccountMutation__
+ *
+ * To run a mutation, you first call `useDeleteAccountMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteAccountMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteAccountMutation, { data, loading, error }] = useDeleteAccountMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
 export function useDeleteAccountMutation(
-  baseOptions?: ReactApolloHooks.MutationHookOptions<
+  baseOptions?: ApolloReactHooks.MutationHookOptions<
     DeleteAccountMutation,
     DeleteAccountMutationVariables
   >
 ) {
-  return ReactApolloHooks.useMutation<
+  return ApolloReactHooks.useMutation<
     DeleteAccountMutation,
     DeleteAccountMutationVariables
   >(DeleteAccountDocument, baseOptions)
 }
 export type DeleteAccountMutationHookResult = ReturnType<
   typeof useDeleteAccountMutation
+>
+export type DeleteAccountMutationResult = ApolloReactCommon.MutationResult<
+  DeleteAccountMutation
+>
+export type DeleteAccountMutationOptions = ApolloReactCommon.BaseMutationOptions<
+  DeleteAccountMutation,
+  DeleteAccountMutationVariables
 >
 export const AddAccountDocument: DocumentNode = {
   kind: "Document",
@@ -1556,20 +1655,48 @@ export const AddAccountDocument: DocumentNode = {
     }
   ]
 }
+export type AddAccountMutationFn = ApolloReactCommon.MutationFunction<
+  AddAccountMutation,
+  AddAccountMutationVariables
+>
 
+/**
+ * __useAddAccountMutation__
+ *
+ * To run a mutation, you first call `useAddAccountMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddAccountMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addAccountMutation, { data, loading, error }] = useAddAccountMutation({
+ *   variables: {
+ *      email: // value for 'email'
+ *   },
+ * });
+ */
 export function useAddAccountMutation(
-  baseOptions?: ReactApolloHooks.MutationHookOptions<
+  baseOptions?: ApolloReactHooks.MutationHookOptions<
     AddAccountMutation,
     AddAccountMutationVariables
   >
 ) {
-  return ReactApolloHooks.useMutation<
+  return ApolloReactHooks.useMutation<
     AddAccountMutation,
     AddAccountMutationVariables
   >(AddAccountDocument, baseOptions)
 }
 export type AddAccountMutationHookResult = ReturnType<
   typeof useAddAccountMutation
+>
+export type AddAccountMutationResult = ApolloReactCommon.MutationResult<
+  AddAccountMutation
+>
+export type AddAccountMutationOptions = ApolloReactCommon.BaseMutationOptions<
+  AddAccountMutation,
+  AddAccountMutationVariables
 >
 export const AuthenticateDocument: DocumentNode = {
   kind: "Document",
@@ -1666,20 +1793,48 @@ export const AuthenticateDocument: DocumentNode = {
     }
   ]
 }
+export type AuthenticateMutationFn = ApolloReactCommon.MutationFunction<
+  AuthenticateMutation,
+  AuthenticateMutationVariables
+>
 
+/**
+ * __useAuthenticateMutation__
+ *
+ * To run a mutation, you first call `useAuthenticateMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAuthenticateMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [authenticateMutation, { data, loading, error }] = useAuthenticateMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
 export function useAuthenticateMutation(
-  baseOptions?: ReactApolloHooks.MutationHookOptions<
+  baseOptions?: ApolloReactHooks.MutationHookOptions<
     AuthenticateMutation,
     AuthenticateMutationVariables
   >
 ) {
-  return ReactApolloHooks.useMutation<
+  return ApolloReactHooks.useMutation<
     AuthenticateMutation,
     AuthenticateMutationVariables
   >(AuthenticateDocument, baseOptions)
 }
 export type AuthenticateMutationHookResult = ReturnType<
   typeof useAuthenticateMutation
+>
+export type AuthenticateMutationResult = ApolloReactCommon.MutationResult<
+  AuthenticateMutation
+>
+export type AuthenticateMutationOptions = ApolloReactCommon.BaseMutationOptions<
+  AuthenticateMutation,
+  AuthenticateMutationVariables
 >
 export const GetConversationDocument: DocumentNode = {
   kind: "Document",
@@ -2136,19 +2291,54 @@ export const GetConversationDocument: DocumentNode = {
   ]
 }
 
+/**
+ * __useGetConversationQuery__
+ *
+ * To run a query within a React component, call `useGetConversationQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetConversationQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetConversationQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *      accountId: // value for 'accountId'
+ *   },
+ * });
+ */
 export function useGetConversationQuery(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<
+  baseOptions?: ApolloReactHooks.QueryHookOptions<
     GetConversationQuery,
     GetConversationQueryVariables
   >
 ) {
-  return ReactApolloHooks.useQuery<
+  return ApolloReactHooks.useQuery<
+    GetConversationQuery,
+    GetConversationQueryVariables
+  >(GetConversationDocument, baseOptions)
+}
+export function useGetConversationLazyQuery(
+  baseOptions?: ApolloReactHooks.LazyQueryHookOptions<
+    GetConversationQuery,
+    GetConversationQueryVariables
+  >
+) {
+  return ApolloReactHooks.useLazyQuery<
     GetConversationQuery,
     GetConversationQueryVariables
   >(GetConversationDocument, baseOptions)
 }
 export type GetConversationQueryHookResult = ReturnType<
   typeof useGetConversationQuery
+>
+export type GetConversationLazyQueryHookResult = ReturnType<
+  typeof useGetConversationLazyQuery
+>
+export type GetConversationQueryResult = ApolloReactCommon.QueryResult<
+  GetConversationQuery,
+  GetConversationQueryVariables
 >
 export const SearchConversationsDocument: DocumentNode = {
   kind: "Document",
@@ -2361,19 +2551,54 @@ export const SearchConversationsDocument: DocumentNode = {
   ]
 }
 
+/**
+ * __useSearchConversationsQuery__
+ *
+ * To run a query within a React component, call `useSearchConversationsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useSearchConversationsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useSearchConversationsQuery({
+ *   variables: {
+ *      accountId: // value for 'accountId'
+ *      query: // value for 'query'
+ *   },
+ * });
+ */
 export function useSearchConversationsQuery(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<
+  baseOptions?: ApolloReactHooks.QueryHookOptions<
     SearchConversationsQuery,
     SearchConversationsQueryVariables
   >
 ) {
-  return ReactApolloHooks.useQuery<
+  return ApolloReactHooks.useQuery<
+    SearchConversationsQuery,
+    SearchConversationsQueryVariables
+  >(SearchConversationsDocument, baseOptions)
+}
+export function useSearchConversationsLazyQuery(
+  baseOptions?: ApolloReactHooks.LazyQueryHookOptions<
+    SearchConversationsQuery,
+    SearchConversationsQueryVariables
+  >
+) {
+  return ApolloReactHooks.useLazyQuery<
     SearchConversationsQuery,
     SearchConversationsQueryVariables
   >(SearchConversationsDocument, baseOptions)
 }
 export type SearchConversationsQueryHookResult = ReturnType<
   typeof useSearchConversationsQuery
+>
+export type SearchConversationsLazyQueryHookResult = ReturnType<
+  typeof useSearchConversationsLazyQuery
+>
+export type SearchConversationsQueryResult = ApolloReactCommon.QueryResult<
+  SearchConversationsQuery,
+  SearchConversationsQueryVariables
 >
 export const SearchCachedConversationsDocument: DocumentNode = {
   kind: "Document",
@@ -2478,19 +2703,54 @@ export const SearchCachedConversationsDocument: DocumentNode = {
   ]
 }
 
+/**
+ * __useSearchCachedConversationsQuery__
+ *
+ * To run a query within a React component, call `useSearchCachedConversationsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useSearchCachedConversationsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useSearchCachedConversationsQuery({
+ *   variables: {
+ *      query: // value for 'query'
+ *      specificityThreshold: // value for 'specificityThreshold'
+ *   },
+ * });
+ */
 export function useSearchCachedConversationsQuery(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<
+  baseOptions?: ApolloReactHooks.QueryHookOptions<
     SearchCachedConversationsQuery,
     SearchCachedConversationsQueryVariables
   >
 ) {
-  return ReactApolloHooks.useQuery<
+  return ApolloReactHooks.useQuery<
+    SearchCachedConversationsQuery,
+    SearchCachedConversationsQueryVariables
+  >(SearchCachedConversationsDocument, baseOptions)
+}
+export function useSearchCachedConversationsLazyQuery(
+  baseOptions?: ApolloReactHooks.LazyQueryHookOptions<
+    SearchCachedConversationsQuery,
+    SearchCachedConversationsQueryVariables
+  >
+) {
+  return ApolloReactHooks.useLazyQuery<
     SearchCachedConversationsQuery,
     SearchCachedConversationsQueryVariables
   >(SearchCachedConversationsDocument, baseOptions)
 }
 export type SearchCachedConversationsQueryHookResult = ReturnType<
   typeof useSearchCachedConversationsQuery
+>
+export type SearchCachedConversationsLazyQueryHookResult = ReturnType<
+  typeof useSearchCachedConversationsLazyQuery
+>
+export type SearchCachedConversationsQueryResult = ApolloReactCommon.QueryResult<
+  SearchCachedConversationsQuery,
+  SearchCachedConversationsQueryVariables
 >
 export const GetMatchingAddressesDocument: DocumentNode = {
   kind: "Document",
@@ -2561,19 +2821,53 @@ export const GetMatchingAddressesDocument: DocumentNode = {
   ]
 }
 
+/**
+ * __useGetMatchingAddressesQuery__
+ *
+ * To run a query within a React component, call `useGetMatchingAddressesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetMatchingAddressesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetMatchingAddressesQuery({
+ *   variables: {
+ *      inputValue: // value for 'inputValue'
+ *   },
+ * });
+ */
 export function useGetMatchingAddressesQuery(
-  baseOptions?: ReactApolloHooks.QueryHookOptions<
+  baseOptions?: ApolloReactHooks.QueryHookOptions<
     GetMatchingAddressesQuery,
     GetMatchingAddressesQueryVariables
   >
 ) {
-  return ReactApolloHooks.useQuery<
+  return ApolloReactHooks.useQuery<
+    GetMatchingAddressesQuery,
+    GetMatchingAddressesQueryVariables
+  >(GetMatchingAddressesDocument, baseOptions)
+}
+export function useGetMatchingAddressesLazyQuery(
+  baseOptions?: ApolloReactHooks.LazyQueryHookOptions<
+    GetMatchingAddressesQuery,
+    GetMatchingAddressesQueryVariables
+  >
+) {
+  return ApolloReactHooks.useLazyQuery<
     GetMatchingAddressesQuery,
     GetMatchingAddressesQueryVariables
   >(GetMatchingAddressesDocument, baseOptions)
 }
 export type GetMatchingAddressesQueryHookResult = ReturnType<
   typeof useGetMatchingAddressesQuery
+>
+export type GetMatchingAddressesLazyQueryHookResult = ReturnType<
+  typeof useGetMatchingAddressesLazyQuery
+>
+export type GetMatchingAddressesQueryResult = ApolloReactCommon.QueryResult<
+  GetMatchingAddressesQuery,
+  GetMatchingAddressesQueryVariables
 >
 export const SyncDocument: DocumentNode = {
   kind: "Document",
@@ -2777,19 +3071,45 @@ export const SyncDocument: DocumentNode = {
     }
   ]
 }
+export type SyncMutationFn = ApolloReactCommon.MutationFunction<
+  SyncMutation,
+  SyncMutationVariables
+>
 
+/**
+ * __useSyncMutation__
+ *
+ * To run a mutation, you first call `useSyncMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSyncMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [syncMutation, { data, loading, error }] = useSyncMutation({
+ *   variables: {
+ *      accountId: // value for 'accountId'
+ *   },
+ * });
+ */
 export function useSyncMutation(
-  baseOptions?: ReactApolloHooks.MutationHookOptions<
+  baseOptions?: ApolloReactHooks.MutationHookOptions<
     SyncMutation,
     SyncMutationVariables
   >
 ) {
-  return ReactApolloHooks.useMutation<SyncMutation, SyncMutationVariables>(
+  return ApolloReactHooks.useMutation<SyncMutation, SyncMutationVariables>(
     SyncDocument,
     baseOptions
   )
 }
 export type SyncMutationHookResult = ReturnType<typeof useSyncMutation>
+export type SyncMutationResult = ApolloReactCommon.MutationResult<SyncMutation>
+export type SyncMutationOptions = ApolloReactCommon.BaseMutationOptions<
+  SyncMutation,
+  SyncMutationVariables
+>
 export const SetIsReadDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -2886,20 +3206,49 @@ export const SetIsReadDocument: DocumentNode = {
     }
   ]
 }
+export type SetIsReadMutationFn = ApolloReactCommon.MutationFunction<
+  SetIsReadMutation,
+  SetIsReadMutationVariables
+>
 
+/**
+ * __useSetIsReadMutation__
+ *
+ * To run a mutation, you first call `useSetIsReadMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSetIsReadMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [setIsReadMutation, { data, loading, error }] = useSetIsReadMutation({
+ *   variables: {
+ *      conversationId: // value for 'conversationId'
+ *      isRead: // value for 'isRead'
+ *   },
+ * });
+ */
 export function useSetIsReadMutation(
-  baseOptions?: ReactApolloHooks.MutationHookOptions<
+  baseOptions?: ApolloReactHooks.MutationHookOptions<
     SetIsReadMutation,
     SetIsReadMutationVariables
   >
 ) {
-  return ReactApolloHooks.useMutation<
+  return ApolloReactHooks.useMutation<
     SetIsReadMutation,
     SetIsReadMutationVariables
   >(SetIsReadDocument, baseOptions)
 }
 export type SetIsReadMutationHookResult = ReturnType<
   typeof useSetIsReadMutation
+>
+export type SetIsReadMutationResult = ApolloReactCommon.MutationResult<
+  SetIsReadMutation
+>
+export type SetIsReadMutationOptions = ApolloReactCommon.BaseMutationOptions<
+  SetIsReadMutation,
+  SetIsReadMutationVariables
 >
 export const ArchiveDocument: DocumentNode = {
   kind: "Document",
@@ -3055,19 +3404,47 @@ export const ArchiveDocument: DocumentNode = {
     }
   ]
 }
+export type ArchiveMutationFn = ApolloReactCommon.MutationFunction<
+  ArchiveMutation,
+  ArchiveMutationVariables
+>
 
+/**
+ * __useArchiveMutation__
+ *
+ * To run a mutation, you first call `useArchiveMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useArchiveMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [archiveMutation, { data, loading, error }] = useArchiveMutation({
+ *   variables: {
+ *      conversationId: // value for 'conversationId'
+ *   },
+ * });
+ */
 export function useArchiveMutation(
-  baseOptions?: ReactApolloHooks.MutationHookOptions<
+  baseOptions?: ApolloReactHooks.MutationHookOptions<
     ArchiveMutation,
     ArchiveMutationVariables
   >
 ) {
-  return ReactApolloHooks.useMutation<
+  return ApolloReactHooks.useMutation<
     ArchiveMutation,
     ArchiveMutationVariables
   >(ArchiveDocument, baseOptions)
 }
 export type ArchiveMutationHookResult = ReturnType<typeof useArchiveMutation>
+export type ArchiveMutationResult = ApolloReactCommon.MutationResult<
+  ArchiveMutation
+>
+export type ArchiveMutationOptions = ApolloReactCommon.BaseMutationOptions<
+  ArchiveMutation,
+  ArchiveMutationVariables
+>
 export const FlagDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -3193,19 +3570,46 @@ export const FlagDocument: DocumentNode = {
     }
   ]
 }
+export type FlagMutationFn = ApolloReactCommon.MutationFunction<
+  FlagMutation,
+  FlagMutationVariables
+>
 
+/**
+ * __useFlagMutation__
+ *
+ * To run a mutation, you first call `useFlagMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useFlagMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [flagMutation, { data, loading, error }] = useFlagMutation({
+ *   variables: {
+ *      conversationIDs: // value for 'conversationIDs'
+ *      isFlagged: // value for 'isFlagged'
+ *   },
+ * });
+ */
 export function useFlagMutation(
-  baseOptions?: ReactApolloHooks.MutationHookOptions<
+  baseOptions?: ApolloReactHooks.MutationHookOptions<
     FlagMutation,
     FlagMutationVariables
   >
 ) {
-  return ReactApolloHooks.useMutation<FlagMutation, FlagMutationVariables>(
+  return ApolloReactHooks.useMutation<FlagMutation, FlagMutationVariables>(
     FlagDocument,
     baseOptions
   )
 }
 export type FlagMutationHookResult = ReturnType<typeof useFlagMutation>
+export type FlagMutationResult = ApolloReactCommon.MutationResult<FlagMutation>
+export type FlagMutationOptions = ApolloReactCommon.BaseMutationOptions<
+  FlagMutation,
+  FlagMutationVariables
+>
 export const FlagPresentableDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -3345,20 +3749,50 @@ export const FlagPresentableDocument: DocumentNode = {
     }
   ]
 }
+export type FlagPresentableMutationFn = ApolloReactCommon.MutationFunction<
+  FlagPresentableMutation,
+  FlagPresentableMutationVariables
+>
 
+/**
+ * __useFlagPresentableMutation__
+ *
+ * To run a mutation, you first call `useFlagPresentableMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useFlagPresentableMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [flagPresentableMutation, { data, loading, error }] = useFlagPresentableMutation({
+ *   variables: {
+ *      presentableId: // value for 'presentableId'
+ *      conversationId: // value for 'conversationId'
+ *      isFlagged: // value for 'isFlagged'
+ *   },
+ * });
+ */
 export function useFlagPresentableMutation(
-  baseOptions?: ReactApolloHooks.MutationHookOptions<
+  baseOptions?: ApolloReactHooks.MutationHookOptions<
     FlagPresentableMutation,
     FlagPresentableMutationVariables
   >
 ) {
-  return ReactApolloHooks.useMutation<
+  return ApolloReactHooks.useMutation<
     FlagPresentableMutation,
     FlagPresentableMutationVariables
   >(FlagPresentableDocument, baseOptions)
 }
 export type FlagPresentableMutationHookResult = ReturnType<
   typeof useFlagPresentableMutation
+>
+export type FlagPresentableMutationResult = ApolloReactCommon.MutationResult<
+  FlagPresentableMutation
+>
+export type FlagPresentableMutationOptions = ApolloReactCommon.BaseMutationOptions<
+  FlagPresentableMutation,
+  FlagPresentableMutationVariables
 >
 export const SendMessageDocument: DocumentNode = {
   kind: "Document",
@@ -3842,20 +4276,49 @@ export const SendMessageDocument: DocumentNode = {
     }
   ]
 }
+export type SendMessageMutationFn = ApolloReactCommon.MutationFunction<
+  SendMessageMutation,
+  SendMessageMutationVariables
+>
 
+/**
+ * __useSendMessageMutation__
+ *
+ * To run a mutation, you first call `useSendMessageMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSendMessageMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [sendMessageMutation, { data, loading, error }] = useSendMessageMutation({
+ *   variables: {
+ *      accountId: // value for 'accountId'
+ *      message: // value for 'message'
+ *   },
+ * });
+ */
 export function useSendMessageMutation(
-  baseOptions?: ReactApolloHooks.MutationHookOptions<
+  baseOptions?: ApolloReactHooks.MutationHookOptions<
     SendMessageMutation,
     SendMessageMutationVariables
   >
 ) {
-  return ReactApolloHooks.useMutation<
+  return ApolloReactHooks.useMutation<
     SendMessageMutation,
     SendMessageMutationVariables
   >(SendMessageDocument, baseOptions)
 }
 export type SendMessageMutationHookResult = ReturnType<
   typeof useSendMessageMutation
+>
+export type SendMessageMutationResult = ApolloReactCommon.MutationResult<
+  SendMessageMutation
+>
+export type SendMessageMutationOptions = ApolloReactCommon.BaseMutationOptions<
+  SendMessageMutation,
+  SendMessageMutationVariables
 >
 export const EditDocument: DocumentNode = {
   kind: "Document",
@@ -4405,19 +4868,49 @@ export const EditDocument: DocumentNode = {
     }
   ]
 }
+export type EditMutationFn = ApolloReactCommon.MutationFunction<
+  EditMutation,
+  EditMutationVariables
+>
 
+/**
+ * __useEditMutation__
+ *
+ * To run a mutation, you first call `useEditMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useEditMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [editMutation, { data, loading, error }] = useEditMutation({
+ *   variables: {
+ *      accountId: // value for 'accountId'
+ *      conversationId: // value for 'conversationId'
+ *      resource: // value for 'resource'
+ *      revision: // value for 'revision'
+ *      content: // value for 'content'
+ *   },
+ * });
+ */
 export function useEditMutation(
-  baseOptions?: ReactApolloHooks.MutationHookOptions<
+  baseOptions?: ApolloReactHooks.MutationHookOptions<
     EditMutation,
     EditMutationVariables
   >
 ) {
-  return ReactApolloHooks.useMutation<EditMutation, EditMutationVariables>(
+  return ApolloReactHooks.useMutation<EditMutation, EditMutationVariables>(
     EditDocument,
     baseOptions
   )
 }
 export type EditMutationHookResult = ReturnType<typeof useEditMutation>
+export type EditMutationResult = ApolloReactCommon.MutationResult<EditMutation>
+export type EditMutationOptions = ApolloReactCommon.BaseMutationOptions<
+  EditMutation,
+  EditMutationVariables
+>
 export const ReplyDocument: DocumentNode = {
   kind: "Document",
   definitions: [
@@ -4920,16 +5413,46 @@ export const ReplyDocument: DocumentNode = {
     }
   ]
 }
+export type ReplyMutationFn = ApolloReactCommon.MutationFunction<
+  ReplyMutation,
+  ReplyMutationVariables
+>
 
+/**
+ * __useReplyMutation__
+ *
+ * To run a mutation, you first call `useReplyMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useReplyMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [replyMutation, { data, loading, error }] = useReplyMutation({
+ *   variables: {
+ *      accountId: // value for 'accountId'
+ *      conversationId: // value for 'conversationId'
+ *      content: // value for 'content'
+ *   },
+ * });
+ */
 export function useReplyMutation(
-  baseOptions?: ReactApolloHooks.MutationHookOptions<
+  baseOptions?: ApolloReactHooks.MutationHookOptions<
     ReplyMutation,
     ReplyMutationVariables
   >
 ) {
-  return ReactApolloHooks.useMutation<ReplyMutation, ReplyMutationVariables>(
+  return ApolloReactHooks.useMutation<ReplyMutation, ReplyMutationVariables>(
     ReplyDocument,
     baseOptions
   )
 }
 export type ReplyMutationHookResult = ReturnType<typeof useReplyMutation>
+export type ReplyMutationResult = ApolloReactCommon.MutationResult<
+  ReplyMutation
+>
+export type ReplyMutationOptions = ApolloReactCommon.BaseMutationOptions<
+  ReplyMutation,
+  ReplyMutationVariables
+>

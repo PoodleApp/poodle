@@ -1,15 +1,20 @@
 /* eslint-disable */
 import { GraphQLResolveInfo } from "graphql"
 import {
-  Account,
-  AccountMutations,
-  ConversationMutations,
-  Message
+  Account as AccountType,
+  AccountMutations as AccountMutationsType,
+  ConversationMutations as ConversationMutationsType,
+  Message as MessageType
 } from "../resolvers/types"
-import { Conversation } from "../models/conversation"
-import { Search } from "../cache/types"
+import { Conversation as ConversationType } from "../models/conversation"
+import { Search as SearchType } from "../cache/types"
 export type Maybe<T> = T | null
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>
+export type RequireFields<T, K extends keyof T> = {
+  [X in Exclude<keyof T, K>]?: T[X]
+} &
+  { [P in K]-?: NonNullable<T[P]> }
+
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string
@@ -293,21 +298,53 @@ export type SubscriptionResolveFn<TResult, TParent, TContext, TArgs> = (
   info: GraphQLResolveInfo
 ) => TResult | Promise<TResult>
 
-export interface SubscriptionResolverObject<TResult, TParent, TContext, TArgs> {
-  subscribe: SubscriptionSubscribeFn<TResult, TParent, TContext, TArgs>
-  resolve?: SubscriptionResolveFn<TResult, TParent, TContext, TArgs>
+export interface SubscriptionSubscriberObject<
+  TResult,
+  TKey extends string,
+  TParent,
+  TContext,
+  TArgs
+> {
+  subscribe: SubscriptionSubscribeFn<
+    { [key in TKey]: TResult },
+    TParent,
+    TContext,
+    TArgs
+  >
+  resolve?: SubscriptionResolveFn<
+    TResult,
+    { [key in TKey]: TResult },
+    TContext,
+    TArgs
+  >
 }
+
+export interface SubscriptionResolverObject<TResult, TParent, TContext, TArgs> {
+  subscribe: SubscriptionSubscribeFn<any, TParent, TContext, TArgs>
+  resolve: SubscriptionResolveFn<TResult, any, TContext, TArgs>
+}
+
+export type SubscriptionObject<
+  TResult,
+  TKey extends string,
+  TParent,
+  TContext,
+  TArgs
+> =
+  | SubscriptionSubscriberObject<TResult, TKey, TParent, TContext, TArgs>
+  | SubscriptionResolverObject<TResult, TParent, TContext, TArgs>
 
 export type SubscriptionResolver<
   TResult,
+  TKey extends string,
   TParent = {},
   TContext = {},
   TArgs = {}
 > =
   | ((
       ...args: any[]
-    ) => SubscriptionResolverObject<TResult, TParent, TContext, TArgs>)
-  | SubscriptionResolverObject<TResult, TParent, TContext, TArgs>
+    ) => SubscriptionObject<TResult, TKey, TParent, TContext, TArgs>)
+  | SubscriptionObject<TResult, TKey, TParent, TContext, TArgs>
 
 export type TypeResolveFn<TTypes, TParent = {}, TContext = {}> = (
   parent: TParent,
@@ -334,18 +371,18 @@ export type DirectiveResolverFn<
 export type ResolversTypes = {
   Query: ResolverTypeWrapper<{}>
   ID: ResolverTypeWrapper<Scalars["ID"]>
-  Account: ResolverTypeWrapper<Account>
+  Account: ResolverTypeWrapper<AccountType>
   String: ResolverTypeWrapper<Scalars["String"]>
   Boolean: ResolverTypeWrapper<Scalars["Boolean"]>
-  Conversation: ResolverTypeWrapper<Conversation>
+  Conversation: ResolverTypeWrapper<ConversationType>
   Address: ResolverTypeWrapper<Address>
   Presentable: ResolverTypeWrapper<Presentable>
   Content: ResolverTypeWrapper<Content>
   PartSpec: ResolverTypeWrapper<PartSpec>
   Disposition: Disposition
   Participants: ResolverTypeWrapper<Participants>
-  Message: ResolverTypeWrapper<Message>
-  Search: ResolverTypeWrapper<Search>
+  Message: ResolverTypeWrapper<MessageType>
+  Search: ResolverTypeWrapper<SearchType>
   Int: ResolverTypeWrapper<Scalars["Int"]>
   ConversationSearchResult: ResolverTypeWrapper<
     Omit<ConversationSearchResult, "conversation"> & {
@@ -353,8 +390,8 @@ export type ResolversTypes = {
     }
   >
   Mutation: ResolverTypeWrapper<{}>
-  AccountMutations: ResolverTypeWrapper<AccountMutations>
-  ConversationMutations: ResolverTypeWrapper<ConversationMutations>
+  AccountMutations: ResolverTypeWrapper<AccountMutationsType>
+  ConversationMutations: ResolverTypeWrapper<ConversationMutationsType>
   PartSpecInput: PartSpecInput
   ContentInput: ContentInput
   MessageInput: MessageInput
@@ -365,25 +402,25 @@ export type ResolversTypes = {
 export type ResolversParentTypes = {
   Query: {}
   ID: Scalars["ID"]
-  Account: Account
+  Account: AccountType
   String: Scalars["String"]
   Boolean: Scalars["Boolean"]
-  Conversation: Conversation
+  Conversation: ConversationType
   Address: Address
   Presentable: Presentable
   Content: Content
   PartSpec: PartSpec
   Disposition: Disposition
   Participants: Participants
-  Message: Message
-  Search: Search
+  Message: MessageType
+  Search: SearchType
   Int: Scalars["Int"]
   ConversationSearchResult: Omit<ConversationSearchResult, "conversation"> & {
-    conversation: ResolversTypes["Conversation"]
+    conversation: ResolversParentTypes["Conversation"]
   }
   Mutation: {}
-  AccountMutations: AccountMutations
-  ConversationMutations: ConversationMutations
+  AccountMutations: AccountMutationsType
+  ConversationMutations: ConversationMutationsType
   PartSpecInput: PartSpecInput
   ContentInput: ContentInput
   MessageInput: MessageInput
@@ -392,7 +429,7 @@ export type ResolversParentTypes = {
 
 export type AccountResolvers<
   ContextType = any,
-  ParentType = ResolversParentTypes["Account"]
+  ParentType extends ResolversParentTypes["Account"] = ResolversParentTypes["Account"]
 > = {
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
   email?: Resolver<ResolversTypes["String"], ParentType, ContextType>
@@ -408,43 +445,43 @@ export type AccountResolvers<
     ResolversTypes["Search"],
     ParentType,
     ContextType,
-    AccountSearchArgs
+    RequireFields<AccountSearchArgs, "query">
   >
 }
 
 export type AccountMutationsResolvers<
   ContextType = any,
-  ParentType = ResolversParentTypes["AccountMutations"]
+  ParentType extends ResolversParentTypes["AccountMutations"] = ResolversParentTypes["AccountMutations"]
 > = {
   create?: Resolver<
     ResolversTypes["Account"],
     ParentType,
     ContextType,
-    AccountMutationsCreateArgs
+    RequireFields<AccountMutationsCreateArgs, "email">
   >
   authenticate?: Resolver<
     ResolversTypes["Account"],
     ParentType,
     ContextType,
-    AccountMutationsAuthenticateArgs
+    RequireFields<AccountMutationsAuthenticateArgs, "id">
   >
   delete?: Resolver<
     ResolversTypes["Boolean"],
     ParentType,
     ContextType,
-    AccountMutationsDeleteArgs
+    RequireFields<AccountMutationsDeleteArgs, "id">
   >
   sync?: Resolver<
     ResolversTypes["Account"],
     ParentType,
     ContextType,
-    AccountMutationsSyncArgs
+    RequireFields<AccountMutationsSyncArgs, "id">
   >
 }
 
 export type AddressResolvers<
   ContextType = any,
-  ParentType = ResolversParentTypes["Address"]
+  ParentType extends ResolversParentTypes["Address"] = ResolversParentTypes["Address"]
 > = {
   host?: Resolver<ResolversTypes["String"], ParentType, ContextType>
   mailbox?: Resolver<ResolversTypes["String"], ParentType, ContextType>
@@ -453,7 +490,7 @@ export type AddressResolvers<
 
 export type ContentResolvers<
   ContextType = any,
-  ParentType = ResolversParentTypes["Content"]
+  ParentType extends ResolversParentTypes["Content"] = ResolversParentTypes["Content"]
 > = {
   resource?: Resolver<ResolversTypes["PartSpec"], ParentType, ContextType>
   revision?: Resolver<ResolversTypes["PartSpec"], ParentType, ContextType>
@@ -468,7 +505,7 @@ export type ContentResolvers<
 
 export type ConversationResolvers<
   ContextType = any,
-  ParentType = ResolversParentTypes["Conversation"]
+  ParentType extends ResolversParentTypes["Conversation"] = ResolversParentTypes["Conversation"]
 > = {
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
   date?: Resolver<ResolversTypes["String"], ParentType, ContextType>
@@ -490,7 +527,7 @@ export type ConversationResolvers<
     ResolversTypes["Participants"],
     ParentType,
     ContextType,
-    ConversationReplyRecipientsArgs
+    RequireFields<ConversationReplyRecipientsArgs, "fromAccountId">
   >
   snippet?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
   subject?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
@@ -498,55 +535,64 @@ export type ConversationResolvers<
 
 export type ConversationMutationsResolvers<
   ContextType = any,
-  ParentType = ResolversParentTypes["ConversationMutations"]
+  ParentType extends ResolversParentTypes["ConversationMutations"] = ResolversParentTypes["ConversationMutations"]
 > = {
   archive?: Resolver<
     ResolversTypes["Conversation"],
     ParentType,
     ContextType,
-    ConversationMutationsArchiveArgs
+    RequireFields<ConversationMutationsArchiveArgs, "id">
   >
   flag?: Resolver<
     Array<ResolversTypes["Conversation"]>,
     ParentType,
     ContextType,
-    ConversationMutationsFlagArgs
+    RequireFields<ConversationMutationsFlagArgs, "ids" | "isFlagged">
   >
   flagPresentable?: Resolver<
     ResolversTypes["Conversation"],
     ParentType,
     ContextType,
-    ConversationMutationsFlagPresentableArgs
+    RequireFields<
+      ConversationMutationsFlagPresentableArgs,
+      "id" | "conversationId" | "isFlagged"
+    >
   >
   edit?: Resolver<
     ResolversTypes["Conversation"],
     ParentType,
     ContextType,
-    ConversationMutationsEditArgs
+    RequireFields<
+      ConversationMutationsEditArgs,
+      "accountId" | "conversationId" | "resource" | "revision" | "content"
+    >
   >
   reply?: Resolver<
     ResolversTypes["Conversation"],
     ParentType,
     ContextType,
-    ConversationMutationsReplyArgs
+    RequireFields<
+      ConversationMutationsReplyArgs,
+      "accountId" | "id" | "content"
+    >
   >
   setIsRead?: Resolver<
     ResolversTypes["Conversation"],
     ParentType,
     ContextType,
-    ConversationMutationsSetIsReadArgs
+    RequireFields<ConversationMutationsSetIsReadArgs, "id" | "isRead">
   >
   sendMessage?: Resolver<
     ResolversTypes["Conversation"],
     ParentType,
     ContextType,
-    ConversationMutationsSendMessageArgs
+    RequireFields<ConversationMutationsSendMessageArgs, "accountId" | "message">
   >
 }
 
 export type ConversationSearchResultResolvers<
   ContextType = any,
-  ParentType = ResolversParentTypes["ConversationSearchResult"]
+  ParentType extends ResolversParentTypes["ConversationSearchResult"] = ResolversParentTypes["ConversationSearchResult"]
 > = {
   conversation?: Resolver<
     ResolversTypes["Conversation"],
@@ -558,7 +604,7 @@ export type ConversationSearchResultResolvers<
 
 export type MessageResolvers<
   ContextType = any,
-  ParentType = ResolversParentTypes["Message"]
+  ParentType extends ResolversParentTypes["Message"] = ResolversParentTypes["Message"]
 > = {
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
   date?: Resolver<ResolversTypes["String"], ParentType, ContextType>
@@ -569,7 +615,7 @@ export type MessageResolvers<
 
 export type MutationResolvers<
   ContextType = any,
-  ParentType = ResolversParentTypes["Mutation"]
+  ParentType extends ResolversParentTypes["Mutation"] = ResolversParentTypes["Mutation"]
 > = {
   accounts?: Resolver<
     ResolversTypes["AccountMutations"],
@@ -585,7 +631,7 @@ export type MutationResolvers<
 
 export type ParticipantsResolvers<
   ContextType = any,
-  ParentType = ResolversParentTypes["Participants"]
+  ParentType extends ResolversParentTypes["Participants"] = ResolversParentTypes["Participants"]
 > = {
   from?: Resolver<
     Maybe<Array<ResolversTypes["Address"]>>,
@@ -603,7 +649,7 @@ export type ParticipantsResolvers<
 
 export type PartSpecResolvers<
   ContextType = any,
-  ParentType = ResolversParentTypes["PartSpec"]
+  ParentType extends ResolversParentTypes["PartSpec"] = ResolversParentTypes["PartSpec"]
 > = {
   messageId?: Resolver<ResolversTypes["String"], ParentType, ContextType>
   contentId?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
@@ -611,7 +657,7 @@ export type PartSpecResolvers<
 
 export type PresentableResolvers<
   ContextType = any,
-  ParentType = ResolversParentTypes["Presentable"]
+  ParentType extends ResolversParentTypes["Presentable"] = ResolversParentTypes["Presentable"]
 > = {
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
   isRead?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>
@@ -625,38 +671,38 @@ export type PresentableResolvers<
 
 export type QueryResolvers<
   ContextType = any,
-  ParentType = ResolversParentTypes["Query"]
+  ParentType extends ResolversParentTypes["Query"] = ResolversParentTypes["Query"]
 > = {
   account?: Resolver<
     Maybe<ResolversTypes["Account"]>,
     ParentType,
     ContextType,
-    QueryAccountArgs
+    RequireFields<QueryAccountArgs, "id">
   >
   accounts?: Resolver<Array<ResolversTypes["Account"]>, ParentType, ContextType>
   addresses?: Resolver<
     Array<ResolversTypes["Address"]>,
     ParentType,
     ContextType,
-    QueryAddressesArgs
+    RequireFields<QueryAddressesArgs, "inputValue">
   >
   conversation?: Resolver<
     Maybe<ResolversTypes["Conversation"]>,
     ParentType,
     ContextType,
-    QueryConversationArgs
+    RequireFields<QueryConversationArgs, "id">
   >
   conversations?: Resolver<
     Array<ResolversTypes["ConversationSearchResult"]>,
     ParentType,
     ContextType,
-    QueryConversationsArgs
+    RequireFields<QueryConversationsArgs, "query">
   >
 }
 
 export type SearchResolvers<
   ContextType = any,
-  ParentType = ResolversParentTypes["Search"]
+  ParentType extends ResolversParentTypes["Search"] = ResolversParentTypes["Search"]
 > = {
   id?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
   conversations?: Resolver<

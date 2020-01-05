@@ -9,9 +9,9 @@ generates:
       - typescript-resolvers
     config:
       mappers:
-        Account: ../resolvers/types#Account
-        AccountMutations: ../resolvers/types#AccountMutations
-        Conversation: ../models/conversation#Conversation
-        ConversationMutations: ../resolvers/types#ConversationMutations
-        Message: ../resolvers/types#Message
-        Search: ../cache/types#Search
+        Account: ../resolvers/types#Account as AccountType
+        AccountMutations: ../resolvers/types#AccountMutations as AccountMutationsType
+        Conversation: ../models/conversation#Conversation as ConversationType
+        ConversationMutations: ../resolvers/types#ConversationMutations as ConversationMutationsType
+        Message: ../resolvers/types#Message as MessageType
+        Search: ../cache/types#Search as SearchType

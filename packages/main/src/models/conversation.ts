@@ -21,6 +21,11 @@ export interface Conversation {
   messages: cache.Message[]
 }
 
+export interface ConversationSearchResult {
+  conversation: Conversation
+  query: string
+}
+
 export interface Presentable extends GeneratedPresentable {
   revisions: Revision[]
 }
