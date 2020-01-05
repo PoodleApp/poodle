@@ -14,6 +14,7 @@ import ReactDOM from "react-dom"
 import { Router } from "react-router-dom"
 import "typeface-roboto"
 import App from "./App"
+import debounce from "./debounce"
 import "./index.css"
 
 // Workaround to escape from Webpack's import rewriting
@@ -33,11 +34,20 @@ const client = new ApolloClient({
 
 // TODO: signal message updates to frontend via GraphQL subscription instead of
 // using Electron IPC directly.
-ipcRenderer.on("message_updates", () => {
-  if (client.queryManager) {
-    client.queryManager.reFetchObservableQueries()
-  }
-})
+
+ipcRenderer.on(
+  "message_updates",
+  debounce(
+    () => {
+      if (client.queryManager) {
+        client.queryManager.reFetchObservableQueries()
+      }
+    },
+    3000,
+    true
+  )
+)
+
 ipcRenderer.send("subscribe_to_message_updates")
 
 const theme = createMuiTheme({
