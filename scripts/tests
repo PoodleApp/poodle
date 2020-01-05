@@ -13,8 +13,8 @@ if [[ -n "$CI" ]]; then
   git diff --exit-code
 fi
 
-(cd packages/main && eslint src/**/*.ts)
-(cd packages/client && eslint src/**/*.{ts,tsx})
+(cd packages/main && yarn lint)
+(cd packages/client && yarn lint)
 
 (cd packages/main && yarn test)
 (cd packages/client && yarn test)

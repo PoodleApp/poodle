@@ -10,7 +10,6 @@ import {
   Menu,
   MenuItem,
   Toolbar,
-  Tooltip,
   Typography
 } from "@material-ui/core"
 import ArchiveIcon from "@material-ui/icons/Archive"
@@ -19,10 +18,10 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore"
 import MoreVertIcon from "@material-ui/icons/MoreVert"
 import StarIcon from "@material-ui/icons/Star"
 import StarBorder from "@material-ui/icons/StarBorder"
-import { Redirect, RouteComponentProps } from "@reach/router"
 import clsx from "clsx"
 import moment from "moment"
 import * as React from "react"
+import { useHistory } from "react-router-dom"
 import Avatar from "./Avatar"
 import EditForm from "./compose/EditForm"
 import ReplyForm from "./compose/ReplyForm"
@@ -32,10 +31,11 @@ import * as graphql from "./generated/graphql"
 import useArchive from "./hooks/useArchive"
 import useSetIsRead from "./hooks/useSetIsRead"
 import { displayParticipant } from "./Participant"
+import Tooltip from "./Tooltip"
 
-type Props = RouteComponentProps & {
-  accountId?: string
-  conversationId?: string
+type Props = {
+  accountId: string
+  conversationId: string
 }
 
 const useStyles = makeStyles(theme => ({
@@ -92,28 +92,15 @@ const useStyles = makeStyles(theme => ({
   }
 }))
 
-export default function Conversation({
-  accountId,
-  conversationId,
-  navigate
-}: Props) {
+export default function Conversation({ accountId, conversationId }: Props) {
   const classes = useStyles()
+  const history = useHistory()
   const { data, error, loading } = graphql.useGetConversationQuery({
-    variables: { id: conversationId!, accountId: accountId! }
+    variables: { id: conversationId, accountId }
   })
-  const [archive, archiveResult] = useArchive({
-    accountId: accountId!,
-    conversationId: conversationId!
-  })
-
-  const [flag, flagResult] = graphql.useFlagMutation()
+  const [archive, archiveResult] = useArchive({ accountId, conversationId })
 
   const setIsReadResult = useSetIsRead(data && data.conversation)
-
-  // TODO: is there a way to guarantee that `accountId` and `conversationId` are available?
-  if (!accountId || !conversationId) {
-    return <Redirect to="/accounts" />
-  }
 
   if (error) {
     return <div>Error! {error.message}</div>
@@ -128,22 +115,14 @@ export default function Conversation({
 
   async function onArchive() {
     await archive()
-    navigate!(`/accounts/${accountId}/dashboard`)
-  }
-
-  async function onFlag() {
-    await (conversationId &&
-      flag({
-        variables: { conversationIDs: [conversationId!], isFlagged: !isStarred }
-      }))
+    history.push(`/accounts/${accountId}/dashboard`)
   }
 
   const {
     labels,
     presentableElements,
     replyRecipients,
-    subject,
-    isStarred
+    subject
   } = data.conversation
 
   return (
@@ -155,7 +134,9 @@ export default function Conversation({
             edge="start"
             color="inherit"
             aria-label="close view"
-            onClick={() => navigate!(`/accounts/${accountId}/dashboard`)}
+            onClick={() => {
+              history.goBack()
+            }}
           >
             <CloseIcon />
           </IconButton>
@@ -168,11 +149,7 @@ export default function Conversation({
           >
             {subject}
           </Typography>
-          <Tooltip
-            title="Archive Conversation"
-            enterDelay={500}
-            leaveDelay={200}
-          >
+          <Tooltip title="Archive Conversation">
             <IconButton
               color="inherit"
               aria-label="archive"
@@ -181,25 +158,12 @@ export default function Conversation({
               <ArchiveIcon />
             </IconButton>
           </Tooltip>
-          <Tooltip
-            title={(isStarred ? "Unstar " : "Star ") + "Conversation"}
-            enterDelay={500}
-            leaveDelay={200}
-          >
-            <IconButton
-              color="inherit"
-              aria-label={isStarred ? "unstar" : "star"}
-              onClick={onFlag}
-            >
-              {isStarred ? <StarBorder /> : <StarIcon />}
-            </IconButton>
-          </Tooltip>
         </Toolbar>
       </AppBar>
       <CssBaseline />
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
-        <DisplayErrors results={[archiveResult, setIsReadResult, flagResult]} />
+        <DisplayErrors results={[archiveResult, setIsReadResult]} />
         {labels
           ? labels.map(label => (
               <span className="label" key={label}>
@@ -244,6 +208,7 @@ function Presentable({
   const [expanded, setExpanded] = React.useState(
     isLast ? true : !presentable.isRead
   )
+  const [flag, flagResult] = graphql.useFlagPresentableMutation()
 
   const classes = useStyles()
   const cardContentID = `card-content-${presentable.id}`
@@ -254,6 +219,16 @@ function Presentable({
 
   function handleClose() {
     setAnchorEl(null)
+  }
+  async function onFlag() {
+    await (conversationId &&
+      flag({
+        variables: {
+          conversationId: conversationId,
+          isFlagged: !presentable.isStarred,
+          presentableId: presentable.id
+        }
+      }))
   }
 
   return (
@@ -270,12 +245,29 @@ function Presentable({
           <div>
             <IconButton
               aria-label="Action"
-              aria-controls={`${presentable.id}-menu`}
+              aria-controls={`menu-${presentable.id}`}
               aria-haspopup="true"
               onClick={handleClick}
             >
               <MoreVertIcon />
             </IconButton>
+            <Tooltip
+              title={
+                (presentable.isStarred ? "Unstar " : "Star ") + "Conversation"
+              }
+            >
+              <IconButton
+                aria-label={presentable.isStarred ? "unstar" : "star"}
+                onClick={onFlag}
+              >
+                {presentable.isStarred ? (
+                  <StarIcon style={{ fill: "gold" }} />
+                ) : (
+                  <StarBorder />
+                )}
+              </IconButton>
+            </Tooltip>
+            <DisplayErrors results={[flagResult]} />
             <IconButton
               className={clsx(classes.expand, {
                 [classes.expandOpen]: expanded
@@ -289,7 +281,7 @@ function Presentable({
             </IconButton>
 
             <Menu
-              id={`${presentable.id}-menu`}
+              id={`menu-${presentable.id}`}
               anchorEl={anchorEl}
               keepMounted
               open={Boolean(anchorEl)}

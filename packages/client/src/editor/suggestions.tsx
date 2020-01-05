@@ -23,9 +23,9 @@ export function useSuggestionsPlugin({ capture }: { capture: RegExp }) {
       // This timeout is necessary to escape a re-render paradox.
       setTimeout(() => setQuery(newQuery), 0)
 
-      let annotations = editor.value.annotations.filter(
-        (annotation: Annotation) => annotation.type !== CONTEXT_ANNOTATION_TYPE
-      )
+      let annotations = (editor.value.annotations.filter(
+        annotation => !annotation || annotation.type !== CONTEXT_ANNOTATION_TYPE
+      ) as unknown) as Immutable.Map<string, Annotation>
 
       if (newQuery) {
         const key = getMentionKey()

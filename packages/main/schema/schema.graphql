@@ -1,16 +1,22 @@
+enum Disposition {
+  inline
+  attachment
+}
+
 type Account {
   id: ID!
   email: String!
   loggedIn: Boolean!
   conversations(label: String): [Conversation!]!
   messages: [Message!]!
+  search(query: String!): Search!
 }
 
 type AccountMutations {
   create(email: String!): Account!
   authenticate(id: ID!): Account!
-  sync(id: ID!): Account!
   delete(id: ID!): Boolean!
+  sync(id: ID!): Account!
 }
 
 type Conversation {
@@ -40,6 +46,11 @@ type ConversationSearchResult {
 type ConversationMutations {
   archive(id: ID!): Conversation!
   flag(ids: [ID!]!, isFlagged: Boolean!): [Conversation!]!
+  flagPresentable(
+    id: ID!
+    conversationId: ID!
+    isFlagged: Boolean!
+  ): Conversation!
   edit(
     accountId: ID!
     conversationId: ID!
@@ -88,6 +99,7 @@ type Participants {
 type Presentable {
   id: ID!
   isRead: Boolean!
+  isStarred: Boolean!
   contents: [Content!]!
   date: String!
   from: Address!
@@ -98,9 +110,16 @@ type Presentable {
 type Content {
   resource: PartSpec!
   revision: PartSpec!
+  disposition: Disposition!
+  filename: String
+  name: String
   type: String!
   subtype: String!
-  content: String!
+  content: String
+  """
+  uri is used internally to retrieve the content for the part
+  """
+  uri: String!
 }
 
 input ContentInput {
@@ -117,6 +136,13 @@ type PartSpec {
 input PartSpecInput {
   messageId: String!
   contentId: String
+}
+
+type Search {
+  id: ID!
+  conversations: [Conversation!]!
+  loading: Boolean!
+  query: String!
 }
 
 type Mutation {

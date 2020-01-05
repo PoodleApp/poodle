@@ -1,4 +1,4 @@
-import { ipcMain, IpcRenderer } from "electron"
+import { ipcMain, WebContents } from "electron"
 import { PubSub } from "graphql-subscriptions"
 
 const pubsub = new PubSub()
@@ -22,7 +22,7 @@ export const [publishMessageUpdates, messageUpdates] = topic<null>(
 // using Electron IPC directly.
 ipcMain.on(
   "subscribe_to_message_updates",
-  async (event: { sender: IpcRenderer }) => {
+  async (event: { sender: WebContents }) => {
     for await (const update of messageUpdates) {
       event.sender.send("message_updates", update)
     }

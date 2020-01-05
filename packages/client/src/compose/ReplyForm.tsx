@@ -6,6 +6,7 @@ import {
   CardHeader
 } from "@material-ui/core"
 import ReplyIcon from "@material-ui/icons/Reply"
+import { makeStyles } from "@material-ui/styles"
 import * as React from "react"
 import { Value } from "slate"
 import DisplayErrors from "../DisplayErrors"
@@ -13,6 +14,16 @@ import Editor from "../editor/Editor"
 import serializer from "../editor/serializer"
 import * as graphql from "../generated/graphql"
 import ParticipantChip from "../ParticipantChip"
+import WithAttachments from "./WithAttachments"
+
+const useStyles = makeStyles(_theme => ({
+  actionRow: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between"
+  }
+}))
 
 const initialValue = serializer.deserialize("")
 
@@ -28,6 +39,7 @@ export default function ReplyForm({
   replyRecipients,
   ...rest
 }: Props) {
+  const classes = useStyles()
   const [reply, replyResult] = graphql.useReplyMutation()
   const [value, setValue] = React.useState(initialValue)
 
@@ -71,20 +83,24 @@ export default function ReplyForm({
           title={<>Reply to {to}</>}
           subheader={cc.length > 0 ? <>Cc {cc}</> : null}
         />
-        <CardContent>
-          <Editor
-            onChange={({ value }: { value: Value }) => {
-              setValue(value)
-            }}
-            value={value}
-            placeholder="Write your reply here."
-          />
-        </CardContent>
-        <CardActions>
-          <Button type="submit" disabled={replyResult.loading}>
-            Send Reply
-          </Button>
-        </CardActions>
+        <WithAttachments>
+          <CardContent>
+            <Editor
+              onChange={({ value }: { value: Value }) => {
+                setValue(value)
+              }}
+              value={value}
+              placeholder="Write your reply here."
+            />
+            <WithAttachments.Attachments />
+          </CardContent>
+          <CardActions className={classes.actionRow}>
+            <Button type="submit" disabled={replyResult.loading}>
+              Send Reply
+            </Button>
+            <WithAttachments.AddAttachmentButton />
+          </CardActions>
+        </WithAttachments>
       </Card>
     </form>
   )

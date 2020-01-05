@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e
+
+if [ -z "$TRAVIS_TAG" ]; then
+  >&2 echo "$TRAVIS_TAG is not set - cannot build a release artifact without a tag. Aborting."
+  exit 33
+fi
+
+(cd packages/main && yarn version --no-git-tag-version --new-version ${TRAVIS_TAG#v})
+(cd packages/main && yarn make)

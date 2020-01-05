@@ -1,15 +1,28 @@
 import { convert } from "encoding"
 import { Collection, is, List, Seq } from "immutable"
-import { idFromHeaderValue, parseMidUri } from "poodle-common/lib/models/uri"
+import {
+  idFromHeaderValue,
+  parseMidUri,
+  bodyUri
+} from "poodle-common/lib/models/uri"
 import * as cache from "../cache"
-import { Content, Participants, Presentable } from "../generated/graphql"
+import {
+  Content,
+  Participants,
+  Disposition,
+  Presentable as GeneratedPresentable
+} from "../generated/graphql"
 import { uniqBy } from "../util/immutable"
 import * as Addr from "./Address"
-import { inlineContentParts } from "./Message"
+import { inlineAndAttachmentContentParts } from "./Message"
 
 export interface Conversation {
   id: string
   messages: cache.Message[]
+}
+
+export interface Presentable extends GeneratedPresentable {
+  revisions: Revision[]
 }
 
 export function getConversation(id: string): Conversation | null {
@@ -109,6 +122,9 @@ export function getPresentableElements({
         isRead: cache
           .getFlags(latestEdit ? latestEdit.revision.message.id : message.id)
           .includes("\\Seen"),
+        isStarred: resources.some(r =>
+          cache.getFlags(r.revision.message.id).includes("\\Flagged")
+        ),
         contents: resources
           .valueSeq()
           .map(getPresentableContent)
@@ -116,6 +132,10 @@ export function getPresentableElements({
         date: message.date,
         from: cache.getParticipants(message.id, "from")[0],
         editedAt: latestEdit && latestEdit.revision.message.date,
+        revisions: resources
+          .valueSeq()
+          .map(r => r.revision)
+          .toArray(),
         editedBy:
           latestEdit &&
           cache.getParticipants(latestEdit.revision.message.id, "from")[0]
@@ -124,18 +144,20 @@ export function getPresentableElements({
 }
 
 function getContentParts(message: cache.Message): List<Revision> {
-  return inlineContentParts(cache.getStruct(message.id)).map(part => {
-    const cachedPart =
-      part.partID &&
-      cache.getPartByPartId({ messageId: message.id, partId: part.partID })
-    if (!cachedPart) {
-      throw new Error("could not get message part from cache")
+  return inlineAndAttachmentContentParts(cache.getStruct(message.id)).map(
+    part => {
+      const cachedPart =
+        part.partID &&
+        cache.getPartByPartId({ messageId: message.id, partId: part.partID })
+      if (!cachedPart) {
+        throw new Error("could not get message part from cache")
+      }
+      return {
+        message,
+        part: cachedPart
+      }
     }
-    return {
-      message,
-      part: cachedPart
-    }
-  })
+  )
 }
 
 function walkGraphOneStep(
@@ -254,25 +276,23 @@ function getPresentableContent({
   const charset = part.params_charset
   const decoded =
     content && (charset ? convert(content, "utf8", charset) : content)
-  const contentMeta = decoded
-    ? {
-        type: part.type || "text",
-        subtype: part.subtype || "plain",
-        content: decoded.toString("utf8")
-      }
-    : fallbackContent()
+  const disposition = part.disposition_type || ""
   return {
-    ...contentMeta,
+    type: part.type || "text",
+    subtype: part.subtype || "plain",
+    content: decoded ? decoded.toString("utf8") : null,
+    disposition:
+      disposition.toLowerCase() === "attachment"
+        ? Disposition.Attachment
+        : Disposition.Inline,
+    filename: part.disposition_filename,
+    name: part.disposition_name,
     resource: partSpec(resource),
-    revision: partSpec(revision)
-  }
-}
-
-function fallbackContent() {
-  return {
-    type: "text",
-    subtype: "plain",
-    content: "[content missing]"
+    revision: partSpec(revision),
+    uri: bodyUri(
+      String(revision.part.message_id),
+      String(revision.part.part_id)
+    )
   }
 }
 

@@ -70,20 +70,18 @@ it("fetches message headers", async () => {
 })
 
 it("fetches content for message parts", async () => {
-  const results = await kefirUtil
-    .takeAll(
-      perform(
-        connection,
-        actions.fetch({ name: "INBOX" }, `${testThread[0].attributes.uid}`, {
-          bodies: ["3", "4"],
-          envelope: true,
-          struct: true
-        })
-      )
-        .filter(isBody)
-        .map(e => ({ ...e, data: e.data.toString("utf8") }))
+  const results = await kefirUtil.takeAll(
+    perform(
+      connection,
+      actions.fetch({ name: "INBOX" }, `${testThread[0].attributes.uid}`, {
+        bodies: ["3", "4"],
+        envelope: true,
+        struct: true
+      })
     )
-    .toPromise()
+      .filter(isBody)
+      .map(e => ({ ...e, data: e.data.toString("utf8") }))
+  )
   expect(results).toEqual(
     expect.arrayContaining([
       {

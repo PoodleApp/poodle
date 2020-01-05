@@ -66,7 +66,8 @@ export const Conversation: ConversationResolvers = {
     const presentables = C.getPresentableElements(conversation)
     const latest = presentables.last(null)
     const content = latest && Seq(latest.contents).first(null)
-    const visible = content && replyParser(content.content, true)
+    const visible =
+      content && content.content && replyParser(content.content, true)
     const plainText =
       visible && content && content.subtype === "html"
         ? htmlToText.fromString(visible, {
@@ -74,7 +75,7 @@ export const Conversation: ConversationResolvers = {
             ignoreImage: true
           })
         : visible
-    return plainText && plainText.slice(0, 1024)
+    return plainText ? plainText.slice(0, 1024) : null
   },
 
   subject(conversation: C.Conversation) {
@@ -114,6 +115,35 @@ export const ConversationMutations: ConversationMutationsResolvers = {
       threads.push(C.mustGetConversation(id))
     }
     return threads
+  },
+
+  async flagPresentable(_parent, { conversationId, id, isFlagged }) {
+    const thread = C.mustGetConversation(conversationId)
+    const presentables = C.getPresentableElements(thread)
+    for (const presentable of presentables) {
+      if (presentable.id === id) {
+        const messages = isFlagged
+          ? [presentable.revisions[presentable.revisions.length - 1].message]
+          : presentable.revisions
+              .filter(revision =>
+                cache.getFlags(revision.message.id).includes("\\Flagged")
+              )
+              .map(revision => revision.message)
+
+        updateAction(messages, (accountId, box, uids) => {
+          schedule(
+            actions.setFlagged({
+              accountId: String(accountId),
+              box,
+              uids,
+              isFlagged
+            })
+          )
+        })
+      }
+    }
+
+    return C.mustGetConversation(conversationId)
   },
 
   async edit(_parent, { accountId, conversationId, revision, content }) {

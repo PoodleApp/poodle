@@ -7,6 +7,8 @@ export type AccountMutations = {}
 
 export type ConversationMutations = {}
 
+export type PresentableMutations = {}
+
 export interface Message {
   id: string
   date: string

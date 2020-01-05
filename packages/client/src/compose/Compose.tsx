@@ -9,15 +9,16 @@ import {
   Typography
 } from "@material-ui/core"
 import CloseIcon from "@material-ui/icons/Close"
-import { navigate } from "@reach/router"
 import clsx from "clsx"
 import * as React from "react"
+import { useHistory } from "react-router"
 import { Value } from "slate"
 import DisplayErrors from "../DisplayErrors"
 import { serializer } from "../editor"
 import Editor from "../editor/Editor"
 import * as graphql from "../generated/graphql"
 import RecipientsInput, { Address } from "./RecipientsInput"
+import WithAttachments from "./WithAttachments"
 
 const initialValue = serializer.deserialize("")
 
@@ -65,6 +66,13 @@ const useStyles = makeStyles(theme => ({
     flexGrow: 1,
     justifyContent: "stretch"
   },
+  actionRow: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%"
+  },
   formInput: {
     marginBottom: theme.spacing(1)
   },
@@ -76,6 +84,7 @@ const useStyles = makeStyles(theme => ({
 
 export default function Compose({ accountId }: Props) {
   const classes = useStyles()
+  const history = useHistory()
   const [subject, setSubject] = React.useState("")
   const [recipients, setRecipients] = React.useState<Address[]>([])
   const [content, setContent] = React.useState(initialValue)
@@ -102,7 +111,7 @@ export default function Compose({ accountId }: Props) {
       })
       if (response && response.data) {
         const conversationId = response.data.conversations.sendMessage.id
-        navigate(`/accounts/${accountId}/conversations/${conversationId}`)
+        history.push(`/accounts/${accountId}/conversations/${conversationId}`)
       }
     } catch (error) {}
   }
@@ -116,9 +125,7 @@ export default function Compose({ accountId }: Props) {
             edge="start"
             color="inherit"
             aria-label="close view"
-            onClick={() =>
-              navigate(accountId ? `/accounts/${accountId}/dashboard` : "/")
-            }
+            onClick={() => history.goBack()}
           >
             <CloseIcon />
           </IconButton>
@@ -167,9 +174,15 @@ export default function Compose({ accountId }: Props) {
             placeholder="Write your message here."
             value={content}
           />
-          <Button color="primary" variant="contained" type="submit">
-            Send
-          </Button>
+          <WithAttachments>
+            <WithAttachments.Attachments />
+            <span className={classes.actionRow}>
+              <WithAttachments.AddAttachmentButton />
+              <Button color="primary" variant="contained" type="submit">
+                Send
+              </Button>
+            </span>
+          </WithAttachments>
         </form>
       </main>
     </div>

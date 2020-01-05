@@ -32,7 +32,7 @@ beforeEach(async () => {
 describe("when querying conversations", () => {
   let conversation: Conversation
   let conversationId: string
-
+  let presentableId: string
   beforeEach(async () => {
     await sync(accountId, connectionManager)
 
@@ -43,6 +43,7 @@ describe("when querying conversations", () => {
           conversations {
             id
             presentableElements {
+              id
               contents {
                 resource { messageId, contentId }
                 revision { messageId, contentId }
@@ -57,6 +58,7 @@ describe("when querying conversations", () => {
     expect(result).toMatchObject({ data: expect.anything() })
     conversation = result.data!.account.conversations[0]
     conversationId = conversation.id
+    presentableId = conversation.presentableElements[0].id
   })
 
   it("gets metadata for a conversation from cache", async () => {
@@ -184,6 +186,9 @@ describe("when querying conversations", () => {
               type
               subtype
               content
+              disposition
+              filename
+              name
             }
           }
         }
@@ -208,7 +213,18 @@ describe("when querying conversations", () => {
                 {
                   type: "text",
                   subtype: "html",
-                  content: "<p>This is a test.</p>"
+                  content: "<p>This is a test.</p>",
+                  disposition: "inline",
+                  filename: null,
+                  name: null
+                },
+                {
+                  type: "image",
+                  subtype: "jpeg",
+                  content: "",
+                  disposition: "attachment",
+                  filename: "cat.jpg",
+                  name: null
                 }
               ]
             },
@@ -224,7 +240,10 @@ describe("when querying conversations", () => {
                 {
                   type: "text",
                   subtype: "plain",
-                  content: "A reply appears."
+                  content: "A reply appears.",
+                  disposition: "inline",
+                  filename: null,
+                  name: null
                 }
               ]
             }
@@ -291,6 +310,11 @@ describe("when querying conversations", () => {
                   type: "text",
                   subtype: "html",
                   content: "<p>This is a test.</p>"
+                },
+                {
+                  type: "image",
+                  subtype: "jpeg",
+                  content: ""
                 }
               ]
             },
@@ -501,6 +525,11 @@ describe("when querying conversations", () => {
                     type: "text",
                     subtype: "html",
                     content: "<p>This is a test.</p>"
+                  },
+                  {
+                    type: "image",
+                    subtype: "jpeg",
+                    content: ""
                   }
                 ]
               },
@@ -599,6 +628,11 @@ describe("when querying conversations", () => {
                     type: "text",
                     subtype: "html",
                     content: "<p>This is a test.</p>"
+                  },
+                  {
+                    type: "image",
+                    subtype: "jpeg",
+                    content: ""
                   }
                 ]
               },
@@ -610,6 +644,92 @@ describe("when querying conversations", () => {
             ],
             isRead: true,
             subject: "Test thread 2019-02"
+          }
+        }
+      }
+    })
+  })
+
+  it("stars an edited message", async () => {
+    const revisedContent = "What I meant to say was, hi."
+    await sendEdit({
+      type: "text",
+      subtype: "plain",
+      content: revisedContent
+    })
+    const result = await request(
+      `
+        mutation flagPresentable($presentableId: ID!, $conversationId: ID!, $isFlagged: Boolean!){
+          conversations {
+            flagPresentable(id: $presentableId, conversationId: $conversationId, isFlagged: $isFlagged){
+              presentableElements {
+                id
+                isStarred
+              }
+              id
+              isStarred
+            }
+          }
+        }
+      `,
+      { conversationId: conversationId, isFlagged: true, presentableId }
+    )
+
+    expect(result).toMatchObject({
+      data: {
+        conversations: {
+          flagPresentable: {
+            id: conversationId,
+            isStarred: true,
+            presentableElements: expect.arrayContaining([
+              {
+                id: presentableId,
+                isStarred: true
+              }
+            ])
+          }
+        }
+      }
+    })
+  })
+
+  it("un-stars an edited message", async () => {
+    const revisedContent = "What I meant to say was, hi."
+    await sendEdit({
+      type: "text",
+      subtype: "plain",
+      content: revisedContent
+    })
+    const result = await request(
+      `
+        mutation flagPresentable($presentableId: ID!, $conversationId: ID!, $isFlagged: Boolean!){
+          conversations {
+            flagPresentable(id: $presentableId, conversationId: $conversationId, isFlagged: $isFlagged){
+              presentableElements {
+                id
+                isStarred
+              }
+              id
+              isStarred
+            }
+          }
+        }
+      `,
+      { conversationId: conversationId, isFlagged: false, presentableId }
+    )
+
+    expect(result).toMatchObject({
+      data: {
+        conversations: {
+          flagPresentable: {
+            id: conversationId,
+            isStarred: false,
+            presentableElements: expect.arrayContaining([
+              {
+                id: presentableId,
+                isStarred: false
+              }
+            ])
           }
         }
       }
@@ -635,10 +755,8 @@ describe("when querying conversations", () => {
       }
     })
     editMessage.attributes.uid = 9000
-    const threadWithEdit = [...testThread, editMessage]
-    mock(Connection.prototype.fetch).mockImplementation(
-      mockFetchImplementation({ thread: threadWithEdit })
-    )
+    editMessage.attributes["x-gm-labels"] = ["\\Inbox"]
+    mockConnection({ thread: [...testThread, editMessage] })
     await sync(accountId, connectionManager)
 
     const result = await request(
@@ -685,6 +803,11 @@ describe("when querying conversations", () => {
                   type: "text",
                   subtype: "html",
                   content: "<p>This is a test.</p>"
+                },
+                {
+                  type: "image",
+                  subtype: "jpeg",
+                  content: ""
                 }
               ]
             },
@@ -772,6 +895,7 @@ describe("when querying conversations", () => {
       }
     })
   })
+
   describe("searching", () => {
     it("lists conversations whose subject matches a given query", async () => {
       const result = await request(
@@ -964,7 +1088,7 @@ describe("when addressing replies", () => {
               }
             }
           }
-        } 
+        }
       `,
       { conversationId: testThread[1].attributes["x-gm-thrid"], accountId }
     )

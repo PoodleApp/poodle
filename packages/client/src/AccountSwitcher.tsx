@@ -1,7 +1,7 @@
 import { Button, Menu, MenuItem } from "@material-ui/core"
 import { ButtonProps } from "@material-ui/core/Button"
-import { Link } from "@reach/router"
 import * as React from "react"
+import { Link } from "react-router-dom"
 import * as graphql from "./generated/graphql"
 
 type Props = ButtonProps & { accountId: string }

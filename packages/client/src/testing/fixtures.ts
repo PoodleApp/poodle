@@ -29,6 +29,7 @@ export const conversation: graphql.Conversation = {
       __typename: "Presentable",
       id: "11",
       isRead: true,
+      isStarred: false,
       contents: [
         {
           __typename: "Content",
@@ -46,7 +47,11 @@ export const conversation: graphql.Conversation = {
           },
           type: "text",
           subtype: "plain",
-          content: "Hello from test"
+          content: "Hello from test",
+          disposition: graphql.Disposition.Inline,
+          filename: null,
+          name: null,
+          uri: "body:11/1"
         }
       ],
       date: "2019-06-17T17:20:20.806Z",
@@ -63,6 +68,7 @@ export const conversation: graphql.Conversation = {
       __typename: "Presentable",
       id: "12",
       isRead: true,
+      isStarred: false,
       contents: [
         {
           __typename: "Content",
@@ -80,7 +86,11 @@ export const conversation: graphql.Conversation = {
           },
           type: "text",
           subtype: "plain",
-          content: "Hello from next test"
+          content: "Hello from next test",
+          disposition: graphql.Disposition.Inline,
+          filename: null,
+          name: null,
+          uri: "body:12/2"
         }
       ],
       date: "2019-07-17T17:20:20.806Z",
@@ -88,6 +98,43 @@ export const conversation: graphql.Conversation = {
         __typename: "Address",
         name: null,
         mailbox: "ben",
+        host: "test.us"
+      },
+      editedAt: null,
+      editedBy: null
+    },
+    {
+      __typename: "Presentable",
+      id: "13",
+      isRead: true,
+      isStarred: false,
+      contents: [
+        {
+          __typename: "Content",
+          revision: {
+            __typename: "PartSpec",
+            messageId: "4962f41f-c675-4b6f-a1b6-ee72b41833ee@mail.gmail.com",
+            contentId: "replytext"
+          },
+          resource: {
+            __typename: "PartSpec",
+            messageId: "4962f41f-c675-4b6f-a1b6-ee72b41833ee@mail.gmail.com",
+            contentId: "replytext"
+          },
+          type: "image",
+          subtype: "jpeg",
+          content: "",
+          disposition: graphql.Disposition.Attachment,
+          filename: "cat.jpg",
+          name: null,
+          uri: "body:13/3"
+        }
+      ],
+      date: "2019-07-26T15:57:24.301Z",
+      from: {
+        __typename: "Address",
+        name: null,
+        mailbox: "carina",
         host: "test.us"
       },
       editedAt: null,
@@ -100,7 +147,115 @@ export const conversation: graphql.Conversation = {
   subject: "Test Thread"
 }
 
-export const account: graphql.Account = {
+export const conversation2: graphql.Conversation = {
+  __typename: "Conversation",
+  id: "2",
+  date: "2019-07-19T12:03:11.114Z",
+  from: {
+    __typename: "Address",
+    name: null,
+    mailbox: "jesse",
+    host: "sitr.us"
+  },
+  labels: [],
+  replyRecipients: {
+    __typename: "Participants",
+    to: [
+      {
+        __typename: "Address",
+        name: null,
+        mailbox: "jesse",
+        host: "sitr.us"
+      }
+    ],
+    from: [],
+    cc: []
+  },
+  presentableElements: [
+    {
+      __typename: "Presentable",
+      id: "11",
+      isStarred: false,
+      isRead: true,
+      contents: [
+        {
+          __typename: "Content",
+          revision: {
+            __typename: "PartSpec",
+            messageId:
+              "CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-sthaorcheuano@mail.gmail.com",
+            contentId: "anotherconvotext"
+          },
+          resource: {
+            __typename: "PartSpec",
+            messageId:
+              "CAGM-pNt++x_o=ZHd_apBYpYntkGWOxF2=Q7H-sthaorcheuano@mail.gmail.com",
+            contentId: "anotherconvotext"
+          },
+          type: "text",
+          subtype: "plain",
+          content: "It's another conversation",
+          disposition: graphql.Disposition.Inline,
+          filename: null,
+          name: null,
+          uri: "body:11/4"
+        }
+      ],
+      date: "2019-07-19T12:03:11.114Z",
+      from: {
+        __typename: "Address",
+        name: null,
+        mailbox: "jesse",
+        host: "sitr.us"
+      },
+      editedAt: null,
+      editedBy: null
+    },
+    {
+      __typename: "Presentable",
+      id: "12",
+      isRead: true,
+      isStarred: false,
+      contents: [
+        {
+          __typename: "Content",
+          revision: {
+            __typename: "PartSpec",
+            messageId: "sacoehuracoheuntahoestam.cmanachtoeu@mail.gmail.com",
+            contentId: "anotherreplytext"
+          },
+          resource: {
+            __typename: "PartSpec",
+            messageId: "sacoehuracoheuntahoestam.cmanachtoeu@mail.gmail.com",
+            contentId: "anotherreplytext"
+          },
+          type: "text",
+          subtype: "plain",
+          content: "What, again?",
+          disposition: graphql.Disposition.Inline,
+          filename: null,
+          name: null,
+          uri: "body:12/5"
+        }
+      ],
+      date: "2019-07-19T12:21:00.002Z",
+      from: {
+        __typename: "Address",
+        name: null,
+        mailbox: "ben",
+        host: "test.us"
+      },
+      editedAt: null,
+      editedBy: null
+    }
+  ],
+  isRead: true,
+  isStarred: false,
+  snippet: "What, again?",
+  subject: "Another conversation"
+}
+
+export const account: Omit<graphql.Account, "search"> = {
   __typename: "Account",
   id: "1",
   conversations: [conversation],
@@ -178,6 +333,44 @@ export function flagMock({
   }
 }
 
+export function flagPresentableMock({
+  isFlagged,
+  presentableId
+}: {
+  isFlagged: boolean
+  presentableId: string
+}) {
+  return {
+    request: {
+      query: graphql.FlagPresentableDocument,
+      variables: {
+        conversationId: conversation.id,
+        isFlagged: isFlagged,
+        presentableId
+      }
+    },
+    result: {
+      data: {
+        conversations: {
+          __typename: "ConversationMutations",
+          flagPresentable: {
+            ...conversation,
+            isStarred: isFlagged,
+            presentableElements: conversation.presentableElements.map(
+              presentable => {
+                if (presentable.id === presentableId) {
+                  return { ...presentable, isStarred: isFlagged }
+                }
+                return presentable
+              }
+            )
+          }
+        }
+      }
+    }
+  }
+}
+
 export function replyMock(content: string) {
   return {
     request: {
@@ -213,6 +406,30 @@ export const setIsReadMock = {
       conversations: {
         __typename: "ConversationMutations",
         setIsRead: { ...conversation, isRead: true }
+      }
+    }
+  }
+}
+
+export function searchMock({ query }: { query: string }) {
+  return {
+    request: {
+      query: graphql.SearchConversationsDocument,
+      variables: { accountId: account.id, query }
+    },
+    result: {
+      data: {
+        account: {
+          __typename: "Account",
+          id: account.id,
+          search: {
+            __typename: "Search",
+            id: 1,
+            conversations: [conversation2],
+            loading: false,
+            query
+          }
+        }
       }
     }
   }
