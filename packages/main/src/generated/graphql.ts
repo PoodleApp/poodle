@@ -352,6 +352,11 @@ export type TypeResolveFn<TTypes, TParent = {}, TContext = {}> = (
   info: GraphQLResolveInfo
 ) => Maybe<TTypes>
 
+export type isTypeOfResolverFn<T = {}> = (
+  obj: T,
+  info: GraphQLResolveInfo
+) => boolean
+
 export type NextResolverFn<T> = () => Promise<T>
 
 export type DirectiveResolverFn<
@@ -447,6 +452,7 @@ export type AccountResolvers<
     ContextType,
     RequireFields<AccountSearchArgs, "query">
   >
+  __isTypeOf?: isTypeOfResolverFn<ParentType>
 }
 
 export type AccountMutationsResolvers<
@@ -477,6 +483,7 @@ export type AccountMutationsResolvers<
     ContextType,
     RequireFields<AccountMutationsSyncArgs, "id">
   >
+  __isTypeOf?: isTypeOfResolverFn<ParentType>
 }
 
 export type AddressResolvers<
@@ -486,6 +493,7 @@ export type AddressResolvers<
   host?: Resolver<ResolversTypes["String"], ParentType, ContextType>
   mailbox?: Resolver<ResolversTypes["String"], ParentType, ContextType>
   name?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
+  __isTypeOf?: isTypeOfResolverFn<ParentType>
 }
 
 export type ContentResolvers<
@@ -501,6 +509,7 @@ export type ContentResolvers<
   subtype?: Resolver<ResolversTypes["String"], ParentType, ContextType>
   content?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
   uri?: Resolver<ResolversTypes["String"], ParentType, ContextType>
+  __isTypeOf?: isTypeOfResolverFn<ParentType>
 }
 
 export type ConversationResolvers<
@@ -531,6 +540,7 @@ export type ConversationResolvers<
   >
   snippet?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
   subject?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
+  __isTypeOf?: isTypeOfResolverFn<ParentType>
 }
 
 export type ConversationMutationsResolvers<
@@ -588,6 +598,7 @@ export type ConversationMutationsResolvers<
     ContextType,
     RequireFields<ConversationMutationsSendMessageArgs, "accountId" | "message">
   >
+  __isTypeOf?: isTypeOfResolverFn<ParentType>
 }
 
 export type ConversationSearchResultResolvers<
@@ -600,6 +611,7 @@ export type ConversationSearchResultResolvers<
     ContextType
   >
   query?: Resolver<ResolversTypes["String"], ParentType, ContextType>
+  __isTypeOf?: isTypeOfResolverFn<ParentType>
 }
 
 export type MessageResolvers<
@@ -611,6 +623,7 @@ export type MessageResolvers<
   messageId?: Resolver<ResolversTypes["ID"], ParentType, ContextType>
   subject?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
   from?: Resolver<Array<ResolversTypes["Address"]>, ParentType, ContextType>
+  __isTypeOf?: isTypeOfResolverFn<ParentType>
 }
 
 export type MutationResolvers<
@@ -645,6 +658,7 @@ export type ParticipantsResolvers<
     ParentType,
     ContextType
   >
+  __isTypeOf?: isTypeOfResolverFn<ParentType>
 }
 
 export type PartSpecResolvers<
@@ -653,6 +667,7 @@ export type PartSpecResolvers<
 > = {
   messageId?: Resolver<ResolversTypes["String"], ParentType, ContextType>
   contentId?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
+  __isTypeOf?: isTypeOfResolverFn<ParentType>
 }
 
 export type PresentableResolvers<
@@ -667,6 +682,7 @@ export type PresentableResolvers<
   from?: Resolver<ResolversTypes["Address"], ParentType, ContextType>
   editedAt?: Resolver<Maybe<ResolversTypes["String"]>, ParentType, ContextType>
   editedBy?: Resolver<Maybe<ResolversTypes["Address"]>, ParentType, ContextType>
+  __isTypeOf?: isTypeOfResolverFn<ParentType>
 }
 
 export type QueryResolvers<
@@ -712,6 +728,7 @@ export type SearchResolvers<
   >
   loading?: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>
   query?: Resolver<ResolversTypes["String"], ParentType, ContextType>
+  __isTypeOf?: isTypeOfResolverFn<ParentType>
 }
 
 export type Resolvers<ContextType = any> = {
