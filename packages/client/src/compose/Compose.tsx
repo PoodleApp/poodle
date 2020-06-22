@@ -12,15 +12,15 @@ import CloseIcon from "@material-ui/icons/Close"
 import clsx from "clsx"
 import * as React from "react"
 import { useHistory } from "react-router"
-import { Value } from "slate"
+import { Node } from "slate"
 import DisplayErrors from "../DisplayErrors"
-import { serializer } from "../editor"
+import { deserialize, serialize } from "../editor"
 import Editor from "../editor/Editor"
 import * as graphql from "../generated/graphql"
 import RecipientsInput, { Address } from "./RecipientsInput"
 import WithAttachments from "./WithAttachments"
 
-const initialValue = serializer.deserialize("")
+const initialValue = deserialize("")
 
 type Props = {
   accountId?: string
@@ -87,7 +87,7 @@ export default function Compose({ accountId }: Props) {
   const history = useHistory()
   const [subject, setSubject] = React.useState("")
   const [recipients, setRecipients] = React.useState<Address[]>([])
-  const [content, setContent] = React.useState(initialValue)
+  const [content, setContent] = React.useState<Node[]>(initialValue)
   const [sendMessage, sendMessageResult] = graphql.useSendMessageMutation()
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -96,7 +96,7 @@ export default function Compose({ accountId }: Props) {
       content: {
         type: "text",
         subtype: "html",
-        content: serializer.serialize(content)
+        content: serialize(content)
       },
       subject,
       to: recipients.map(r => ({
@@ -170,7 +170,7 @@ export default function Compose({ accountId }: Props) {
           />
           <Editor
             className={clsx(classes.formInput, classes.contentInput)}
-            onChange={({ value }: { value: Value }) => setContent(value)}
+            onChange={setContent}
             placeholder="Write your message here."
             value={content}
           />

@@ -1,8 +1,8 @@
 import { Button } from "@material-ui/core"
 import * as React from "react"
-import { Value } from "slate"
+import { Node } from "slate"
 import DisplayErrors from "../DisplayErrors"
-import { Editor, serializer } from "../editor"
+import { Editor, deserialize, serialize } from "../editor"
 import * as graphql from "../generated/graphql"
 
 export default function EditForm({
@@ -16,10 +16,10 @@ export default function EditForm({
   contentToEdit: graphql.Content
   onComplete: () => void
 }) {
-  const [content, setContent] = React.useState(
+  const [content, setContent] = React.useState<Node[]>(
     contentToEdit.content
-      ? serializer.deserialize(contentToEdit.content)
-      : serializer.deserialize("")
+      ? deserialize(contentToEdit.content)
+      : deserialize("")
   )
   const [sendEdit, sendEditResult] = graphql.useEditMutation()
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -39,7 +39,7 @@ export default function EditForm({
         content: {
           type: contentToEdit.type,
           subtype: contentToEdit.subtype,
-          content: serializer.serialize(content)
+          content: serialize(content)
         }
       }
     })
@@ -47,12 +47,7 @@ export default function EditForm({
   }
   return (
     <form onSubmit={onSubmit}>
-      <Editor
-        onChange={({ value }: { value: Value }) => {
-          setContent(value)
-        }}
-        value={content}
-      />
+      <Editor onChange={setContent} value={content} />
       <Button disabled={sendEditResult.loading} onClick={onComplete}>
         Cancel
       </Button>

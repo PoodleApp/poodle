@@ -8,10 +8,10 @@ import {
 import ReplyIcon from "@material-ui/icons/Reply"
 import { makeStyles } from "@material-ui/styles"
 import * as React from "react"
-import { Value } from "slate"
+import { Node } from "slate"
 import DisplayErrors from "../DisplayErrors"
 import Editor from "../editor/Editor"
-import serializer from "../editor/serializer"
+import {serialize, deserialize} from "../editor/serializer"
 import * as graphql from "../generated/graphql"
 import ParticipantChip from "../ParticipantChip"
 import WithAttachments from "./WithAttachments"
@@ -25,7 +25,7 @@ const useStyles = makeStyles(_theme => ({
   }
 }))
 
-const initialValue = serializer.deserialize("")
+const initialValue = deserialize("")
 
 type Props = React.FormHTMLAttributes<HTMLFormElement> & {
   accountId: string
@@ -41,7 +41,7 @@ export default function ReplyForm({
 }: Props) {
   const classes = useStyles()
   const [reply, replyResult] = graphql.useReplyMutation()
-  const [value, setValue] = React.useState(initialValue)
+  const [content, setContent] = React.useState<Node[]>(initialValue)
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -52,11 +52,11 @@ export default function ReplyForm({
         content: {
           type: "text",
           subtype: "html",
-          content: serializer.serialize(value)
+          content: serialize(content)
         }
       }
     })
-    setValue(initialValue)
+    setContent(initialValue)
   }
 
   const to = replyRecipients.to.map(address => (
@@ -86,10 +86,8 @@ export default function ReplyForm({
         <WithAttachments>
           <CardContent>
             <Editor
-              onChange={({ value }: { value: Value }) => {
-                setValue(value)
-              }}
-              value={value}
+              onChange={setContent}
+              value={content}
               placeholder="Write your reply here."
             />
             <WithAttachments.Attachments />

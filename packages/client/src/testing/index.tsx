@@ -27,8 +27,9 @@ export function mount(
   } = {}
 ): enzyme.ReactWrapper {
   const wrapper = enzyme.mount(
+    // @ts-ignore
     <MockedProvider mocks={mocks}>
-      <Router history={history}>{element}</Router>
+      <Router history={history as History}>{element}</Router> // TODO: remove cast
     </MockedProvider>
   )
   mounts.push(wrapper)

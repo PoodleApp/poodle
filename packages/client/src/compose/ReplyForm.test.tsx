@@ -1,6 +1,6 @@
 import { List } from "immutable"
 import * as React from "react"
-import { Value } from "slate"
+import { Node, Value } from "slate"
 import { Editor } from "slate-react"
 import { mount } from "../testing"
 import * as $ from "../testing/fixtures"
