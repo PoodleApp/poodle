@@ -1,5 +1,5 @@
 import { MockedProvider } from "@apollo/react-testing"
-import { MockedProviderProps } from "@apollo/react-testing/lib/mocks/MockedProvider"
+import type { MockedProviderProps } from "@apollo/react-testing/lib/mocks/types"
 import * as enzyme from "enzyme"
 import { createMemoryHistory, History } from "history"
 import * as React from "react"

@@ -1,3 +1,4 @@
+import type { MutationResult, QueryResult } from "@apollo/react-common"
 import {
   IconButton,
   makeStyles,
@@ -6,7 +7,6 @@ import {
 } from "@material-ui/core"
 import CloseIcon from "@material-ui/icons/Close"
 import * as React from "react"
-import { MutationResult, QueryResult } from "react-apollo"
 import useRequestStates from "./hooks/useRequestStates"
 
 type Props = {

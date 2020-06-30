@@ -1,5 +1,5 @@
+import type { MutationResult } from "@apollo/react-common"
 import * as React from "react"
-import { MutationResult } from "react-apollo"
 import * as graphql from "../generated/graphql"
 
 export default function useSetisRead(
