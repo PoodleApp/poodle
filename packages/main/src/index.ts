@@ -113,16 +113,19 @@ contextMenu()
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on("ready", async () => {
+  // TODO: get Apollo and Immutable dev tools working again.
   if (isDev) {
     const {
       default: installExtension,
-      APOLLO_DEVELOPER_TOOLS,
+      // APOLLO_DEVELOPER_TOOLS,
       REACT_DEVELOPER_TOOLS
     } = require("electron-devtools-installer")
-    const IMMUTABLE_JS_OBJECT_FORMATTER = "hgldghadipiblonfkkicmgcbbijnpeog"
-    await installExtension(APOLLO_DEVELOPER_TOOLS)
-    await installExtension(REACT_DEVELOPER_TOOLS)
-    await installExtension(IMMUTABLE_JS_OBJECT_FORMATTER)
+    // const IMMUTABLE_JS_OBJECT_FORMATTER = "hgldghadipiblonfkkicmgcbbijnpeog"
+    await installExtension([
+      // APOLLO_DEVELOPER_TOOLS,
+      // IMMUTABLE_JS_OBJECT_FORMATTER,
+      REACT_DEVELOPER_TOOLS
+    ])
   }
   createWindow()
   handleContentDownloads()

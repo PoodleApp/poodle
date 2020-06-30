@@ -96,7 +96,7 @@
     "buffer-to-stream": "^1.0.0",
     "cross-env": "^5.2.0",
     "electron": "6",
-    "electron-devtools-installer": "^2.2.4",
+    "electron-devtools-installer": "^3.1.0",
     "eol": "^0.9.1",
     "eslint": "^5.16.0",
     "eslint-config-react-app": "^4.0.1",
@@ -106,7 +106,7 @@
     "jest": "24.7.1",
     "semantic-release": "^15.13.19",
     "ts-jest": "^24.0.2",
-    "typescript": "^3.7.4",
+    "typescript": "^3.9.5",
     "watch": "^1.0.2"
   }
 }
