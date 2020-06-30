@@ -1,5 +1,6 @@
 // Entrypoint for client
 
+import { ApolloProvider } from "@apollo/react-hooks"
 import * as colors from "@material-ui/core/colors"
 import { createMuiTheme } from "@material-ui/core/styles"
 import { ThemeProvider } from "@material-ui/styles"
@@ -9,7 +10,6 @@ import * as electronImports from "electron"
 import { createIpcLink } from "graphql-transport-electron"
 import { createBrowserHistory, createHashHistory } from "history"
 import React from "react"
-import { ApolloProvider } from "react-apollo"
 import ReactDOM from "react-dom"
 import { Router } from "react-router-dom"
 import "typeface-roboto"

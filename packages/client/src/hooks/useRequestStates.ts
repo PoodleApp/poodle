@@ -1,6 +1,6 @@
+import type { MutationResult, QueryResult } from "@apollo/react-common"
 import * as React from "react"
 import { ApolloError } from "apollo-client"
-import { MutationResult, QueryResult } from "react-apollo"
 
 export default function useRequestStates(
   operationResults: Array<MutationResult | QueryResult>
