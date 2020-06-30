@@ -15,7 +15,6 @@ You must have these programs installed:
 
 - g++
 - Node v8 or later
-- tmux
 - yarn v0.26.0 or later
 
 On macOS you can get g++ by installing the

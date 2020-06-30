@@ -4,26 +4,6 @@ set -e
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-tmux new-session -s poodle-dev -d
-tmux rename-window -t poodle-dev console
-
-tmux split-window -h -t poodle-dev
-tmux select-pane -L -t poodle-dev
-
-tmux send-keys -t poodle-dev "cd $DIR/../packages/client" C-m
-tmux send-keys -t poodle-dev "yarn start" C-m
-
-tmux split-window -v -t poodle-dev
-tmux send-keys -t poodle-dev "cd $DIR/../packages/client" C-m
-tmux send-keys -t poodle-dev "yarn codegen:watch" C-m
-
-tmux select-pane -R -t poodle-dev
-
-tmux send-keys -t poodle-dev "cd $DIR/../packages/main" C-m
-tmux send-keys -t poodle-dev "wait-on http://localhost:3000/ && yarn start" C-m
-
-tmux split-window -v -t poodle-dev
-tmux send-keys -t poodle-dev "cd $DIR/../packages/main" C-m
-tmux send-keys -t poodle-dev "yarn codegen:watch" C-m
-
-tmux attach -t poodle-dev
+concurrently \
+	"cd $DIR/../packages/client && yarn start" \
+	"cd $DIR/../packages/main && wait-on http://localhost:3000/ && yarn start"
