@@ -51,7 +51,7 @@
     "kefir": "^3.8.6",
     "keytar": "^5.0.0-beta.0",
     "libqp": "^1.1.0",
-    "lodash": "4.17.14",
+    "lodash": "4.17.19",
     "mailparser": "^2.6.0",
     "mkdirp": "^0.5.1",
     "moment": "^2.24.0",
