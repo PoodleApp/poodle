@@ -58,7 +58,7 @@
     "node-email-reply-parser": "^0.1.1",
     "node-fetch": "^2.3.0",
     "node-uuid": "^1.4.8",
-    "nodemailer": "^6.0.0",
+    "nodemailer": "^6.4.16",
     "update-electron-app": "^1.5.0",
     "xdg-basedir": "^3.0.0",
     "xoauth2": "^1.2.0"
