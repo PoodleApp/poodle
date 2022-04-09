@@ -54,7 +54,7 @@
     "lodash": "4.17.14",
     "mailparser": "^2.6.0",
     "mkdirp": "^0.5.1",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "node-email-reply-parser": "^0.1.1",
     "node-fetch": "^2.3.0",
     "node-uuid": "^1.4.8",
